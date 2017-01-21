@@ -19,6 +19,10 @@ my $CUT_NUM_DISP = 4;
 my $SESSID = get_session_id();
 $SIG{CHLD} = "IGNORE";
 
+my $MAX_SHAPE_NUM = 9;
+my $MAX_CUT_NUM = 9;
+
+
 my $mail_host = '127.0.0.1';
 my $from_address = pack('H*', '5477697374792052656e6465726572203c' .
 			'7477697374795f72656e64657265722e6e65743e');
@@ -59,16 +63,7 @@ print $cgi_var->start_form();
 print $cgi_var->h4('Define Shape:');
 print '<p><b>Base shape:</b> ',
     $cgi_var->scrolling_list('base_shape',
-			     [0,
-			      1,
-			      2,
-			      3,
-			      4,
-			      5,
-			      6,
-			      7,
-			      8,
-			      9],
+			     [0 .. $MAX_SHAPE_NUM],
 			     ['5'],
 			     1, 0,
 			     {0=>'Sphere',
@@ -135,15 +130,7 @@ for (my $i = 0; $i < $CUT_NUM_DISP; $i++) {
 	print $cgi_var->checkbox('use_' . $i, '', 'on', 'Use'),
     }
     print ' ', $cgi_var->scrolling_list('sym_' . $i,
-					[1,
-					 2,
-					 3,
-					 4,
-					 5,
-					 6,
-					 7,
-					 8,
-					 9],
+					[1 .. $MAX_CUT_NUM],
 					['5'],
 					1, 0,
 					{1=>'Tetrahedron Corners',
@@ -242,7 +229,9 @@ if (defined $cgi_var->param('action_button')) {
 
     # base shape
     unless ((defined $cgi_var->param('base_shape')) &&
-	    ($cgi_var->param('base_shape') =~ m/^[0-9]$/)) {
+	    ($cgi_var->param('base_shape') =~ m/^[0-9]+$/) &&
+	    (int($cgi_var->param('base_shape')) >= 0) &&
+	    (int($cgi_var->param('base_shape')) <= $MAX_SHAPE_NUM)) {
 	html_warn('Base shape malformed.');
 	$replacements{'TEXTSHAPE'} = 5;
     }
@@ -423,7 +412,9 @@ if (defined $cgi_var->param('action_button')) {
 	    push @url_args, 'use_' . $i . '=' . $cgi_var->param('use_' . $i);
 
 	    unless ((defined $cgi_var->param('sym_' . $i)) &&
-		    ($cgi_var->param('sym_' . $i) =~ m/^[1-9]$/)) {
+		    ($cgi_var->param('sym_' . $i) =~ m/^[0-9]+$/) &&
+		    (int($cgi_var->param('sym_' . $i)) >= 1) &&
+		    (int($cgi_var->param('sym_' . $i)) <= $MAX_CUT_NUM)) {
 		html_warn('Cut ' . $i . ' -- symmetry malformed.');
 		next;
 	    }
@@ -490,7 +481,7 @@ if (defined $cgi_var->param('action_button')) {
     }
     close RENDERTEMPLATE;
 
-    
+
     # Do template replacements
     foreach my $replacement (keys %replacements) {
 	$render_template =~ s/$replacement/$replacements{$replacement}/g;
@@ -523,13 +514,13 @@ if (defined $cgi_var->param('action_button')) {
 	$link = 1;
     }
     elsif ($action eq 'job') {
-	
+
 	unless ((defined $cgi_var->param('render_email')) &&
 		($cgi_var->param('render_email') =~ m/^[\w\d._-]{1,40}@[\w\d.-]{3,80}$/) &&
 		($cgi_var->param('render_email') ne 'user@domain.com')) {
 
 	    html_warn('You must provide a valid email address for the render results to be sent to you.');
-	}	
+	}
 	else {
 
 	    $to_address = $cgi_var->param('render_email');
@@ -541,14 +532,14 @@ if (defined $cgi_var->param('action_button')) {
 		close STDIN;
 		close STDERR;
 		my $sess_id = POSIX::setsid();
-		
+
 		my $cmd = `./render_quality.sh $SESSID`;
-		
+
 
 		$body = 'Your rendered image for session ' . $SESSID .
 		    ' is attached.' . "\n" . 'URL for configuration: ' .
 		    $base_url . '?' . join('&', @url_args) . "\n";
-		
+
 		my $msg;
 		### Create the multipart container
 		$msg = MIME::Lite->new(
@@ -559,7 +550,7 @@ if (defined $cgi_var->param('action_button')) {
 		    'Type' => 'text/plain',
 		    'Data' => $body
 		    ) or die 'Error creating multipart container: ', $!, "\n";
-		
+
 		$msg->attach(
 		    'Type' => 'image/png',
 		    'Path' => '../render_data/job_' . $SESSID . '.png',
@@ -573,7 +564,7 @@ if (defined $cgi_var->param('action_button')) {
 
 		exit(0);
 	    }
-	    
+
 	    print '<p><b><font color="#0000ff">A render job has been submitted',
 	    ' and the results will be emailed to you.</font></b></p>', "\n";
 	    $link = 1;
@@ -661,7 +652,7 @@ sub get_session_id {
 
     my $rand;
     read(URANDOM, $rand, 16);
-    
+
     close URANDOM;
 
     return unpack('H*', $rand);
