@@ -100,6 +100,17 @@ print ' <b>Cut Thickness:</b> ',
 				  3=>'3 (Normal)',
 				  4=>'4',
 				  5=>'5 (Thick)'}, undef), "\n";
+print ' <b>Shape Material:</b> ',
+        $cgi_var->scrolling_list('usermat',
+				 [0,
+				  1,
+				  2],
+				 ['0'],
+				 1, 0,
+				 {0=>'White Clay',
+				  1=>'Graphite',
+				  2=>'Gold'
+				 }, undef), "\n";
 print ' <b>Background:</b> ',
         $cgi_var->scrolling_list('userbg',
 				 [0,
@@ -368,7 +379,6 @@ if (defined $cgi_var->param('action_button')) {
 	push @url_args, 'cut_width=' . $cgi_var->param('cut_width');
     }
 
-
     # Background
     unless ((defined $cgi_var->param('userbg')) &&
 	    ($cgi_var->param('userbg') =~ m/^[0-2]$/)) {
@@ -378,6 +388,17 @@ if (defined $cgi_var->param('action_button')) {
     else {
 	$replacements{'TEXTUSERBG'} = $cgi_var->param('userbg');
 	push @url_args, 'userbg=' . $cgi_var->param('userbg');
+    }
+
+    # Material
+    unless ((defined $cgi_var->param('usermat')) &&
+	    ($cgi_var->param('usermat') =~ m/^[0-2]$/)) {
+	html_warn('Material malformed.');
+	$replacements{'TEXTUSERMAT'} = '0';
+    }
+    else {
+	$replacements{'TEXTUSERMAT'} = $cgi_var->param('usermat');
+	push @url_args, 'usermat=' . $cgi_var->param('usermat');
     }
 
     # Camera
