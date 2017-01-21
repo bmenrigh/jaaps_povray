@@ -324,72 +324,22 @@ normalize(dirsetDeltIcosi)
     #end
 #end
 
-/*
-relations[][] (to resize the sphere)
-all shapes have an initially face-sphere (inner sphere) radius of 1 as they were defined
-
-rows (shape):
-    //0: sphere
-    //1: tetrahedron
-    //2: cube
-    //3: octahedron
-    //4: rhombic dodecahedron
-    //5: dodecahedron
-    //6: icosahedron
-    //7: rhombic tricontahedron
-    //8: polyhedron with cube-wing-faces
-columns (direction vector set):
-    //0: not in use
-    //1: TC (tetrahedron corners)
-    //2: CF (cube faces)
-    //3: CC (cube corners)
-    //4: CE (cube edges)
-    //5: DF (dodecahedron faces)
-    //6: DC (dodecahedron corners)
-    //7: DE (dodecahedron edges)
-    //8: CW (triakis octahedron)
-
-#declare relations=array[9][9]{
-//          TC     CF     CC     CE     DF     DC     DE     CW
-    {0     ,1.000 ,1.000 ,1.000 ,1.000 ,1.000 ,1.000 ,1.000 ,1.000 ,}, //0: sphere
-    {0     ,3.000 ,1.732 ,1.000 ,2.43  ,2.37  ,2.97  ,2.77  ,2.82  ,}, //1: tetrahedron
-    {0     ,1.732 ,1.000 ,1.732 ,1.414 ,1.38  ,1.732 ,1.62  ,1.64  ,}, //2: cube
-    {0     ,1.000 ,1.732 ,1.000 ,1.225 ,1.47  ,1.61  ,1.73  ,1.18  ,}, //3: octahedron
-    {0     ,1.225 ,1.414 ,1.225 ,1.000 ,1.20  ,1.32  ,1.41  ,1.16  ,}, //4: rhombic dodecahedron
-    {0     ,1.26  ,1.18  ,1.26  ,1.15  ,1.000 ,1.258 ,1.176 ,1.19  ,}, //5: dodecahedron
-    {0     ,1.000 ,1.07  ,1.000 ,1.225 ,1.258 ,1.000 ,1.070 ,1.18  ,}, //6: icosahedron
-    {0     ,1.07  ,1.000 ,1.07  ,1.14  ,1.176 ,1.070 ,1.000 ,1.10  ,}, //7: rhombic tricontahedron
-    {0     ,1.06  ,1.47  ,1.06  ,1.04  ,1.25  ,1.37  ,1.47  ,1.000 ,}, //8: triakis octahedron
-}
-*/
-
-#declare relations=array[10][10]{
-//          TC           CF           CC           CE            DF            DC          DE		 CW
-    {0, 1.000      , 1 ,1.000   , 1.000 ,1.000 ,1.000 ,1.000 ,1.000 , 1}, //0: sphere
-    {0, 3.000      , 1.732      , 1 ,2.43  ,2.37  ,2.97  ,2.77  ,2.82  , 1}, //1: tetrahedron
-    {0, 1.732050808, 1.000000000, 1.732050808, 1.414213562, 1.376381920, 1.732050808, 1.618033989, 1.638281327, 1}, //2: cube
-    {0, 1.000      , 1.732      , 1.000 ,1.225 ,1.47  ,1.61  ,1.73  ,1.18  , 1}, //3: octahedron
-    {0, 1.225      , 1.414      , 1.225 ,1.000 ,1.20  ,1.32  ,1.41  ,1.16  , 1}, //4: rhombic dodecahedron
-    {0, 1.26       , 1.18       , 1.26  ,1.15  ,1.000 ,1.258 ,1.176 ,1.19  , 1}, //5: dodecahedron
-    {0, 1.000      , 1.07       , 1.000 ,1.225 ,1.258 ,1.000 ,1.070 ,1.18  , 1}, //6: icosahedron
-    {0, 1.07       , 1.000      , 1.07  ,1.14  ,1.176 ,1.070 ,1.000 ,1.10  , 1}, //7: rhombic tricontahedron
-    {0, 1.057236495, 1.638281327, 1.057236495, 1.337651102, 1.25  ,1.37  ,1.47  ,1.000 , 1}, //8: triakis octahedron
-    {0, 1.097853885, 1.577669698, 1.097853885, 1.288161914, 1.25  ,1.37  ,1.47  ,1.000 , 1}, //9: Deltoidal Icositetrahedron
-}
-
 
 //used for fitting
-#declare viewScale=array[10]{
-    1.6,          //0: sphere
-    0.7,          //1: tetrahedron
-    1.2,          //2: cube
-    1.1,          //3: octahedron
-    1.3,          //4: rhombic dodecahedron
-    1.3,          //5: dodecahedron
-    1.45,         //6: icosahedron
-    1.4,          //7: rhombic tricontahedron
-    1.2,          //8: Triakis Octahedron
-    1.5,          //9: Deltoidal Icositetrahedron
+#declare globalScale = 1.8;
+
+// This scale value is the ratio of the circumscribed sphere to the inscribed sphere
+#declare shapeScale=array[10]{
+    1.0000000000, //0: sphere
+    0.3333333333, //1: tetrahedron
+    0.5773502692, //2: cube
+    0.5773502692, //3: octahedron
+    0.7071067812, //4: rhombic dodecahedron
+    0.7946544723, //5: dodecahedron
+    0.7946544723, //6: icosahedron
+    0.8506508084, //7: rhombic tricontahedron
+    0.6785983445, //8: Triakis Octahedron
+    0.8628562095, //9: Deltoidal Icositetrahedron
 }
 
 
@@ -403,7 +353,6 @@ columns (direction vector set):
 	coneDirection, //a normalized direction from the direction-set
 	normDiv,  //divider value in the scope 1 to 0
 	normApx, //same scale as normDiv -----------new---------------
-	relation, //relative size of the sphere
 	gth)	  // gap thickness
 
 	#local Base_Point = coneDirection * normDiv;                  //at the divider = depth of cut
@@ -412,12 +361,6 @@ columns (direction vector set):
 	#local hoa = atan(Base_Radius/vlength(Base_Point-Cap_Point)); //half opening angle
 	#local offst = gth / sin(hoa) ;								  //offset to gain the gap-thickness
 
-/*
-	//resize sphere to relation - to get sphere touching the solids extreme
-	#local Base_Point = Base_Point * relation;
-	#local Base_Radius = Base_Radius * relation;
-	#local Cap_Point = Cap_Point * relation;
-*/
 	//make cone big enough
 	#local scal=100;
 	#local coneHeight= Base_Point - Cap_Point ;
@@ -493,7 +436,7 @@ columns (direction vector set):
 
     	#local dset=dirset[Count]*neg;
 
-        #local subtrahendSolid= ConeShell(dirset[Count]*neg, normDiv, normApx, relations[shapeIndex][dirsetIndex], gth)
+	#local subtrahendSolid= ConeShell(dirset[Count]*neg, normDiv, normApx, gth)
 
         #local subtrahendSolid = object{subtrahendSolid rotate<TEXTROTCX, TEXTROTCY, TEXTROTCZ>}
         #local subtrahendSolid = object{subtrahendSolid translate<TEXTTRANSCX, TEXTTRANSCY, TEXTTRANSCZ>}
@@ -534,7 +477,7 @@ columns (direction vector set):
 
 //show mainSolid
 object { mainSolid
-    scale viewScale [shapeIndex]
+    scale ((shapeScale [shapeIndex]) * globalScale)
     transform{  main_orientation}
 }
 
