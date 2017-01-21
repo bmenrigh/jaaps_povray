@@ -246,9 +246,9 @@ light_source {
 
 #macro getShape(index)
     #switch (index)
-        #case (0) sphere{0,1. getShapeMaterialPreset(usermat)} #break
+        #case (0) object{shSphere getShapeMaterialPreset(usermat)} #break
         #case (1) object{shTet getShapeMaterialPreset(usermat)} #break
-        #case (2) box {-1,1 getShapeMaterialPreset(usermat)} #break
+        #case (2) object{shCube getShapeMaterialPreset(usermat)} #break
         #case (3) object{shOct getShapeMaterialPreset(usermat)} #break
         #case (4) object{shRhDod getShapeMaterialPreset(usermat)} #break
         #case (5) object{shDod getShapeMaterialPreset(usermat)} #break
