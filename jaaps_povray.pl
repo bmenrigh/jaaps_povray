@@ -32,8 +32,8 @@ my $bcc_address = $from_address;
 my $subject = 'Twisty puzzle render job';
 my $body;
 
-#my $base_url = 'http://www.brandonenright.net/cgi-bin/jaaps_povray.pl';
-my $base_url = 'http://127.0.0.1/cgi-bin/jaaps_povray.pl';
+my $base_url = 'http://www.brandonenright.net/cgi-bin/jaaps_povray.pl';
+#my $base_url = 'http://127.0.0.1/cgi-bin/jaaps_povray.pl';
 my @url_args;
 
 my %replacements;
@@ -199,7 +199,21 @@ for (my $i = 0; $i < $CUT_NUM_DISP; $i++) {
 					 4=>'BlueViolet',
 					 5=>'Coral',
 					 6=>'MediumTurquoise',
-					 7=>'SpringGreen'}, 0);
+					 7=>'SpringGreen',
+					 8=>'Magenta',
+					 9=>'Maroon',
+					 10=>'YellowGreen',
+					 11=>'Orange',
+					 12=>'OrangeRed',
+					 13=>'SeaGreen',
+					 14=>'SummerSky',
+					 15=>'NeonBlue',
+					 16=>'White',
+					 17=>'Black',
+					 18=>'MediumSlateBlue',
+					 19=>'MediumSpringGreen',
+					 20=>'Scarlet',
+					}, 0);
     print '</p>', "\n";
 }
 

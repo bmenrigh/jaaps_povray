@@ -165,8 +165,29 @@ light_source {
 
 
 //colors initially set to the colors used by Jaap for the divider rows
-#declare divider_row_colors=array[8] {color Red, color Green, color Blue, color Yellow,
-									  color BlueViolet, color Coral, color MediumTurquoise , color SpringGreen};
+#declare divider_row_colors=array[21] {
+	 color Red,               //0
+	 color Green,		  //1
+	 color Blue,		  //2
+	 color Yellow,		  //3
+	 color BlueViolet,	  //4
+	 color Coral,		  //5
+	 color MediumTurquoise,	  //6
+	 color SpringGreen,	  //7
+	 color Magenta,		  //8
+	 color Maroon,		  //9
+	 color YellowGreen, 	  //10
+	 color Orange,		  //11
+	 color OrangeRed,	  //12
+	 color SeaGreen,	  //13
+	 color SummerSky,	  //14
+	 color NeonBlue,	  //15
+	 color White,	  	  //16
+	 color Black,	  	  //17
+	 color MediumSlateBlue,	  //18
+	 color MediumSpringGreen, //19
+	 color Scarlet,		  //20
+};
 
 
 //end of the individual configuration
