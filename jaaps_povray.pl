@@ -21,6 +21,7 @@ $SIG{CHLD} = "IGNORE";
 
 my $MAX_SHAPE_NUM = 22;
 my $MAX_CUT_NUM = 22;
+my $MAX_COLOR_NUM = 20;
 
 
 my $mail_host = '127.0.0.1';
@@ -32,8 +33,8 @@ my $bcc_address = $from_address;
 my $subject = 'Twisty puzzle render job';
 my $body;
 
-my $base_url = 'http://www.brandonenright.net/cgi-bin/jaaps_povray.pl';
-#my $base_url = 'http://127.0.0.1/cgi-bin/jaaps_povray.pl';
+#my $base_url = 'http://www.brandonenright.net/cgi-bin/jaaps_povray.pl';
+my $base_url = 'http://127.0.0.1/cgi-bin/jaaps_povray.pl';
 my @url_args;
 
 my %replacements;
@@ -182,14 +183,7 @@ for (my $i = 0; $i < $CUT_NUM_DISP; $i++) {
     print ' with apex at';
     print ' ', $cgi_var->textfield('apex_' . $i, '0', 5, 5);
     print ' ', $cgi_var->scrolling_list('color_' . $i,
-					[0,
-					 1,
-					 2,
-					 3,
-					 4,
-					 5,
-					 6,
-					 7],
+					[0 .. $MAX_COLOR_NUM],
 					[$i],
 					1, 0,
 					{0=>'Red',
@@ -501,7 +495,9 @@ if (defined $cgi_var->param('action_button')) {
 	    push @url_args, 'apex_' . $i . '=' . $cgi_var->param('apex_' . $i);
 
 	    unless ((defined $cgi_var->param('color_' . $i)) &&
-		    ($cgi_var->param('color_' . $i) =~ m/^[0-7]$/)) {
+		    ($cgi_var->param('color_' . $i) =~ m/^[0-9]+$/) &&
+		    (int($cgi_var->param('color_' . $i)) >= 0) &&
+		    (int($cgi_var->param('color_' . $i)) <= $MAX_COLOR_NUM)) {
 		html_warn('Cut ' . $i . ' -- color malformed.');
 		next;
 	    }
