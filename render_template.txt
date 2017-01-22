@@ -266,6 +266,9 @@ light_source {
         #case (17) object{shTriaIcosa getShapeMaterialPreset(usermat)} #break
 	#case (18) object{shPentHexeD getShapeMaterialPreset(usermat)} #break
 	#case (19) object{shPentHexeL getShapeMaterialPreset(usermat)} #break
+	#case (20) object{shTriDipyra getShapeMaterialPreset(usermat)} #break
+	#case (21) object{shPentDipyra getShapeMaterialPreset(usermat)} #break
+	#case (22) object{shHexDipyra getShapeMaterialPreset(usermat)} #break
     #end
 #end
 
@@ -312,6 +315,9 @@ light_source {
         #case (17) dirsTriaIcosa #break
         #case (18) dirsPentHexeD #break
         #case (19) dirsPentHexeL #break
+        #case (20) dirsTriDipyra #break
+        #case (21) dirsPentDipyra #break
+        #case (22) dirsHexDipyra #break
     #end
 #end
 
@@ -320,7 +326,7 @@ light_source {
 #declare globalScale = 1.8;
 
 // This scale value is the ratio of the circumscribed sphere to the inscribed sphere
-#declare shapeScale=array[20]{
+#declare shapeScale = array[23] {
     1.0000000000, //0: sphere
     0.3333333333, //1: tetrahedron
     0.5773502692, //2: cube
@@ -341,6 +347,9 @@ light_source {
     0.8385051474, //17: Triakis Icosahedron
     0.9188614921, //18: Pentagonal Hexecontahedron (dextro)
     0.9188614921, //19: Pentagonal Hexecontahedron (laevo)
+    0.3779644730, //20: Triangular Dipyramid
+    0.5067318540, //21: Pentagonal Dipyramid
+    0.4472135955, //22: Hexagonal Dipyramid
 }
 
 

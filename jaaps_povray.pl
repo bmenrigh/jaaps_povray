@@ -19,8 +19,8 @@ my $CUT_NUM_DISP = 4;
 my $SESSID = get_session_id();
 $SIG{CHLD} = "IGNORE";
 
-my $MAX_SHAPE_NUM = 19;
-my $MAX_CUT_NUM = 19;
+my $MAX_SHAPE_NUM = 22;
+my $MAX_CUT_NUM = 22;
 
 
 my $mail_host = '127.0.0.1';
@@ -86,6 +86,9 @@ print '<p><b>Base shape:</b> ',
 			      17=>'Triakis Icosahedron',
 			      18=>'Pentagonal Hexecontahedron (dextro)',
 			      19=>'Pentagonal Hexecontahedron (laevo)',
+			      20=>'Triangular Dipyramid',
+			      21=>'Pentagonal Dipyramid',
+			      22=>'Hexagonal Dipyramid',
 			     }, undef), "\n";
 
 print ' <b>Rotate (x, y, z):</b> ',
@@ -163,6 +166,9 @@ for (my $i = 0; $i < $CUT_NUM_DISP; $i++) {
 					 17=>'Triakis Icosahedron Faces',
 					 18=>'Pentagonal Hexecontahedron (dextro) Faces',
 					 19=>'Pentagonal Hexecontahedron (laevo) Faces',
+					 20=>'Triangular Dipyramid Faces',
+					 21=>'Pentagonal Dipyramid Faces',
+					 22=>'Hexagonal Dipyramid Faces',
 					}, undef);
     print ' at depth';
     print ' ', $cgi_var->textfield('depth_' . $i, '200', 7, 7);

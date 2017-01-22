@@ -718,6 +718,74 @@
 }
 
 
+// Triangular Dipyramid
+// Using dual Triangular Prism for axis system
+
+// sqrt(3) / 6
+#declare tri_dipyra_c0 = 0.28867513459481288225457439025097872782;
+
+// sqrt(3) / 3
+#declare tri_dipyra_c1 = 0.57735026918962576450914878050195745565;
+
+#declare dirsTriDipyra=array [6] {
+	 < 0.0,  0.5,  tri_dipyra_c1>,
+	 < 0.0, -0.5,  tri_dipyra_c1>,
+ 	 <-0.5,  0.5,  -tri_dipyra_c0>,
+  	 <-0.5, -0.5,  -tri_dipyra_c0>,
+  	 < 0.5,  0.5,  -tri_dipyra_c0>,
+  	 < 0.5, -0.5,  -tri_dipyra_c0>,
+}
+
+
+// Pentagonal Dipyramid
+// Using dual Pentagonal Prism for axis system
+
+// sqrt((1/10) * (5 + sqrt(5)))
+#declare pent_dipyra_c0 = 0.85065080835203993218154049706301107224;
+
+// (1/2) * sqrt((1/5) * (5 + 2 * sqrt(5)))
+#declare pent_dipyra_c1 = 0.68819096023558676910360479095544383976;
+
+// (1/4) * (1 + sqrt(5))
+#declare pent_dipyra_c2 = 0.80901699437494742410229341718281905886;
+
+// 1 / sqrt(2 * (5 + sqrt(5)))
+#declare pent_dipyra_c3 = 0.26286555605956680301283454242393830364;
+
+#declare dirsPentDipyra=array [10] {
+	 < 0.0,  0.5, pent_dipyra_c0>,
+	 < pent_dipyra_c2,  0.5, pent_dipyra_c3>,
+ 	 <-pent_dipyra_c2,  0.5, pent_dipyra_c3>,
+	 < 0.5,  0.5, -pent_dipyra_c1>,
+ 	 <-0.5,  0.5, -pent_dipyra_c1>,
+ 	 < 0.0, -0.5, pent_dipyra_c0>,
+	 < pent_dipyra_c2, -0.5, pent_dipyra_c3>,
+ 	 <-pent_dipyra_c2, -0.5, pent_dipyra_c3>,
+	 < 0.5, -0.5, -pent_dipyra_c1>,
+ 	 <-0.5, -0.5, -pent_dipyra_c1>,
+}
+
+
+// Hexagonal Dipyramid
+// Using dual Hexagonal Prism for axis system
+
+// sqrt(3) / 2
+#declare hex_dipyra_c0 = 0.86602540378443864676372317075293618347;
+
+#declare dirsHexDipyra=array [12] {
+	 < 0.0,  0.5,  1>,
+	 < hex_dipyra_c0,  0.5,  0.5>,
+ 	 < hex_dipyra_c0,  0.5, -0.5>,
+ 	 < 0.0,  0.5,  -1>,
+  	 <-hex_dipyra_c0,  0.5, -0.5>,
+   	 <-hex_dipyra_c0,  0.5,  0.5>,
+ 	 < 0.0, -0.5,  1>,
+	 < hex_dipyra_c0, -0.5,  0.5>,
+ 	 < hex_dipyra_c0, -0.5, -0.5>,
+ 	 < 0.0, -0.5,  -1>,
+  	 <-hex_dipyra_c0, -0.5, -0.5>,
+   	 <-hex_dipyra_c0, -0.5,  0.5>,
+}
 
 
 #macro normalize (dirset)
@@ -750,6 +818,9 @@ normalize(dirsPentaDodeca)
 normalize(dirsTriaIcosa)
 normalize(dirsPentHexeD)
 normalize(dirsPentHexeL)
+normalize(dirsTriDipyra)
+normalize(dirsPentDipyra)
+normalize(dirsHexDipyra)
 
 
 #macro intersect_shape(shape, dirset)
@@ -845,3 +916,15 @@ intersect_shape(shPentHexeD, dirsPentHexeD)
 // Pentagonal Hexecontahedron (laevo)
 #declare shPentHexeL = 0;
 intersect_shape(shPentHexeL, dirsPentHexeL)
+
+// Triangular Dipyramid
+#declare shTriDipyra = 0;
+intersect_shape(shTriDipyra, dirsTriDipyra)
+
+// Pentagonal Dipyramid
+#declare shPentDipyra = 0;
+intersect_shape(shPentDipyra, dirsPentDipyra)
+
+// Hexagonal Dipyramid
+#declare shHexDipyra = 0;
+intersect_shape(shHexDipyra, dirsHexDipyra)
