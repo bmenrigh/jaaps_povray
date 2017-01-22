@@ -19,8 +19,8 @@ my $CUT_NUM_DISP = 4;
 my $SESSID = get_session_id();
 $SIG{CHLD} = "IGNORE";
 
-my $MAX_SHAPE_NUM = 9;
-my $MAX_CUT_NUM = 9;
+my $MAX_SHAPE_NUM = 19;
+my $MAX_CUT_NUM = 19;
 
 
 my $mail_host = '127.0.0.1';
@@ -75,7 +75,18 @@ print '<p><b>Base shape:</b> ',
 			      6=>'Icosahedron',
 			      7=>'Rhombic Triacontahedron',
 			      8=>'Triakis Octahedron',
-			      9=>'Deltoidal Icositetrahedron'}, undef), "\n";
+			      9=>'Deltoidal Icositetrahedron',
+			      10=>'Deltoidal Hexecontahedron',
+			      11=>'Triakis Tetrahedron',
+			      12=>'Tetrakis Hexahedron',
+			      13=>'Pentagonal Icositetrahedron (dextro)',
+			      14=>'Pentagonal Icositetrahedron (laevo)',
+			      15=>'Disdyakis Dodecahedron',
+			      16=>'Pentakis Dodecahedron',
+			      17=>'Triakis Icosahedron',
+			      18=>'Pentagonal Hexecontahedron (dextro)',
+			      19=>'Pentagonal Hexecontahedron (laevo)',
+			     }, undef), "\n";
 
 print ' <b>Rotate (x, y, z):</b> ',
     $cgi_var->textfield('rot_x', '-20', 3, 5), ' ',
@@ -141,7 +152,18 @@ for (my $i = 0; $i < $CUT_NUM_DISP; $i++) {
 					 6=>'Dodecahedron Corners',
 					 7=>'Dodecahedron Edges',
 					 8=>'Triakis Octahedron Faces',
-					 9=>'Deltoidal Icositetrahedron Faces'}, undef);
+					 9=>'Deltoidal Icositetrahedron Faces',
+					 10=>'Deltoidal Hexecontahedron Faces',
+					 11=>'Triakis Tetrahedron Faces',
+					 12=>'Tetrakis Hexahedron Faces',
+					 13=>'Pentagonal Icositetrahedron (dextro) Faces',
+					 14=>'Pentagonal Icositetrahedron (laevo) Faces',
+					 15=>'Disdyakis Dodecahedron Faces',
+					 16=>'Pentakis Dodecahedron Faces',
+					 17=>'Triakis Icosahedron Faces',
+					 18=>'Pentagonal Hexecontahedron (dextro) Faces',
+					 19=>'Pentagonal Hexecontahedron (laevo) Faces',
+					}, undef);
     print ' at depth';
     print ' ', $cgi_var->textfield('depth_' . $i, '200', 7, 7);
     print ' ', $cgi_var->scrolling_list('type_' . $i,
@@ -565,8 +587,8 @@ if (defined $cgi_var->param('action_button')) {
 		exit(0);
 	    }
 
-	    print '<p><b><font color="#0000ff">A render job has been submitted',
-	    ' and the results will be emailed to you.</font></b></p>', "\n";
+	    print '<p><b><font color="#0000ff"><h1>A render job has been submitted',
+	    ' and the results will be emailed to you.  Please allow at least an hour for the render to complete.</h1></font></b></p>', "\n";
 	    $link = 1;
 	}
 

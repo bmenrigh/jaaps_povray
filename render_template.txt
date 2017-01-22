@@ -256,6 +256,16 @@ light_source {
         #case (7) object{shRhTriacon getShapeMaterialPreset(usermat)} #break
         #case (8) object{shCW getShapeMaterialPreset(usermat)} #break
         #case (9) object{shDeltIcosi getShapeMaterialPreset(usermat)} #break
+        #case (10) object{shDeltHex getShapeMaterialPreset(usermat)} #break
+        #case (11) object{shTriaTet getShapeMaterialPreset(usermat)} #break
+        #case (12) object{shTetraHex getShapeMaterialPreset(usermat)} #break
+        #case (13) object{shPentIcosiD getShapeMaterialPreset(usermat)} #break
+        #case (14) object{shPentIcosiL getShapeMaterialPreset(usermat)} #break
+        #case (15) object{shDisdyDodeca getShapeMaterialPreset(usermat)} #break
+        #case (16) object{shPentaDodeca getShapeMaterialPreset(usermat)} #break
+        #case (17) object{shTriaIcosa getShapeMaterialPreset(usermat)} #break
+	#case (18) object{shPentHexeD getShapeMaterialPreset(usermat)} #break
+	#case (19) object{shPentHexeL getShapeMaterialPreset(usermat)} #break
     #end
 #end
 
@@ -292,6 +302,16 @@ light_source {
         #case (7) dirsDE #break
         #case (8) dirsCW #break
         #case (9) dirsDeltIcosi #break
+        #case (10) dirsDeltHex #break
+        #case (11) dirsTriaTet #break
+        #case (12) dirsTetraHex #break
+        #case (13) dirsPentIcosiD #break
+        #case (14) dirsPentIcosiL #break
+        #case (15) dirsDisdyDodeca #break
+        #case (16) dirsPentaDodeca #break
+        #case (17) dirsTriaIcosa #break
+        #case (18) dirsPentHexeD #break
+        #case (19) dirsPentHexeL #break
     #end
 #end
 
@@ -300,7 +320,7 @@ light_source {
 #declare globalScale = 1.8;
 
 // This scale value is the ratio of the circumscribed sphere to the inscribed sphere
-#declare shapeScale=array[10]{
+#declare shapeScale=array[20]{
     1.0000000000, //0: sphere
     0.3333333333, //1: tetrahedron
     0.5773502692, //2: cube
@@ -311,6 +331,16 @@ light_source {
     0.8506508084, //7: rhombic tricontahedron
     0.6785983445, //8: Triakis Octahedron
     0.8628562095, //9: Deltoidal Icositetrahedron
+    0.9245941063, //10: Deltoidal Hexecontahedron
+    0.5222329679, //11: Triakis Tetrahedron
+    0.6708203932, //12: Tetrakis Hexahedron
+    0.8503402074, //13: Pentagonal Icositetrahedron (dextro)
+    0.8503402074, //14: Pentagonal Icositetrahedron (laveo)
+    0.8259425910, //15: Disdyakis Dodecahedron
+    0.9149583817, //16: Pentakis Dodecahedron
+    0.8385051474, //17: Triakis Icosahedron
+    0.9188614921, //18: Pentagonal Hexecontahedron (dextro)
+    0.9188614921, //19: Pentagonal Hexecontahedron (laevo)
 }
 
 
