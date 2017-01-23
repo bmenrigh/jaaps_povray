@@ -301,6 +301,13 @@ light_source {
 	#case (31) object{shTrapRhomDod getShapeMaterialPreset(usermat)} #break
 	#case (32) object{shPseuDeltIcosi getShapeMaterialPreset(usermat)} #break
 	#case (33) object{shTrapRhomTria getShapeMaterialPreset(usermat)} #break
+	#case (34) object{shTriPrism getShapeMaterialPreset(usermat)} #break
+	#case (35) object{shPentPrism getShapeMaterialPreset(usermat)} #break
+	#case (36) object{shHexPrism getShapeMaterialPreset(usermat)} #break
+	#case (37) object{shHepPrism getShapeMaterialPreset(usermat)} #break
+	#case (38) object{shOctPrism getShapeMaterialPreset(usermat)} #break
+	#case (39) object{shCubeOcto getShapeMaterialPreset(usermat)} #break
+	#case (40) object{shIcosiDod getShapeMaterialPreset(usermat)} #break
     #end
 #end
 
@@ -376,7 +383,7 @@ light_source {
 #declare globalScale = 1.8;
 
 // This scale value is the ratio of the circumscribed sphere to the inscribed sphere
-#declare shapeScale = array[34] {
+#declare shapeScale = array[41] {
     1.0000000000, //0: sphere
     0.3333333333, //1: tetrahedron
     0.5773502692, //2: cube
@@ -411,6 +418,13 @@ light_source {
     0.7071067812, //31: Trapezo-rhombic dodecahedron
     0.8628562095, //32: Pseudo-deltoidal icositetrahedron
     0.8506508084, //33: Trapezo-Rhombic Triacontahedron
+    0.4472135955, //34: Triangular Prism
+    0.6289601696, //35: Pentagonal Prism
+    0.6546536707, //36: Hexagonal Prism
+    0.6693623193, //37: Heptagonal Prism
+    0.6785983445, //38: Octagonal Prism
+    0.8628562095, //39: Truncated cube // May not be correct
+    0.8506508084, //40: Truncated Dodecahedron // May not be correct
 }
 
 
