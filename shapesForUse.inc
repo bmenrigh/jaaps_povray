@@ -2,6 +2,16 @@
 
 // --------------------------------------------
 
+#macro normalize (dirset)
+    #local length=dimension_size(dirset,1);
+    #local i=0;
+
+    #while(i<length)
+        #declare dirset[i]=dirset[i]/vlength(dirset[i]);
+    #local i=i+1;
+    #end
+#end
+
 
 // Phi (actually the conjugate of phi) is (sqrt(5) - 1) / 2
 #declare  phi = 0.61803398874989484820458683436563811772;
@@ -21,25 +31,46 @@
         //8: CW (triakis octahedron)
         //9: DeltIcosi (Deltoidal Icositetrahedron)
 
-#declare dirsTC=array [4]{ <1,1,1>,<1,-1,-1>,<-1,1,-1>,<-1,-1,1>};
-#declare dirsCF=array [6]{	<0,0,1>,<0,0,-1>,<0,1,0>,<0,-1,0>,<1,0,0>,<-1,0,0>};
+#declare dirsTC=array [4] {
+	 <1,1,1>,<1,-1,-1>,<-1,1,-1>,<-1,-1,1>
+};
+normalize(dirsTC)
+
+#declare dirsCF=array [6] {
+	 <0,0,1>,<0,0,-1>,<0,1,0>,<0,-1,0>,<1,0,0>,<-1,0,0>
+};
+normalize(dirsCF)
+
+
 #declare dirsCC=array [8]{
 	<1,1,1>,<-1,-1,-1>,<-1,1,1>,<1,-1,-1>,
-	<1,-1,1>,<-1,1,-1>,<1,1,-1>,<-1,-1,1>};
+	<1,-1,1>,<-1,1,-1>,<1,1,-1>,<-1,-1,1>
+};
+normalize(dirsCC)
+
 #declare dirsCE=array [12]{
 	<0,1,1>,<0,-1,-1>,<0,-1,1>,<0,1,-1>,
 	<1,1,0>,<-1,-1,0>,<-1,1,0>,<1,-1,0>,
-	<1,0,1>,<-1,0,-1>,<1,0,-1>,<-1,0,1>};
+	<1,0,1>,<-1,0,-1>,<1,0,-1>,<-1,0,1>
+};
+normalize(dirsCE)
+
 #declare dirsDF=array [12]{
 	<0,1,phi>,<0,-1,-phi>,<0,-1,phi>,<0,1,-phi>,
 	<1,phi,0>,<-1,-phi,0>,<-1,phi,0>,<1,-phi,0>,
-	<phi,0,1>,<-phi,0,-1>,<phi,0,-1>,<-phi,0,1>};
+	<phi,0,1>,<-phi,0,-1>,<phi,0,-1>,<-phi,0,1>
+};
+normalize(dirsDF)
+
 #declare dirsDC=array [20]{
 	<1,1,1>,<-1,-1,-1>,<-1,1,1>,<1,-1,-1>,
 	<1,-1,1>,<-1,1,-1>,<1,1,-1>,<-1,-1,1>,
 	<0,1,phi+2>,<0,-1,-phi-2>,<0,-1,phi+2>,<0,1,-phi-2>,
 	<1,phi+2,0>,<-1,-phi-2,0>,<-1,phi+2,0>,<1,-phi-2,0>,
-	<phi+2,0,1>,<-phi-2,0,-1>,<phi+2,0,-1>,<-phi-2,0,1>};
+	<phi+2,0,1>,<-phi-2,0,-1>,<phi+2,0,-1>,<-phi-2,0,1>
+};
+normalize(dirsDC)
+
 #declare dirsDE=array [30]{
 	<0,0,1>,<0,0,-1>,<0,1,0>,<0,-1,0>,<1,0,0>,<-1,0,0>,
 	<1,1+phi,phi>,<phi,1,1+phi>,<1+phi,phi,1>,
@@ -49,7 +80,9 @@
 	<-1,1+phi,phi>,<-phi,1,1+phi>,<-1-phi,phi,1>,
 	<-1,1+phi,-phi>,<-phi,1,-1-phi>,<-1-phi,phi,-1>,
 	<-1,-1-phi,phi>,<-phi,-1,1+phi>,<-1-phi,-phi,1>,
-	<-1,-1-phi,-phi>,<-phi,-1,-1-phi>,<-1-phi,-phi,-1>};
+	<-1,-1-phi,-phi>,<-phi,-1,-1-phi>,<-1-phi,-phi,-1>
+};
+normalize(dirsDE)
 
 // triakis octahedron
 // dwing is 2 * (sqrt(2) - 1)
@@ -82,6 +115,7 @@
     < 2,-2, dwing>,
     < 2,-2,-dwing>,
 }
+normalize(dirsCW)
 
 
 // Deltoidal Icositetrahedron
@@ -113,6 +147,7 @@
 	 <1 + sqrt2, -1, -1>,
 	 <-1 - sqrt2, -1, -1>,
 }
+normalize(dirsDeltIcosi)
 
 
 // DeltoidalHexecontahedron
@@ -195,6 +230,7 @@
 	 < -delt_hex_c0, -delt_hex_c2, delt_hex_c1>,
 	 < -delt_hex_c0, -delt_hex_c2, -delt_hex_c1>,
 }
+normalize(dirsDeltHex)
 
 
 // Triakis Tetrahedron
@@ -220,6 +256,7 @@
 	 <-tria_tet_c0,  tria_tet_c1,  tria_tet_c0>,
 	 <-tria_tet_c0, -tria_tet_c1, -tria_tet_c0>,
 }
+normalize(dirsTriaTet)
 
 
 // Tetrakis Hexahedron
@@ -251,6 +288,7 @@
 	 <-(sqrt2 / 2.0),  sqrt2, 0.0>,
 	 <-(sqrt2 / 2.0), -sqrt2, 0.0>,
 }
+normalize(dirsTetraHex)
 
 
 // Pentagonal Icositetrahedron (dextro)
@@ -286,6 +324,7 @@
 	 <-pent_icosi_c1,  (1.0 / pent_icosi_c1),  1>,
 	 <-pent_icosi_c1, -(1.0 / pent_icosi_c1), -1>,
 }
+normalize(dirsPentIcosiD)
 
 
 // dextro coords
@@ -315,6 +354,7 @@
 	 <-pent_icosi_c1, -(1.0 / pent_icosi_c1),  1>,
 	 <-pent_icosi_c1,  (1.0 / pent_icosi_c1), -1>,
 }
+normalize(dirsPentIcosiL)
 
 
 // Disdyakis Dodecahedron
@@ -376,6 +416,7 @@
 	 < -disdy_dodeca_c0,  -disdy_dodeca_c1,  1>,
 	 < -disdy_dodeca_c0,  -disdy_dodeca_c1, -1>,
 }
+normalize(dirsDisdyDodeca)
 
 
 // Pentakis Dodecahedron
@@ -458,6 +499,7 @@
 	 < -penta_dodeca_c1,  -penta_dodeca_c2,  1.0>,
 	 < -penta_dodeca_c1,  -penta_dodeca_c2, -1.0>,
 }
+normalize(dirsPentaDodeca)
 
 
 // Triakis Icosahedron
@@ -540,6 +582,7 @@
 	 < -tria_icosa_c1,  -tria_icosa_c2,   tria_icosa_c0>,
 	 < -tria_icosa_c1,  -tria_icosa_c2,  -tria_icosa_c0>,
 }
+normalize(dirsTriaIcosa)
 
 
 // Pentagonal Hexecontahedron
@@ -652,6 +695,7 @@
 	 < -pent_hexe_c5, -pent_hexe_c10,   pent_hexe_c9>,
 	 < -pent_hexe_c5,  pent_hexe_c10,  -pent_hexe_c9>,
 }
+normalize(dirsPentHexeD)
 
 
 #declare dirsPentHexeL=array [60] {
@@ -716,6 +760,165 @@
 	 < -pent_hexe_c5,  pent_hexe_c10,   pent_hexe_c9>,
 	 < -pent_hexe_c5, -pent_hexe_c10,  -pent_hexe_c9>,
 }
+normalize(dirsPentHexeL)
+
+
+// Disdyakis Triacontahedron
+// Using dual Truncated Icosidodecahedron for axis system
+
+// (3 + sqrt(5)) / 2
+#declare disdy_tria_c0 = 2.6180339887498948482045868343656381177;
+
+// 1 + sqrt(5)
+#declare disdy_tria_c1 = 3.2360679774997896964091736687312762354;
+
+// (5 + sqrt(5)) / 2
+#declare disdy_tria_c2 = 3.6180339887498948482045868343656381177;
+
+// 2 + sqrt(5)
+#declare disdy_tria_c3 = 4.2360679774997896964091736687312762354;
+
+// (3 * (1 + sqrt(5))) / 2
+#declare disdy_tria_c4 = 4.8541019662496845446137605030969143532;
+
+// 3 + sqrt(5)
+#declare disdy_tria_c5 = 5.2360679774997896964091736687312762354;
+
+// ((5 + 3 * sqrt(5))) / 2
+#declare disdy_tria_c6 = 5.8541019662496845446137605030969143531;
+
+// 4 + sqrt(5)
+#declare disdy_tria_c7 = 6.2360679774997896964091736687312762354;
+
+// (7 + 3 * sqrt(5)) / 2
+#declare disdy_tria_c8 = 6.8541019662496845446137605030969143531;
+
+// (3 + 2 * sqrt(5))
+#declare disdy_tria_c9 = 7.4721359549995793928183473374625524709;
+
+#declare dirsDisdyTria=array [120] {
+	 < 1.0,  1.0,   disdy_tria_c9>,
+	 < 1.0,  1.0,  -disdy_tria_c9>,
+	 < 1.0, -1.0,   disdy_tria_c9>,
+	 < 1.0, -1.0,  -disdy_tria_c9>,
+	 <-1.0,  1.0,   disdy_tria_c9>,
+	 <-1.0,  1.0,  -disdy_tria_c9>,
+	 <-1.0, -1.0,   disdy_tria_c9>,
+	 <-1.0, -1.0,  -disdy_tria_c9>,
+	 <  disdy_tria_c9,  1.0,  1.0>,
+	 <  disdy_tria_c9,  1.0, -1.0>,
+	 <  disdy_tria_c9, -1.0,  1.0>,
+	 <  disdy_tria_c9, -1.0, -1.0>,
+	 < -disdy_tria_c9,  1.0,  1.0>,
+	 < -disdy_tria_c9,  1.0, -1.0>,
+	 < -disdy_tria_c9, -1.0,  1.0>,
+	 < -disdy_tria_c9, -1.0, -1.0>,
+	 < 1.0,   disdy_tria_c9,  1.0>,
+	 < 1.0,   disdy_tria_c9, -1.0>,
+	 < 1.0,  -disdy_tria_c9,  1.0>,
+	 < 1.0,  -disdy_tria_c9, -1.0>,
+	 <-1.0,   disdy_tria_c9,  1.0>,
+	 <-1.0,   disdy_tria_c9, -1.0>,
+	 <-1.0,  -disdy_tria_c9,  1.0>,
+	 <-1.0,  -disdy_tria_c9, -1.0>,
+	 < 2.0,   disdy_tria_c0,   disdy_tria_c8>,
+	 < 2.0,   disdy_tria_c0,  -disdy_tria_c8>,
+	 < 2.0,  -disdy_tria_c0,   disdy_tria_c8>,
+	 < 2.0,  -disdy_tria_c0,  -disdy_tria_c8>,
+	 <-2.0,   disdy_tria_c0,   disdy_tria_c8>,
+	 <-2.0,   disdy_tria_c0,  -disdy_tria_c8>,
+	 <-2.0,  -disdy_tria_c0,   disdy_tria_c8>,
+	 <-2.0,  -disdy_tria_c0,  -disdy_tria_c8>,
+	 <  disdy_tria_c8,  2.0,   disdy_tria_c0>,
+	 <  disdy_tria_c8,  2.0,  -disdy_tria_c0>,
+	 <  disdy_tria_c8, -2.0,   disdy_tria_c0>,
+	 <  disdy_tria_c8, -2.0,  -disdy_tria_c0>,
+	 < -disdy_tria_c8,  2.0,   disdy_tria_c0>,
+	 < -disdy_tria_c8,  2.0,  -disdy_tria_c0>,
+	 < -disdy_tria_c8, -2.0,   disdy_tria_c0>,
+	 < -disdy_tria_c8, -2.0,  -disdy_tria_c0>,
+	 <  disdy_tria_c0,   disdy_tria_c8,  2.0>,
+	 <  disdy_tria_c0,   disdy_tria_c8, -2.0>,
+	 <  disdy_tria_c0,  -disdy_tria_c8,  2.0>,
+	 <  disdy_tria_c0,  -disdy_tria_c8, -2.0>,
+	 < -disdy_tria_c0,   disdy_tria_c8,  2.0>,
+	 < -disdy_tria_c0,   disdy_tria_c8, -2.0>,
+	 < -disdy_tria_c0,  -disdy_tria_c8,  2.0>,
+	 < -disdy_tria_c0,  -disdy_tria_c8, -2.0>,
+	 < 1.0,   disdy_tria_c3,   disdy_tria_c7>,
+	 < 1.0,   disdy_tria_c3,  -disdy_tria_c7>,
+	 < 1.0,  -disdy_tria_c3,   disdy_tria_c7>,
+	 < 1.0,  -disdy_tria_c3,  -disdy_tria_c7>,
+	 <-1.0,   disdy_tria_c3,   disdy_tria_c7>,
+	 <-1.0,   disdy_tria_c3,  -disdy_tria_c7>,
+	 <-1.0,  -disdy_tria_c3,   disdy_tria_c7>,
+	 <-1.0,  -disdy_tria_c3,  -disdy_tria_c7>,
+	 <  disdy_tria_c7,  1.0,   disdy_tria_c3>,
+	 <  disdy_tria_c7,  1.0,  -disdy_tria_c3>,
+	 <  disdy_tria_c7, -1.0,   disdy_tria_c3>,
+	 <  disdy_tria_c7, -1.0,  -disdy_tria_c3>,
+	 < -disdy_tria_c7,  1.0,   disdy_tria_c3>,
+	 < -disdy_tria_c7,  1.0,  -disdy_tria_c3>,
+	 < -disdy_tria_c7, -1.0,   disdy_tria_c3>,
+	 < -disdy_tria_c7, -1.0,  -disdy_tria_c3>,
+	 <  disdy_tria_c3,   disdy_tria_c7,  1.0>,
+	 <  disdy_tria_c3,   disdy_tria_c7, -1.0>,
+	 <  disdy_tria_c3,  -disdy_tria_c7,  1.0>,
+	 <  disdy_tria_c3,  -disdy_tria_c7, -1.0>,
+	 < -disdy_tria_c3,   disdy_tria_c7,  1.0>,
+	 < -disdy_tria_c3,   disdy_tria_c7, -1.0>,
+	 < -disdy_tria_c3,  -disdy_tria_c7,  1.0>,
+	 < -disdy_tria_c3,  -disdy_tria_c7, -1.0>,
+	 <  disdy_tria_c2,   disdy_tria_c1,   disdy_tria_c6>,
+	 <  disdy_tria_c2,   disdy_tria_c1,  -disdy_tria_c6>,
+	 <  disdy_tria_c2,  -disdy_tria_c1,   disdy_tria_c6>,
+	 <  disdy_tria_c2,  -disdy_tria_c1,  -disdy_tria_c6>,
+	 < -disdy_tria_c2,   disdy_tria_c1,   disdy_tria_c6>,
+	 < -disdy_tria_c2,   disdy_tria_c1,  -disdy_tria_c6>,
+	 < -disdy_tria_c2,  -disdy_tria_c1,   disdy_tria_c6>,
+	 < -disdy_tria_c2,  -disdy_tria_c1,  -disdy_tria_c6>,
+	 <  disdy_tria_c6,   disdy_tria_c2,   disdy_tria_c1>,
+	 <  disdy_tria_c6,   disdy_tria_c2,  -disdy_tria_c1>,
+	 <  disdy_tria_c6,  -disdy_tria_c2,   disdy_tria_c1>,
+	 <  disdy_tria_c6,  -disdy_tria_c2,  -disdy_tria_c1>,
+	 < -disdy_tria_c6,   disdy_tria_c2,   disdy_tria_c1>,
+	 < -disdy_tria_c6,   disdy_tria_c2,  -disdy_tria_c1>,
+	 < -disdy_tria_c6,  -disdy_tria_c2,   disdy_tria_c1>,
+	 < -disdy_tria_c6,  -disdy_tria_c2,  -disdy_tria_c1>,
+	 <  disdy_tria_c1,   disdy_tria_c6,   disdy_tria_c2>,
+	 <  disdy_tria_c1,   disdy_tria_c6,  -disdy_tria_c2>,
+	 <  disdy_tria_c1,  -disdy_tria_c6,   disdy_tria_c2>,
+	 <  disdy_tria_c1,  -disdy_tria_c6,  -disdy_tria_c2>,
+	 < -disdy_tria_c1,   disdy_tria_c6,   disdy_tria_c2>,
+	 < -disdy_tria_c1,   disdy_tria_c6,  -disdy_tria_c2>,
+	 < -disdy_tria_c1,  -disdy_tria_c6,   disdy_tria_c2>,
+	 < -disdy_tria_c1,  -disdy_tria_c6,  -disdy_tria_c2>,
+	 <  disdy_tria_c0,   disdy_tria_c4,   disdy_tria_c5>,
+	 <  disdy_tria_c0,   disdy_tria_c4,  -disdy_tria_c5>,
+	 <  disdy_tria_c0,  -disdy_tria_c4,   disdy_tria_c5>,
+	 <  disdy_tria_c0,  -disdy_tria_c4,  -disdy_tria_c5>,
+	 < -disdy_tria_c0,   disdy_tria_c4,   disdy_tria_c5>,
+	 < -disdy_tria_c0,   disdy_tria_c4,  -disdy_tria_c5>,
+	 < -disdy_tria_c0,  -disdy_tria_c4,   disdy_tria_c5>,
+	 < -disdy_tria_c0,  -disdy_tria_c4,  -disdy_tria_c5>,
+	 <  disdy_tria_c5,   disdy_tria_c0,   disdy_tria_c4>,
+	 <  disdy_tria_c5,   disdy_tria_c0,  -disdy_tria_c4>,
+	 <  disdy_tria_c5,  -disdy_tria_c0,   disdy_tria_c4>,
+	 <  disdy_tria_c5,  -disdy_tria_c0,  -disdy_tria_c4>,
+	 < -disdy_tria_c5,   disdy_tria_c0,   disdy_tria_c4>,
+	 < -disdy_tria_c5,   disdy_tria_c0,  -disdy_tria_c4>,
+	 < -disdy_tria_c5,  -disdy_tria_c0,   disdy_tria_c4>,
+	 < -disdy_tria_c5,  -disdy_tria_c0,  -disdy_tria_c4>,
+	 <  disdy_tria_c4,   disdy_tria_c5,   disdy_tria_c0>,
+	 <  disdy_tria_c4,   disdy_tria_c5,  -disdy_tria_c0>,
+	 <  disdy_tria_c4,  -disdy_tria_c5,   disdy_tria_c0>,
+	 <  disdy_tria_c4,  -disdy_tria_c5,  -disdy_tria_c0>,
+	 < -disdy_tria_c4,   disdy_tria_c5,   disdy_tria_c0>,
+	 < -disdy_tria_c4,   disdy_tria_c5,  -disdy_tria_c0>,
+	 < -disdy_tria_c4,  -disdy_tria_c5,   disdy_tria_c0>,
+	 < -disdy_tria_c4,  -disdy_tria_c5,  -disdy_tria_c0>,
+}
+normalize(dirsDisdyTria)
 
 
 // Triangular Dipyramid
@@ -735,6 +938,7 @@
   	 < 0.5,  0.5,  -tri_dipyra_c0>,
   	 < 0.5, -0.5,  -tri_dipyra_c0>,
 }
+normalize(dirsTriDipyra)
 
 
 // Pentagonal Dipyramid
@@ -764,6 +968,7 @@
 	 < 0.5, -0.5, -pent_dipyra_c1>,
  	 <-0.5, -0.5, -pent_dipyra_c1>,
 }
+normalize(dirsPentDipyra)
 
 
 // Hexagonal Dipyramid
@@ -786,42 +991,438 @@
   	 <-hex_dipyra_c0, -0.5, -0.5>,
    	 <-hex_dipyra_c0, -0.5,  0.5>,
 }
-
-
-#macro normalize (dirset)
-    #local length=dimension_size(dirset,1);
-    #local i=0;
-
-    #while(i<length)
-        #declare dirset[i]=dirset[i]/vlength(dirset[i]);
-    #local i=i+1;
-    #end
-#end
-
-//normalize all dirs
-normalize(dirsTC)
-normalize(dirsCF)
-normalize(dirsCC)
-normalize(dirsCE)
-normalize(dirsDF)
-normalize(dirsDC)
-normalize(dirsDE)
-normalize(dirsCW)
-normalize(dirsDeltIcosi)
-normalize(dirsDeltHex)
-normalize(dirsTriaTet)
-normalize(dirsTetraHex)
-normalize(dirsPentIcosiD)
-normalize(dirsPentIcosiL)
-normalize(dirsDisdyDodeca)
-normalize(dirsPentaDodeca)
-normalize(dirsTriaIcosa)
-normalize(dirsPentHexeD)
-normalize(dirsPentHexeL)
-normalize(dirsTriDipyra)
-normalize(dirsPentDipyra)
 normalize(dirsHexDipyra)
 
+
+// Heptagonal Dipyramid
+// Using dual Heptagonal Prism for axis system
+
+// Heptagons are a mess so coordinates come from:
+// (polroots(x^7 - 1) * I) / abs((cos(0) + sin(0)*I) - (cos(2*Pi / 7) + sin(2*Pi / 7)*I))
+// Which is the roots of unity rotated 90 degrees and scaled to make edges length 1
+
+#declare dirsHepDipyra = array [14] {
+	 < 0.0,  0.5,  1.1523824354812432526205751117734275567>,
+	 < 0.5,  0.5, -1.0382606982861682835817694307429201654>,
+	 <-0.5,  0.5, -1.0382606982861682835817694307429201654>,
+	 < 0.90096886790241912623610231950744505116,  0.5,  0.71849869636368513214480677892506880211>,
+ 	 <-0.90096886790241912623610231950744505116,  0.5,  0.71849869636368513214480677892506880211>,
+	 < 1.1234898018587335305250048840042398106 ,  0.5, -0.25642921581813847487332490406886241512>,
+ 	 <-1.1234898018587335305250048840042398106 ,  0.5, -0.25642921581813847487332490406886241512>,
+ 	 < 0.0, -0.5,  1.1523824354812432526205751117734275567>,
+	 < 0.5, -0.5, -1.0382606982861682835817694307429201654>,
+	 <-0.5, -0.5, -1.0382606982861682835817694307429201654>,
+	 < 0.90096886790241912623610231950744505116, -0.5,  0.71849869636368513214480677892506880211>,
+ 	 <-0.90096886790241912623610231950744505116, -0.5,  0.71849869636368513214480677892506880211>,
+	 < 1.1234898018587335305250048840042398106 , -0.5, -0.25642921581813847487332490406886241512>,
+ 	 <-1.1234898018587335305250048840042398106 , -0.5, -0.25642921581813847487332490406886241512>,
+}
+normalize(dirsHepDipyra)
+
+
+// Octagonal Dipyramid
+// Using dual Octagonal Prism for axis system
+
+// sqrt((1/2) * (2 + sqrt(2)))
+#declare oct_dipyra_c0 = 1.3065629648763765278566431734271871536;
+
+// sqrt(2 + sqrt(2)) / 2
+#declare oct_dipyra_c1 = 0.92387953251128675612818318939678828682;
+
+#declare dirsOctDipyra=array [16] {
+	 <0.0,  0.5,  oct_dipyra_c0>,
+ 	 <0.0,  0.5, -oct_dipyra_c0>,
+   	 < oct_dipyra_c1,  0.5,  oct_dipyra_c1>,
+	 < oct_dipyra_c1,  0.5, -oct_dipyra_c1>,
+   	 <-oct_dipyra_c1,  0.5,  oct_dipyra_c1>,
+ 	 <-oct_dipyra_c1,  0.5, -oct_dipyra_c1>,
+	 < oct_dipyra_c0,  0.5, 0.0>
+ 	 <-oct_dipyra_c0,  0.5, 0.0>
+ 	 <0.0, -0.5,  oct_dipyra_c0>,
+ 	 <0.0, -0.5, -oct_dipyra_c0>,
+   	 < oct_dipyra_c1, -0.5,  oct_dipyra_c1>,
+	 < oct_dipyra_c1, -0.5, -oct_dipyra_c1>,
+   	 <-oct_dipyra_c1, -0.5,  oct_dipyra_c1>,
+ 	 <-oct_dipyra_c1, -0.5, -oct_dipyra_c1>,
+	 < oct_dipyra_c0, -0.5, 0.0>
+ 	 <-oct_dipyra_c0, -0.5, 0.0>
+}
+normalize(dirsOctDipyra)
+
+
+// Tetragonal Trapezohedron
+// Using dual geometry square antiprism for axes
+
+// Top coords
+// (polroots(x^4 - 1) * I) / abs((cos(0) + sin(0)*I) - (cos(2*Pi / 4) + sin(2*Pi / 4)*I))
+
+// Bottom coords
+// (polroots(x^4 - 1) * (cos((2 * Pi) / 8) + sin((2*Pi) / 8)*I)) / abs((cos(0) + sin(0)*I) - (cos(2*Pi / 4) + sin(2*Pi / 4)*I))
+
+
+// h(n) = sqrt(1 - (1/4)*(1/cos(Pi / (2 * n)))^2) / 2 where n=4
+#declare tetra_trapezo_h = 0.42044820762685727151556273811660744752;
+
+// sqrt(2) / 2
+#declare tetra_trapezo_c0 = 0.70710678118654752440084436210484903928;
+
+#declare dirsTetraTrapezo = array [8] {
+	 < 0.0,  tetra_trapezo_h,  tetra_trapezo_c0>,
+	 < 0.0,  tetra_trapezo_h, -tetra_trapezo_c0>,
+	 < tetra_trapezo_c0,  tetra_trapezo_h,  0.0>,
+ 	 <-tetra_trapezo_c0,  tetra_trapezo_h,  0.0>,
+	 < 0.5, -tetra_trapezo_h, -0.5>,
+	 <-0.5, -tetra_trapezo_h,  0.5>,
+	 < 0.5, -tetra_trapezo_h,  0.5>,
+ 	 <-0.5, -tetra_trapezo_h, -0.5>,
+}
+normalize(dirsTetraTrapezo)
+
+
+// Pentagonal Trapezohedron
+// Using dual geometry pentagonal antiprism for axes
+
+// Top coords
+// (polroots(x^5 - 1) * I) / abs((cos(0) + sin(0)*I) - (cos(2*Pi / 5) + sin(2*Pi / 5)*I))
+
+// Bottom coords
+// (polroots(x^5 - 1) * I * (cos((2 * Pi) / 10) + sin((2*Pi) / 10)*I)) / abs((cos(0) + sin(0)*I) - (cos(2*Pi / 5) + sin(2*Pi / 5)*I))
+
+
+// h(n) = sqrt(1 - (1/4)*(1/cos(Pi / (2 * n)))^2) / 2 where n = 5
+#declare pent_trapezo_h = 0.42532540417601996609077024853150553612;
+
+#declare dirsPentTrapezo = array [10] {
+	 < 0.0,  pent_trapezo_h,  0.85065080835203993218154049706301107224>,
+	 < 0.5,  pent_trapezo_h, -0.68819096023558676910360479095544383976>,
+	 <-0.5,  pent_trapezo_h, -0.68819096023558676910360479095544383976>,
+	 < 0.80901699437494742410229341718281905886,  pent_trapezo_h,  0.26286555605956680301283454242393830364>,
+ 	 <-0.80901699437494742410229341718281905886,  pent_trapezo_h,  0.26286555605956680301283454242393830364>,
+	 <-0.5 , -pent_trapezo_h,  0.68819096023558676910360479095544383976>,
+	 < 0.80901699437494742410229341718281905886, -pent_trapezo_h, -0.26286555605956680301283454242393830364>,
+	 < 0.0, -pent_trapezo_h, -0.85065080835203993218154049706301107224>,
+	 < 0.5, -pent_trapezo_h,  0.68819096023558676910360479095544383976>,
+	 <-0.80901699437494742410229341718281905886, -pent_trapezo_h, -0.26286555605956680301283454242393830364>,
+}
+normalize(dirsPentTrapezo)
+
+
+// Hexagonal Trapezohedron
+// Using dual geometry hexagonal antiprism for axes
+
+// Top coords
+// (polroots(x^6 - 1) * I) / abs((cos(0) + sin(0)*I) - (cos(2*Pi / 6) + sin(2*Pi / 6)*I))
+
+// Bottom coords
+// (polroots(x^6 - 1) * I * (cos((2 * Pi) / 12) + sin((2*Pi) / 12)*I)) / abs((cos(0) + sin(0)*I) - (cos(2*Pi / 6) + sin(2*Pi / 6)*I))
+
+// h(n) = sqrt(1 - (1/4)*(1/cos(Pi / (2 * n)))^2) / 2 where n = 6
+#declare hex_trapezo_h = 0.42779983858367609648461788310558818792;
+
+#declare dirsHexTrapezo = array [12] {
+	 < 0.0,  hex_trapezo_h,  1.0>,
+ 	 < 0.0,  hex_trapezo_h, -1.0>,
+	 < 0.86602540378443864676372317075293618348, hex_trapezo_h, -0.5>,
+ 	 <-0.86602540378443864676372317075293618348, hex_trapezo_h, -0.5>,
+ 	 < 0.86602540378443864676372317075293618348, hex_trapezo_h,  0.5>,
+ 	 <-0.86602540378443864676372317075293618348, hex_trapezo_h,  0.5>,
+	 < 0.5, -hex_trapezo_h, -0.86602540378443864676372317075293618348>,
+	 <-0.5, -hex_trapezo_h,  0.86602540378443864676372317075293618348>,
+ 	 < 1.0, -hex_trapezo_h,  0.0>,
+ 	 <-0.5, -hex_trapezo_h, -0.86602540378443864676372317075293618348>,
+ 	 < 0.5, -hex_trapezo_h,  0.86602540378443864676372317075293618348>,
+ 	 <-1.0, -hex_trapezo_h,  0.0>,
+}
+normalize(dirsHexTrapezo)
+
+
+// Heptagonal Trapezohedron
+// Using dual geometry heptagonal antiprism for axes
+
+// Top coords
+// (polroots(x^7 - 1) * I) / abs((cos(0) + sin(0)*I) - (cos(2*Pi / 7) + sin(2*Pi / 7)*I))
+
+// Bottom coords
+// (polroots(x^7 - 1) * I * (cos((2 * Pi) / 14) + sin((2*Pi) / 14)*I)) / abs((cos(0) + sin(0)*I) - (cos(2*Pi / 7) + sin(2*Pi / 7)*I))
+
+// h(n) = sqrt(1 - (1/4)*(1/cos(Pi / (2 * n)))^2) / 2 where n = 7
+#declare hept_trapezo_h = 0.42923659824727732620247761433595883913;
+
+// for(i = 1, length(l), printf("< %f, hept_trapezo_h, %f>\n", real(l[i]), imag(l[i]));)
+
+#declare dirsHeptTrapezo = array [14] {
+	 < 0.0, hept_trapezo_h,  1.1523824354812432526205751117734275567>
+	 < 0.5, hept_trapezo_h, -1.0382606982861682835817694307429201654>
+	 <-0.5, hept_trapezo_h, -1.0382606982861682835817694307429201654>
+	 < 0.90096886790241912623610231950744505116, hept_trapezo_h,  0.71849869636368513214480677892506880211>
+	 <-0.90096886790241912623610231950744505116, hept_trapezo_h,  0.71849869636368513214480677892506880211>
+	 < 1.1234898018587335305250048840042398106, hept_trapezo_h, -0.25642921581813847487332490406886241512>
+	 <-1.1234898018587335305250048840042398106, hept_trapezo_h, -0.25642921581813847487332490406886241512>
+	 <-0.5, -hept_trapezo_h, 1.0382606982861682835817694307429201654>
+	 < 0.90096886790241912623610231950744505116, -hept_trapezo_h, -0.71849869636368513214480677892506880211>
+	 < 0.0, -hept_trapezo_h, -1.1523824354812432526205751117734275567>
+	 < 0.5, -hept_trapezo_h, 1.0382606982861682835817694307429201654>
+	 <-1.1234898018587335305250048840042398106, -hept_trapezo_h, 0.25642921581813847487332490406886241512>
+	 < 1.1234898018587335305250048840042398106, -hept_trapezo_h, 0.25642921581813847487332490406886241512>
+	 <-0.90096886790241912623610231950744505116, -hept_trapezo_h, -0.71849869636368513214480677892506880211>
+}
+normalize(dirsHeptTrapezo)
+
+
+// Octagonal Trapezohedron
+// Using dual geometry octagonal antiprism for axes
+
+// Top coords
+// (polroots(x^8 - 1) * I) / abs((cos(0) + sin(0)*I) - (cos(2*Pi / 8) + sin(2*Pi / 8)*I))
+
+// Bottom coords
+// (polroots(x^8 - 1) * I * (cos((2 * Pi) / 16) + sin((2*Pi) / 16)*I)) / abs((cos(0) + sin(0)*I) - (cos(2*Pi / 8) + sin(2*Pi / 8)*I))
+
+// h(n) = sqrt(1 - (1/4)*(1/cos(Pi / (2 * n)))^2) / 2 where n = 8
+#declare oct_trapezo_h = 0.43014778493148578322115038800205284617;
+
+// for(i = 1, length(l), printf("< %f, oct_trapezo_h, %f>\n", real(l[i]), imag(l[i]));)
+
+#declare dirsOctTrapezo = array [16] {
+	 < 0.0,  oct_trapezo_h, -1.3065629648763765278566431734271871536>
+	 < 0.0,  oct_trapezo_h, 1.3065629648763765278566431734271871536>
+	 < 0.92387953251128675612818318939678828682,  oct_trapezo_h, -0.92387953251128675612818318939678828682>
+	 <-0.92387953251128675612818318939678828682,  oct_trapezo_h, -0.92387953251128675612818318939678828682>
+	 < 0.92387953251128675612818318939678828682,  oct_trapezo_h, 0.92387953251128675612818318939678828682>
+	 <-0.92387953251128675612818318939678828682,  oct_trapezo_h, 0.92387953251128675612818318939678828682>
+	 < 1.3065629648763765278566431734271871536,  oct_trapezo_h, 0.0>
+	 <-1.3065629648763765278566431734271871536,  oct_trapezo_h, 0.0>
+	 < 0.5, -oct_trapezo_h, -1.2071067811865475244008443621048490393>
+	 <-0.5, -oct_trapezo_h, 1.2071067811865475244008443621048490393>
+	 < 1.2071067811865475244008443621048490393, -oct_trapezo_h, -0.5>
+	 <-0.5, -oct_trapezo_h, -1.2071067811865475244008443621048490393>
+	 < 0.5, -oct_trapezo_h, 1.2071067811865475244008443621048490393>
+	 <-1.2071067811865475244008443621048490393, -oct_trapezo_h,  0.5>
+	 < 1.2071067811865475244008443621048490393, -oct_trapezo_h,  0.5>
+	 <-1.2071067811865475244008443621048490393, -oct_trapezo_h, -0.5>
+}
+normalize(dirsOctTrapezo)
+
+
+// Trapezo-rhombic dodecahedron
+// Using dual geometry Triangular orthobicupola for axes
+
+// Coordinates from Wolfram Alpha "Triangular orthobicupola virtex coordinates"
+
+// 1 / (2 * sqrt(3))
+#declare trap_rhom_dod_c0 = 0.28867513459481288225457439025097872782;
+
+// sqrt(2 / 3)
+#declare trap_rhom_dod_c1 = 0.81649658092772603273242802490196379732;
+
+// 1 / sqrt(3)
+#declare trap_rhom_dod_c2 = 0.57735026918962576450914878050195745565;
+
+// sqrt(3) / 2
+#declare trap_rhom_dod_c3 = 0.86602540378443864676372317075293618347;
+
+#declare dirsTrapRhomDod = array [12] {
+	 < 0.0, 0.0, -1.0>,
+	 < 0.0, 0.0,  1.0>,
+	 <-trap_rhom_dod_c0, -trap_rhom_dod_c1, -0.5>,
+	 <-trap_rhom_dod_c0,  trap_rhom_dod_c1, -0.5>,
+	 <-trap_rhom_dod_c0, -trap_rhom_dod_c1,  0.5>,
+ 	 <-trap_rhom_dod_c0,  trap_rhom_dod_c1,  0.5>,
+	 < trap_rhom_dod_c2, -trap_rhom_dod_c1,  0.0>,
+	 < trap_rhom_dod_c2,  trap_rhom_dod_c1,  0.0>,
+	 <-trap_rhom_dod_c3,  0.0, -0.5>,
+ 	 <-trap_rhom_dod_c3,  0.0,  0.5>,
+  	 < trap_rhom_dod_c3,  0.0, -0.5>,
+   	 < trap_rhom_dod_c3,  0.0,  0.5>,
+}
+normalize(dirsTrapRhomDod)
+
+
+// Pseudo-deltoidal icositetrahedron
+// Using dual geometry Elongated square gyrobicupola for axes
+
+// Coordinates from Wolfram Alpha "Elongated square gyrobicupola vertex coordinates"
+
+// (1 + sqrt(2))
+#declare pseu_delt_icosi_c0 = 2.4142135623730950488016887242096980786;
+
+// 2 / sqrt(2)
+#declare pseu_delt_icosi_c1 = 1.4142135623730950488016887242096980786;
+
+#declare dirsPseuDeltIcosi = array [24] {
+	 <-1, -pseu_delt_icosi_c0, -1>, // r1
+	 <-1, -pseu_delt_icosi_c0,  1>,
+	 < 0,  pseu_delt_icosi_c0, -pseu_delt_icosi_c1>,
+ 	 < 0,  pseu_delt_icosi_c0,  pseu_delt_icosi_c1>, // r2
+	 < 1, -pseu_delt_icosi_c0, -1>,
+ 	 < 1, -pseu_delt_icosi_c0,  1>,
+	 <-pseu_delt_icosi_c1,  pseu_delt_icosi_c0,  0>, //r3
+	 < pseu_delt_icosi_c1,  pseu_delt_icosi_c0,  0>,
+	 < 1, -1,  pseu_delt_icosi_c0>,
+	 < 1,  1,  pseu_delt_icosi_c0>, //r4
+	 <-1, -1,  pseu_delt_icosi_c0>,
+	 <-1,  1,  pseu_delt_icosi_c0>,
+	 <-pseu_delt_icosi_c0, -1,  1>, //r5
+	 <-pseu_delt_icosi_c0,  1,  1>,
+	 <-pseu_delt_icosi_c0, -1, -1>,
+	 <-pseu_delt_icosi_c0,  1, -1>, //r6
+	 <-1, -1, -pseu_delt_icosi_c0>,
+	 <-1,  1, -pseu_delt_icosi_c0>,
+	 < 1, -1, -pseu_delt_icosi_c0>, //r7
+	 < 1,  1, -pseu_delt_icosi_c0>,
+	 < pseu_delt_icosi_c0, -1, -1>,
+	 < pseu_delt_icosi_c0,  1, -1>, //r8
+	 < pseu_delt_icosi_c0, -1,  1>,
+	 < pseu_delt_icosi_c0,  1,  1>,
+}
+normalize(dirsPseuDeltIcosi)
+
+
+// Trapezo-Rhombic Triacontahedron
+// Using dual geometry Pentagonal orthobirotunda for axes
+
+// Coordinates from Wolfram Alpha "Pentagonal orthobirotunda vertex coordinates"
+
+#declare dirsTrapRhomTria = array [30] {
+	 <0.00000000000000000000000000000000000000, 0.00000000000000000000000000000000000000, -1.6180339887498948482045868343656381177>,
+	 <0.00000000000000000000000000000000000000, 0.00000000000000000000000000000000000000, 1.6180339887498948482045868343656381177>,
+	 <-0.95105651629515357211643933337938214341, 0.00000000000000000000000000000000000000, -1.3090169943749474241022934171828190589>,
+	 <-0.95105651629515357211643933337938214341, 0.00000000000000000000000000000000000000, 1.3090169943749474241022934171828190589>,
+	 <0.95105651629515357211643933337938214341, 0.00000000000000000000000000000000000000, -1.3090169943749474241022934171828190589>,
+	 <0.95105651629515357211643933337938214341, 0.00000000000000000000000000000000000000, 1.3090169943749474241022934171828190589>,
+	 <-1.5388417685876267012851452880184549120, 0.00000000000000000000000000000000000000, -0.50000000000000000000000000000000000000>,
+	 <-1.5388417685876267012851452880184549120, 0.00000000000000000000000000000000000000, 0.50000000000000000000000000000000000000>,
+	 <1.5388417685876267012851452880184549120, 0.00000000000000000000000000000000000000, -0.50000000000000000000000000000000000000>,
+	 <1.5388417685876267012851452880184549120, 0.00000000000000000000000000000000000000, 0.50000000000000000000000000000000000000>,
+	 <1.3763819204711735382072095819108876795, -0.85065080835203993218154049706301107224, 0.00000000000000000000000000000000000000>,
+	 <1.3763819204711735382072095819108876795, 0.85065080835203993218154049706301107224, 0.00000000000000000000000000000000000000>,
+	 <0.42532540417601996609077024853150553612, -0.85065080835203993218154049706301107224, -1.3090169943749474241022934171828190589>,
+	 <0.42532540417601996609077024853150553612, 0.85065080835203993218154049706301107224, -1.3090169943749474241022934171828190589>,
+	 <0.42532540417601996609077024853150553612, -0.85065080835203993218154049706301107224, 1.3090169943749474241022934171828190589>,
+	 <0.42532540417601996609077024853150553612, 0.85065080835203993218154049706301107224, 1.3090169943749474241022934171828190589>,
+	 <-1.1135163644116067351943750394869493759, -0.85065080835203993218154049706301107224, -0.80901699437494742410229341718281905886>,
+	 <-1.1135163644116067351943750394869493759, 0.85065080835203993218154049706301107224, -0.80901699437494742410229341718281905886>,
+	 <-1.1135163644116067351943750394869493759, -0.85065080835203993218154049706301107224, 0.80901699437494742410229341718281905886>,
+	 <-1.1135163644116067351943750394869493759, 0.85065080835203993218154049706301107224, 0.80901699437494742410229341718281905886>,
+	 <-0.85065080835203993218154049706301107224, -1.3763819204711735382072095819108876795, 0.00000000000000000000000000000000000000>,
+	 <-0.85065080835203993218154049706301107224, 1.3763819204711735382072095819108876795, 0.00000000000000000000000000000000000000>,
+	 <-0.26286555605956680301283454242393830364, -1.3763819204711735382072095819108876795, -0.80901699437494742410229341718281905886>,
+	 <-0.26286555605956680301283454242393830364, 1.3763819204711735382072095819108876795, -0.80901699437494742410229341718281905886>,
+	 <-0.26286555605956680301283454242393830364, -1.3763819204711735382072095819108876795, 0.80901699437494742410229341718281905886>,
+	 <-0.26286555605956680301283454242393830364, 1.3763819204711735382072095819108876795, 0.80901699437494742410229341718281905886>,
+	 <0.68819096023558676910360479095544383976, -1.3763819204711735382072095819108876795, -0.50000000000000000000000000000000000000>,
+	 <0.68819096023558676910360479095544383976, 1.3763819204711735382072095819108876795, -0.50000000000000000000000000000000000000>,
+	 <0.68819096023558676910360479095544383976, -1.3763819204711735382072095819108876795, 0.50000000000000000000000000000000000000>,
+	 <0.68819096023558676910360479095544383976, 1.3763819204711735382072095819108876795, 0.50000000000000000000000000000000000000>,
+}
+normalize(dirsTrapRhomTria)
+
+
+// ============================= CUTS ONLY ======================
+
+// Dihedral cuts
+#declare dirsCutsDihe = array [2] {
+	 <0,  1, 0>,
+	 <0, -1, 0>,
+}
+normalize(dirsCutsDihe)
+
+
+// Triangular Prism side faces
+
+// Sides
+// (polroots(x^3 - 1) * I)
+
+#declare dirsCutsTriPrism = array [3] {
+	 < 0.00000000000000000000000000000000000000,  0, 1.0000000000000000000000000000000000000>,
+	 < 0.86602540378443864676372317075293618347,  0, -0.50000000000000000000000000000000000000>,
+	 < -0.86602540378443864676372317075293618347,  0, -0.50000000000000000000000000000000000000>,
+}
+normalize(dirsCutsTriPrism)
+
+
+// Square Prism side faces
+
+// Sides
+// (polroots(x^4 - 1) * I)
+
+#declare dirsCutsSquarePrism = array [4] {
+	 < 0.00000000000000000000000000000000000000,  0, -1.0000000000000000000000000000000000000>,
+	 < 0.00000000000000000000000000000000000000,  0, 1.0000000000000000000000000000000000000>,
+	 < 1.0000000000000000000000000000000000000,  0, 0.00000000000000000000000000000000000000>,
+	 < -1.0000000000000000000000000000000000000,  0, 0.00000000000000000000000000000000000000>,
+}
+normalize(dirsCutsSquarePrism)
+
+
+// Pentagonal Prism side faces
+
+// Sides
+// (polroots(x^5 - 1) * I)
+
+#declare dirsCutsPentPrism = array [5] {
+	 < 0.00000000000000000000000000000000000000,  0, 1.0000000000000000000000000000000000000>,
+	 < 0.58778525229247312916870595463907276860,  0, -0.80901699437494742410229341718281905886>,
+	 < -0.58778525229247312916870595463907276860,  0, -0.80901699437494742410229341718281905886>,
+	 < 0.95105651629515357211643933337938214341,  0, 0.30901699437494742410229341718281905886>,
+	 < -0.95105651629515357211643933337938214341,  0, 0.30901699437494742410229341718281905886>,
+}
+normalize(dirsCutsPentPrism)
+
+
+// Hexagonal Prism side faces
+
+// Sides
+// (polroots(x^6 - 1) * I)
+
+#declare dirsCutsHexPrism = array [6] {
+	 < 0.00000000000000000000000000000000000000,  0, -1.0000000000000000000000000000000000000>,
+	 < 0.00000000000000000000000000000000000000,  0, 1.0000000000000000000000000000000000000>,
+	 < 0.86602540378443864676372317075293618347,  0, -0.50000000000000000000000000000000000000>,
+	 < -0.86602540378443864676372317075293618347,  0, -0.50000000000000000000000000000000000000>,
+	 < 0.86602540378443864676372317075293618347,  0, 0.50000000000000000000000000000000000000>,
+	 < -0.86602540378443864676372317075293618347,  0, 0.50000000000000000000000000000000000000>,
+}
+normalize(dirsCutsHexPrism)
+
+
+// Heptagonal Prism side faces
+
+// Sides
+// (polroots(x^7 - 1) * I)
+
+#declare dirsCutsHepPrism = array [7] {
+	 < 0.00000000000000000000000000000000000000,  0, 1.0000000000000000000000000000000000000>,
+	 < 0.43388373911755812047576833284835875461,  0, -0.90096886790241912623610231950744505116>,
+	 < -0.43388373911755812047576833284835875461,  0, -0.90096886790241912623610231950744505116>,
+	 < 0.78183148246802980870844452667405775023,  0, 0.62348980185873353052500488400423981063>,
+	 < -0.78183148246802980870844452667405775023,  0, 0.62348980185873353052500488400423981063>,
+	 < 0.97492791218182360701813168299393121723,  0, -0.22252093395631440428890256449679475947>,
+	 < -0.97492791218182360701813168299393121723,  0, -0.22252093395631440428890256449679475947>,
+}
+normalize(dirsCutsHepPrism)
+
+
+// Octagonal Prism side faces
+
+// Sides
+// (polroots(x^8 - 1) * I)
+
+#declare dirsCutsOctPrism = array [8] {
+	 < 0.00000000000000000000000000000000000000,  0, -1.0000000000000000000000000000000000000>,
+	 < 0.00000000000000000000000000000000000000,  0, 1.0000000000000000000000000000000000000>,
+	 < 0.70710678118654752440084436210484903928,  0, -0.70710678118654752440084436210484903928>,
+	 < -0.70710678118654752440084436210484903928,  0, -0.70710678118654752440084436210484903928>,
+	 < 0.70710678118654752440084436210484903928,  0, 0.70710678118654752440084436210484903928>,
+	 < -0.70710678118654752440084436210484903928,  0, 0.70710678118654752440084436210484903928>,
+	 < 1.0000000000000000000000000000000000000,  0, 0.00000000000000000000000000000000000000>,
+	 < -1.0000000000000000000000000000000000000,  0, 0.00000000000000000000000000000000000000>,
+}
+normalize(dirsCutsOctPrism)
+
+
+
+// ============================= SHAPES ======================
 
 #macro intersect_shape(shape, dirset)
        #local length = dimension_size(dirset, 1);
@@ -917,6 +1518,10 @@ intersect_shape(shPentHexeD, dirsPentHexeD)
 #declare shPentHexeL = 0;
 intersect_shape(shPentHexeL, dirsPentHexeL)
 
+// Disdyakis Triacontahedron
+#declare shDisdyTria = 0;
+intersect_shape(shDisdyTria, dirsDisdyTria)
+
 // Triangular Dipyramid
 #declare shTriDipyra = 0;
 intersect_shape(shTriDipyra, dirsTriDipyra)
@@ -928,3 +1533,43 @@ intersect_shape(shPentDipyra, dirsPentDipyra)
 // Hexagonal Dipyramid
 #declare shHexDipyra = 0;
 intersect_shape(shHexDipyra, dirsHexDipyra)
+
+// Heptagonal Dipyramid
+#declare shHepDipyra = 0;
+intersect_shape(shHepDipyra, dirsHepDipyra)
+
+// Octagonal Dipyramid
+#declare shOctDipyra = 0;
+intersect_shape(shOctDipyra, dirsOctDipyra)
+
+// Tetragonal Trapezohedron
+#declare shTetraTrapezo = 0;
+intersect_shape(shTetraTrapezo, dirsTetraTrapezo)
+
+// Pentagonal Trapezohedron
+#declare shPentTrapezo = 0;
+intersect_shape(shPentTrapezo, dirsPentTrapezo)
+
+// Hexagonal Trapezohedron
+#declare shHexTrapezo = 0;
+intersect_shape(shHexTrapezo, dirsHexTrapezo)
+
+// Heptagonal Trapezohedron
+#declare shHeptTrapezo = 0;
+intersect_shape(shHeptTrapezo, dirsHeptTrapezo)
+
+// Octagonal Trapezohedron
+#declare shOctTrapezo = 0;
+intersect_shape(shOctTrapezo, dirsOctTrapezo)
+
+// Trapezo-rhombic dodecahedron
+#declare shTrapRhomDod = 0;
+intersect_shape(shTrapRhomDod, dirsTrapRhomDod)
+
+// Pseudo-deltoidal icositetrahedron
+#declare shPseuDeltIcosi = 0;
+intersect_shape(shPseuDeltIcosi, dirsPseuDeltIcosi)
+
+// Trapezo-Rhombic Triacontahedron
+#declare shTrapRhomTria = 0;
+intersect_shape(shTrapRhomTria, dirsTrapRhomTria)

@@ -287,9 +287,20 @@ light_source {
         #case (17) object{shTriaIcosa getShapeMaterialPreset(usermat)} #break
 	#case (18) object{shPentHexeD getShapeMaterialPreset(usermat)} #break
 	#case (19) object{shPentHexeL getShapeMaterialPreset(usermat)} #break
-	#case (20) object{shTriDipyra getShapeMaterialPreset(usermat)} #break
-	#case (21) object{shPentDipyra getShapeMaterialPreset(usermat)} #break
-	#case (22) object{shHexDipyra getShapeMaterialPreset(usermat)} #break
+	#case (20) object{shDisdyTria getShapeMaterialPreset(usermat)} #break
+	#case (21) object{shTriDipyra getShapeMaterialPreset(usermat)} #break
+	#case (22) object{shPentDipyra getShapeMaterialPreset(usermat)} #break
+	#case (23) object{shHexDipyra getShapeMaterialPreset(usermat)} #break
+	#case (24) object{shHepDipyra getShapeMaterialPreset(usermat)} #break
+	#case (25) object{shOctDipyra getShapeMaterialPreset(usermat)} #break
+	#case (26) object{shTetraTrapezo getShapeMaterialPreset(usermat)} #break
+	#case (27) object{shPentTrapezo getShapeMaterialPreset(usermat)} #break
+	#case (28) object{shHexTrapezo getShapeMaterialPreset(usermat)} #break
+	#case (29) object{shHeptTrapezo getShapeMaterialPreset(usermat)} #break
+	#case (30) object{shOctTrapezo getShapeMaterialPreset(usermat)} #break
+	#case (31) object{shTrapRhomDod getShapeMaterialPreset(usermat)} #break
+	#case (32) object{shPseuDeltIcosi getShapeMaterialPreset(usermat)} #break
+	#case (33) object{shTrapRhomTria getShapeMaterialPreset(usermat)} #break
     #end
 #end
 
@@ -336,9 +347,27 @@ light_source {
         #case (17) dirsTriaIcosa #break
         #case (18) dirsPentHexeD #break
         #case (19) dirsPentHexeL #break
-        #case (20) dirsTriDipyra #break
-        #case (21) dirsPentDipyra #break
-        #case (22) dirsHexDipyra #break
+        #case (20) dirsDisdyTria #break
+        #case (21) dirsTriDipyra #break
+        #case (22) dirsPentDipyra #break
+        #case (23) dirsHexDipyra #break
+        #case (24) dirsHepDipyra #break
+        #case (25) dirsOctDipyra #break
+        #case (26) dirsTetraTrapezo #break
+        #case (27) dirsPentTrapezo #break
+        #case (28) dirsHexTrapezo #break
+        #case (29) dirsHeptTrapezo #break
+        #case (30) dirsOctTrapezo #break
+        #case (31) dirsTrapRhomDod #break
+        #case (32) dirsPseuDeltIcosi #break
+        #case (33) dirsTrapRhomTria #break
+        #case (34) dirsCutsDihe #break
+        #case (35) dirsCutsTriPrism #break
+        #case (36) dirsCutsSquarePrism #break
+        #case (37) dirsCutsPentPrism #break
+        #case (38) dirsCutsHexPrism #break
+        #case (39) dirsCutsHepPrism #break
+        #case (40) dirsCutsOctPrism #break
     #end
 #end
 
@@ -347,7 +376,7 @@ light_source {
 #declare globalScale = 1.8;
 
 // This scale value is the ratio of the circumscribed sphere to the inscribed sphere
-#declare shapeScale = array[23] {
+#declare shapeScale = array[34] {
     1.0000000000, //0: sphere
     0.3333333333, //1: tetrahedron
     0.5773502692, //2: cube
@@ -368,9 +397,20 @@ light_source {
     0.8385051474, //17: Triakis Icosahedron
     0.9188614921, //18: Pentagonal Hexecontahedron (dextro)
     0.9188614921, //19: Pentagonal Hexecontahedron (laevo)
-    0.3779644730, //20: Triangular Dipyramid
-    0.5067318540, //21: Pentagonal Dipyramid
-    0.4472135955, //22: Hexagonal Dipyramid
+    0.9049441875, //20: Disdyakis Triacontahedron
+    0.3779644730, //21: Triangular Dipyramid
+    0.5067318540, //22: Pentagonal Dipyramid
+    0.4472135955, //23: Hexagonal Dipyramid
+    0.3980324968, //24: Heptagonal Dipyramid
+    0.3574067443, //25: Octagonal Dipyramid
+    0.5110810845, //26: Tetragonal Trapezohedron
+    0.4472135955, //27: Pentagonal Trapezohedron
+    0.3933198932, //28: Hexagonal Trapezohedron
+    0.3490502193, //29: Heptagonal Trapezohedron
+    0.3127099914, //30: Octagonal Trapezohedron
+    0.7071067812, //31: Trapezo-rhombic dodecahedron
+    0.8628562095, //32: Pseudo-deltoidal icositetrahedron
+    0.8506508084, //33: Trapezo-Rhombic Triacontahedron
 }
 
 

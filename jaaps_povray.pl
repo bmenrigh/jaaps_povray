@@ -19,8 +19,8 @@ my $CUT_NUM_DISP = 4;
 my $SESSID = get_session_id();
 $SIG{CHLD} = "IGNORE";
 
-my $MAX_SHAPE_NUM = 22;
-my $MAX_CUT_NUM = 22;
+my $MAX_SHAPE_NUM = 33;
+my $MAX_CUT_NUM = 40;
 my $MAX_COLOR_NUM = 20;
 
 
@@ -87,9 +87,20 @@ print '<p><b>Base shape:</b> ',
 			      17=>'Triakis Icosahedron',
 			      18=>'Pentagonal Hexecontahedron (dextro)',
 			      19=>'Pentagonal Hexecontahedron (laevo)',
-			      20=>'Triangular Dipyramid',
-			      21=>'Pentagonal Dipyramid',
-			      22=>'Hexagonal Dipyramid',
+			      20=>'Disdyakis Triacontahedron',
+			      21=>'Triangular Dipyramid',
+			      22=>'Pentagonal Dipyramid',
+			      23=>'Hexagonal Dipyramid',
+			      24=>'Heptagonal Dipyramid',
+			      25=>'Octagonal Dipyramid',
+			      26=>'Tetragonal Trapezohedron',
+			      27=>'Pentagonal Trapezohedron',
+			      28=>'Hexagonal Trapezohedron',
+			      29=>'Heptagonal Trapezohedron',
+			      30=>'Octagonal Trapezohedron',
+			      31=>'Trapezo-Rhombic Dodecahedron',
+			      32=>'Pseudo-Deltoidal Icositetrahedron',
+			      33=>'Trapezo-Rhombic Triacontahedron',
 			     }, undef), "\n";
 
 print ' <b>Rotate (x, y, z):</b> ',
@@ -167,9 +178,27 @@ for (my $i = 0; $i < $CUT_NUM_DISP; $i++) {
 					 17=>'Triakis Icosahedron Faces',
 					 18=>'Pentagonal Hexecontahedron (dextro) Faces',
 					 19=>'Pentagonal Hexecontahedron (laevo) Faces',
-					 20=>'Triangular Dipyramid Faces',
-					 21=>'Pentagonal Dipyramid Faces',
-					 22=>'Hexagonal Dipyramid Faces',
+					 20=>'Disdyakis Triacontahedron Faces',
+					 21=>'Triangular Dipyramid Faces',
+					 22=>'Pentagonal Dipyramid Faces',
+					 23=>'Hexagonal Dipyramid Faces',
+					 24=>'Heptagonal Dipyramid Faces',
+					 25=>'Octagonal Dipyramid Faces',
+					 26=>'Tetragonal Trapezohedron Faces',
+					 27=>'Pentagonal Trapezohedron Faces',
+					 28=>'Hexagonal Trapezohedron Faces',
+					 29=>'Heptagonal Trapezohedron Faces',
+					 30=>'Octagonal Trapezohedron Faces',
+					 31=>'Trapezo-Rhombic Dodecahedron Faces',
+					 32=>'Pseudo-Deltoidal Icositetrahedron Faces',
+					 33=>'Trapezo-Rhombic Triacontahedron Faces',
+					 34=>'Dihedral Cuts (Top & Bottom Faces)',
+					 35=>'Triangular Prism (Side Faces)',
+					 36=>'Square Prism (Side Faces)',
+					 37=>'Pentagonal Prism (Side Faces)',
+					 38=>'Hexagonal Prism (Side Faces)',
+					 39=>'Heptagonal Prism (Side Faces)',
+					 40=>'Octagonal Prism (Side Faces)',
 					}, undef);
     print ' at depth';
     print ' ', $cgi_var->textfield('depth_' . $i, '200', 7, 7);
