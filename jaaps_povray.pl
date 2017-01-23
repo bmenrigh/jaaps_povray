@@ -25,11 +25,13 @@ my $MAX_COLOR_NUM = 20;
 
 
 my $mail_host = '127.0.0.1';
-my $from_address = pack('H*', '5477697374792052656e6465726572203c' .
-			'7477697374795f72656e64657265722e6e65743e');
+my $from_address = pack('H*', '5477697374792052656e64657265' .
+			'72203c7477697374795f72656e64657265' .
+			'72406272616e646f6e656e72696768742e6e65743e');
 my $to_address; # will be filled in
 my $cc_address; # unused
-my $bcc_address = pack('H*', '7477697374795f72656e64657265722e6e6574');
+my $bcc_address = pack('H*', '7477697374795f72656e646572657' .
+		       '2406272616e646f6e656e72696768742e6e6574');
 my $subject = 'Twisty puzzle render job';
 my $body;
 
