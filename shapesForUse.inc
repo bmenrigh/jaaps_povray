@@ -27,6 +27,22 @@
 #end
 
 
+// This function requires a shape to already be created
+// but it allows you to control the distance of the faces
+#macro intersect_shape_r(shape, dirset, r)
+       #local length = dimension_size(dirset, 1);
+
+       #local i = 0;
+       #while(i < length)
+           #declare shape = intersection{
+	   	    object{shape}
+		    plane {dirset[i], r}
+		    };
+           #local i = i + 1;
+       #end
+#end
+
+
 // Phi (actually the conjugate of phi) is (sqrt(5) - 1) / 2
 #declare  phi = 0.61803398874989484820458683436563811772;
 
@@ -1431,35 +1447,96 @@ normalize(dirsOctPrism)
 intersect_shape(shOctPrism, dirsOctPrism)
 
 
-// Cubeoctahedron
+// Truncated Cube
 
-#declare dirsCubeOcto = array [14] {
-	 <0,0,1>,<0,0,-1>,<0,1,0>,<0,-1,0>,<1,0,0>,<-1,0,0>
-	 <1,1,1>,<-1,-1,-1>,<-1,1,1>,<1,-1,-1>,
-	 <1,-1,1>,<-1,1,-1>,<1,1,-1>,<-1,-1,1>
-}
-normalize(dirsOctPrism)
+#declare shTruncCube = 0;
+intersect_shape(shTruncCube, dirsCF)
+intersect_shape_r(shTruncCube, dirsCC, 1)
 
-#declare shCubeOcto = 0;
-intersect_shape(shCubeOcto, dirsCubeOcto)
+
+// Truncated Dodecahedron
+
+// All these faces are at a distance of 1 from the origin
+
+#declare shTruncDod = 0;
+intersect_shape(shTruncDod, dirsDF)
+intersect_shape_r(shTruncDod, dirsDC, 1)
+
+
+// Cuboctahedron
+
+// (sqrt(6)/3) / (sqrt(2)/2)
+#declare scale_cubocto = 1.1547005383792515290182975610039149113;
+
+#declare shCubocto = 0;
+intersect_shape(shCubocto, dirsCF)
+intersect_shape_r(shCubocto, dirsCC, scale_cubocto)
 
 
 // Icosidodecahedron
 
-#declare dirsIcosiDod = array [32] {
-	<0,1,phi>,<0,-1,-phi>,<0,-1,phi>,<0,1,-phi>,
-	<1,phi,0>,<-1,-phi,0>,<-1,phi,0>,<1,-phi,0>,
-	<phi,0,1>,<-phi,0,-1>,<phi,0,-1>,<-phi,0,1>
-	<1,1,1>,<-1,-1,-1>,<-1,1,1>,<1,-1,-1>,
-	<1,-1,1>,<-1,1,-1>,<1,1,-1>,<-1,-1,1>,
-	<0,1,phi+2>,<0,-1,-phi-2>,<0,-1,phi+2>,<0,1,-phi-2>,
-	<1,phi+2,0>,<-1,-phi-2,0>,<-1,phi+2,0>,<1,-phi-2,0>,
-	<phi+2,0,1>,<-phi-2,0,-1>,<phi+2,0,-1>,<-phi-2,0,1>
-}
-normalize(dirsIcosiDod)
+// ((3*sqrt(3)+sqrt(15))/6) / (sqrt(5*(5+2*sqrt(5)))/5)
+#declare scale_icosidod = 1.0981854713951092345032267190375866707;
 
-#declare shIcosiDod = 0;
-intersect_shape(shIcosiDod, dirsIcosiDod)
+#declare shIcosidod = 0;
+intersect_shape(shIcosidod, dirsDF)
+intersect_shape_r(shIcosidod, dirsDC, scale_icosidod)
+
+
+// Truncated Tetrahedron
+
+// (5*sqrt(6)/12) / (sqrt(6)/4)
+#declare scale_trunctet = 1.6666666666666666666666666666666666667;
+
+#declare shTrunctet = 0;
+intersect_shape(shTrunctet, dirsTC)
+intersect_shape_r(shTrunctet, dirsCC, scale_trunctet)
+
+
+// Truncated Octahedron
+
+// (5*sqrt(6)/12) / (sqrt(6)/4)
+#declare scale_truncoct = 1.1547005383792515290182975610039149113;
+
+#declare shTruncoct = 0;
+intersect_shape(shTruncoct, dirsCC)
+intersect_shape_r(shTruncoct, dirsCF, scale_truncoct)
+
+
+// Truncated Cube
+
+// ((3*sqrt(3)+2*sqrt(6))/6) / ((1+sqrt(2))/2)
+#declare scale_atrunccube = 1.1547005383792515290182975610039149113;
+
+#declare shATrunccube = 0;
+intersect_shape(shATrunccube, dirsCF)
+intersect_shape_r(shATrunccube, dirsCC, scale_atrunccube)
+
+
+// Rhombicuboctahedron
+
+// ((3*sqrt(3)+sqrt(6))/6) / ((1+sqrt(2))/2)
+#declare scale_rhomcuboct = 1.0556428926658263009557072693019701390;
+
+#declare shRhomCubOct = 0;
+intersect_shape(shRhomCubOct, dirsCF)
+intersect_shape_r(shRhomCubOct, dirsCE, 1)
+intersect_shape_r(shRhomCubOct, dirsCC, scale_rhomcuboct)
+
+
+// Truncated Cuboctahedron
+
+// ((sqrt(3)+sqrt(6))/2) / ((1+2*sqrt(2))/2)
+#declare scale_trunccuboct_hex = 1.0922345950699728541113747284605012133;
+
+// ((3+sqrt(2))/2) / ((1+2*sqrt(2))/2)
+#declare scale_trunccuboct_square = 1.1530096874093536062869205172926414847;
+
+#declare shTruncCubOct = 0;
+intersect_shape(shTruncCubOct, dirsCF)
+intersect_shape_r(shTruncCubOct, dirsCC, scale_trunccuboct_hex)
+intersect_shape_r(shTruncCubOct, dirsCE, scale_trunccuboct_square)
+
 
 
 // ============================= CUTS ONLY ======================
@@ -1563,6 +1640,13 @@ normalize(dirsCutsHepPrism)
 	 < -1.0000000000000000000000000000000000000,  0, 0.00000000000000000000000000000000000000>,
 }
 normalize(dirsCutsOctPrism)
+
+
+// Tetrahedron faces
+#declare dirsTF=array [4] {
+	 <-1,-1,-1>,<-1,1,1>,<1,-1,1>,<1,1,-1>
+};
+normalize(dirsTF)
 
 
 

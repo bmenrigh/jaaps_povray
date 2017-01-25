@@ -306,8 +306,15 @@ light_source {
 	#case (36) object{shHexPrism getShapeMaterialPreset(usermat)} #break
 	#case (37) object{shHepPrism getShapeMaterialPreset(usermat)} #break
 	#case (38) object{shOctPrism getShapeMaterialPreset(usermat)} #break
-	#case (39) object{shCubeOcto getShapeMaterialPreset(usermat)} #break
-	#case (40) object{shIcosiDod getShapeMaterialPreset(usermat)} #break
+	#case (39) object{shTruncCube getShapeMaterialPreset(usermat)} #break
+	#case (40) object{shTruncDod getShapeMaterialPreset(usermat)} #break
+	#case (41) object{shCubocto getShapeMaterialPreset(usermat)} #break
+	#case (42) object{shIcosidod getShapeMaterialPreset(usermat)} #break
+	#case (43) object{shTrunctet getShapeMaterialPreset(usermat)} #break
+	#case (44) object{shTruncoct getShapeMaterialPreset(usermat)} #break
+	#case (45) object{shATrunccube getShapeMaterialPreset(usermat)} #break
+	#case (46) object{shRhomCubOct getShapeMaterialPreset(usermat)} #break
+	#case (47) object{shTruncCubOct getShapeMaterialPreset(usermat)} #break
     #end
 #end
 
@@ -375,6 +382,7 @@ light_source {
         #case (38) dirsCutsHexPrism #break
         #case (39) dirsCutsHepPrism #break
         #case (40) dirsCutsOctPrism #break
+        #case (41) dirsTF #break
     #end
 #end
 
@@ -383,7 +391,7 @@ light_source {
 #declare globalScale = 1.8;
 
 // This scale value is the ratio of the circumscribed sphere to the inscribed sphere
-#declare shapeScale = array[41] {
+#declare shapeScale = array[48] {
     1.0000000000, //0: sphere
     0.3333333333, //1: tetrahedron
     0.5773502692, //2: cube
@@ -425,6 +433,13 @@ light_source {
     0.6785983445, //38: Octagonal Prism
     0.8068982214, //39: Truncated cube
     0.9226021945, //40: Truncated Dodecahedron
+    0.7071067812, //41: Cuboctohedron
+    0.8506508084, //42: Icosidodecahedron
+    0.5222329679, //43: Truncated Tetrahedron
+    0.7745966692, //44: Truncated Octahedron
+    0.6785983445, //45: Truncated Cube
+    0.8628562095, //46: Rhombicuboctahedron
+    0.8259425910, //47: Truncated Cuboctahedron
 }
 
 
