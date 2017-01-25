@@ -423,8 +423,8 @@ light_source {
     0.6546536707, //36: Hexagonal Prism
     0.6693623193, //37: Heptagonal Prism
     0.6785983445, //38: Octagonal Prism
-    0.8628562095, //39: Truncated cube // May not be correct
-    0.8506508084, //40: Truncated Dodecahedron // May not be correct
+    0.8068982214, //39: Truncated cube
+    0.9226021945, //40: Truncated Dodecahedron
 }
 
 
