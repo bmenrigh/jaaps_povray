@@ -19,7 +19,7 @@ my $CUT_NUM_DISP = 4;
 my $SESSID = get_session_id();
 $SIG{CHLD} = "IGNORE";
 
-my $MAX_SHAPE_NUM = 47;
+my $MAX_SHAPE_NUM = 53;
 my $MAX_CUT_NUM = 41;
 my $MAX_COLOR_NUM = 20;
 
@@ -103,11 +103,11 @@ print '<p><b>Base shape:</b> ',
 			      31=>'Trapezo-Rhombic Dodecahedron',
 			      32=>'Pseudo-Deltoidal Icositetrahedron',
 			      33=>'Trapezo-Rhombic Triacontahedron',
-			      34=>'Triangular Prism',
-			      35=>'Pentagonal Prism',
-			      36=>'Hexagonal Prism',
-			      37=>'Heptagonal Prism',
-			      38=>'Octagonal Prism',
+			      34=>'Triangular Prism (Equidistant Faces)',
+			      35=>'Pentagonal Prism (Equidistant Faces)',
+			      36=>'Hexagonal Prism (Equidistant Faces)',
+			      37=>'Heptagonal Prism (Equidistant Faces)',
+			      38=>'Octagonal Prism (Equidistant Faces)',
 			      39=>'Truncated Cube (Equidistant Faces)',
 			      40=>'Truncated Dodecahedron (Equidistant Faces)',
 			      41=>'Cuboctahedron',
@@ -117,6 +117,12 @@ print '<p><b>Base shape:</b> ',
 			      45=>'Truncated Cube',
       			      46=>'Rhombicuboctahedron',
 			      47=>'Truncated Cuboctahedron',
+     			      48=>'Snub Cube (dextro)',
+			      49=>'Snub Cube (laevo)',
+			      50=>'Truncated Icosahedron',
+			      51=>'Truncated Dodecahedron',
+			      52=>'Rhombicosidodecahedron',
+			      53=>'Truncated Icosidodecahedron',
 			     }, undef), "\n";
 
 print ' <b>Rotate (x, y, z):</b> ',

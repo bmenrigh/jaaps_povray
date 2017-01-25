@@ -1447,14 +1447,14 @@ normalize(dirsOctPrism)
 intersect_shape(shOctPrism, dirsOctPrism)
 
 
-// Truncated Cube
+// Truncated Cube (Equadistant)
 
 #declare shTruncCube = 0;
 intersect_shape(shTruncCube, dirsCF)
 intersect_shape_r(shTruncCube, dirsCC, 1)
 
 
-// Truncated Dodecahedron
+// Truncated Dodecahedron (Equadistant)
 
 // All these faces are at a distance of 1 from the origin
 
@@ -1537,6 +1537,151 @@ intersect_shape(shTruncCubOct, dirsCF)
 intersect_shape_r(shTruncCubOct, dirsCC, scale_trunccuboct_hex)
 intersect_shape_r(shTruncCubOct, dirsCE, scale_trunccuboct_square)
 
+
+// Snub Cube
+
+// Using dual Pentagonal Icositetrahedron for axes
+
+// (sqrt(3*(6+cbrt(199+3*sqrt(33))+cbrt(199-3*sqrt(33))))/6) / (sqrt(3*(4+cbrt(199+3*sqrt(33))+cbrt(199-3*sqrt(33))))/6)
+// root of 27*x^6 - 27*x^4 - 3*x^2 - 1
+#declare scale_snub_cube = 1.0619127032398092395971936314408577019;
+
+// sqrt(6 * (cbrt(6*(9 + sqrt(33))) + cbrt(6*(9 - sqrt(33))) - 6)) / 12
+#declare snub_cube_c0 = 0.21879664300048044102152503371202125654;
+
+// (sqrt(6 * (6 + cbrt(6*(9 + sqrt(33))) + cbrt(6*(9 - sqrt(33))))) / 12)
+#declare snub_cube_c1 = 0.74018374136985722280850816594285125636;
+
+// (sqrt(6 * (18 + cbrt(6*(9 + sqrt(33))) + cbrt(6*(9 - sqrt(33))))) / 12)
+#declare snub_cube_c2 = 1.0236561781126901823634768752676670940;
+
+
+#declare dirsSnubcubeTriL = array [32] {
+	 <-snub_cube_c1,  snub_cube_c0, -snub_cube_c2>,
+	 <-snub_cube_c1, -snub_cube_c0,  snub_cube_c2>,
+	 < snub_cube_c1, -snub_cube_c0, -snub_cube_c2>,
+	 < snub_cube_c1,  snub_cube_c0,  snub_cube_c2>,
+	 <-snub_cube_c2,  snub_cube_c1, -snub_cube_c0>,
+	 <-snub_cube_c2, -snub_cube_c1,  snub_cube_c0>,
+	 < snub_cube_c2, -snub_cube_c1, -snub_cube_c0>,
+	 < snub_cube_c2,  snub_cube_c1,  snub_cube_c0>,
+	 <-snub_cube_c0,  snub_cube_c2, -snub_cube_c1>,
+	 <-snub_cube_c0, -snub_cube_c2,  snub_cube_c1>,
+	 < snub_cube_c0, -snub_cube_c2, -snub_cube_c1>,
+	 < snub_cube_c0,  snub_cube_c2,  snub_cube_c1>,
+	 <-snub_cube_c0, -snub_cube_c1, -snub_cube_c2>,
+	 <-snub_cube_c0,  snub_cube_c1,  snub_cube_c2>,
+	 < snub_cube_c0,  snub_cube_c1, -snub_cube_c2>,
+	 < snub_cube_c0, -snub_cube_c1,  snub_cube_c2>,
+	 <-snub_cube_c2, -snub_cube_c0, -snub_cube_c1>,
+	 <-snub_cube_c2,  snub_cube_c0,  snub_cube_c1>,
+	 < snub_cube_c2,  snub_cube_c0, -snub_cube_c1>,
+	 < snub_cube_c2, -snub_cube_c0,  snub_cube_c1>,
+	 <-snub_cube_c1, -snub_cube_c2, -snub_cube_c0>,
+	 <-snub_cube_c1,  snub_cube_c2,  snub_cube_c0>,
+	 < snub_cube_c1,  snub_cube_c2, -snub_cube_c0>,
+	 < snub_cube_c1, -snub_cube_c2,  snub_cube_c0>,
+	 <-snub_cube_c1, -snub_cube_c1, -snub_cube_c1>,
+	 <-snub_cube_c1, -snub_cube_c1,  snub_cube_c1>,
+	 <-snub_cube_c1,  snub_cube_c1, -snub_cube_c1>,
+	 <-snub_cube_c1,  snub_cube_c1,  snub_cube_c1>,
+	 < snub_cube_c1, -snub_cube_c1, -snub_cube_c1>,
+	 < snub_cube_c1, -snub_cube_c1,  snub_cube_c1>,
+	 < snub_cube_c1,  snub_cube_c1, -snub_cube_c1>,
+	 < snub_cube_c1,  snub_cube_c1,  snub_cube_c1>,
+}
+
+
+#declare dirsSnubcubeTriD = array [32] {
+	 < snub_cube_c1, -snub_cube_c0,  snub_cube_c2>,
+	 < snub_cube_c1,  snub_cube_c0, -snub_cube_c2>,
+	 <-snub_cube_c1,  snub_cube_c0,  snub_cube_c2>,
+	 <-snub_cube_c1, -snub_cube_c0, -snub_cube_c2>,
+	 < snub_cube_c2, -snub_cube_c1,  snub_cube_c0>,
+	 < snub_cube_c2,  snub_cube_c1, -snub_cube_c0>,
+	 <-snub_cube_c2,  snub_cube_c1,  snub_cube_c0>,
+	 <-snub_cube_c2, -snub_cube_c1, -snub_cube_c0>,
+	 < snub_cube_c0, -snub_cube_c2,  snub_cube_c1>,
+	 < snub_cube_c0,  snub_cube_c2, -snub_cube_c1>,
+	 <-snub_cube_c0,  snub_cube_c2,  snub_cube_c1>,
+	 <-snub_cube_c0, -snub_cube_c2, -snub_cube_c1>,
+	 < snub_cube_c0,  snub_cube_c1,  snub_cube_c2>,
+	 < snub_cube_c0, -snub_cube_c1, -snub_cube_c2>,
+	 <-snub_cube_c0, -snub_cube_c1,  snub_cube_c2>,
+	 <-snub_cube_c0,  snub_cube_c1, -snub_cube_c2>,
+	 < snub_cube_c2,  snub_cube_c0,  snub_cube_c1>,
+	 < snub_cube_c2, -snub_cube_c0, -snub_cube_c1>,
+	 <-snub_cube_c2, -snub_cube_c0,  snub_cube_c1>,
+	 <-snub_cube_c2,  snub_cube_c0, -snub_cube_c1>,
+	 < snub_cube_c1,  snub_cube_c2,  snub_cube_c0>,
+	 < snub_cube_c1, -snub_cube_c2, -snub_cube_c0>,
+	 <-snub_cube_c1, -snub_cube_c2,  snub_cube_c0>,
+	 <-snub_cube_c1,  snub_cube_c2, -snub_cube_c0>,
+	 < snub_cube_c1,  snub_cube_c1,  snub_cube_c1>,
+	 < snub_cube_c1,  snub_cube_c1, -snub_cube_c1>,
+	 < snub_cube_c1, -snub_cube_c1,  snub_cube_c1>,
+	 < snub_cube_c1, -snub_cube_c1, -snub_cube_c1>,
+	 <-snub_cube_c1,  snub_cube_c1,  snub_cube_c1>,
+	 <-snub_cube_c1,  snub_cube_c1, -snub_cube_c1>,
+	 <-snub_cube_c1, -snub_cube_c1,  snub_cube_c1>,
+	 <-snub_cube_c1, -snub_cube_c1, -snub_cube_c1>,
+}
+
+
+#declare shSnubcubeD = 0;
+#declare shSnubcubeL = 0;
+intersect_shape(shSnubcubeD, dirsCF)
+intersect_shape(shSnubcubeL, dirsCF)
+intersect_shape_r(shSnubcubeD, dirsSnubcubeTriD, scale_snub_cube)
+intersect_shape_r(shSnubcubeL, dirsSnubcubeTriL, scale_snub_cube)
+
+
+// Truncated Icosahedron
+
+// (sqrt(10*(125+41*sqrt(5)))/20) / ((3*sqrt(3)+sqrt(15))/4)
+#declare scale_truncicosa = 1.0265315223282925463306438159323617301;
+
+#declare shTruncIcosa = 0;
+intersect_shape(shTruncIcosa, dirsDC)
+intersect_shape_r(shTruncIcosa, dirsDF, scale_truncicosa)
+
+
+// Truncated Dodecahedron
+
+// ((9*sqrt(3)+5*sqrt(15))/12) / (sqrt(2*(25+11*sqrt(5)))/4)
+#declare scale_atruncdod = 1.1698394204619259226758096221428116114;
+
+#declare shATruncDod = 0;
+intersect_shape(shATruncDod, dirsDF)
+intersect_shape_r(shATruncDod, dirsDC, scale_atruncdod)
+
+
+// Rhombicosidodecahedron
+
+// ((2+sqrt(5))/2) / (3*sqrt(5*(5+2*sqrt(5)))/10)
+#declare scale_rhombicosidod_square = 1.0258945123917511341900968586789699413;
+
+// ((3*sqrt(3)+2*sqrt(15))/6) / (3*sqrt(5*(5+2*sqrt(5)))/10)
+#declare scale_rhombicosidod_tri = 1.0447777710718726561023833908710724216;
+
+#declare shRhombIcosiDod = 0;
+intersect_shape(shRhombIcosiDod, dirsDF)
+intersect_shape_r(shRhombIcosiDod, dirsDE, scale_rhombicosidod_square)
+intersect_shape_r(shRhombIcosiDod, dirsDC, scale_rhombicosidod_tri)
+
+
+// Truncated Icosidodecahedron
+
+// ((2*sqrt(3)+sqrt(15))/2) / (sqrt(5*(5+2*sqrt(5)))/2)
+#declare scale_truncicosidod_hex = 1.0661408512011672874627207221376781212;
+
+// ((3+2*sqrt(5))/2) / (sqrt(5*(5+2*sqrt(5)))/2)
+#declare scale_truncicosidod_square = 1.0857649092690291838490228789186401797;
+
+#declare shTruncIcosiDod = 0;
+intersect_shape(shTruncIcosiDod, dirsDF)
+intersect_shape_r(shTruncIcosiDod, dirsDC, scale_truncicosidod_hex)
+intersect_shape_r(shTruncIcosiDod, dirsDE, scale_truncicosidod_square)
 
 
 // ============================= CUTS ONLY ======================
