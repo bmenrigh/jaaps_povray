@@ -663,7 +663,7 @@ normalize(dirsTriaIcosa)
 // root of 4096*x^12 - 21504*x^10 + 16384*x^8 - 4672*x^6 + 624*x^4 - 40*x^2 + 1
 #declare pent_hexe_c14 = 2.0970538352520879924039590523482862400;
 
-#declare dirsPentHexeD=array [60] {
+#declare dirsPentHexeL=array [60] {
 	 <  pent_hexe_c2,  -pent_hexe_c1,  pent_hexe_c14>,
 	 <  pent_hexe_c2,   pent_hexe_c1, -pent_hexe_c14>,
 	 < -pent_hexe_c2,   pent_hexe_c1,  pent_hexe_c14>,
@@ -725,10 +725,10 @@ normalize(dirsTriaIcosa)
 	 < -pent_hexe_c5, -pent_hexe_c10,   pent_hexe_c9>,
 	 < -pent_hexe_c5,  pent_hexe_c10,  -pent_hexe_c9>,
 }
-normalize(dirsPentHexeD)
+normalize(dirsPentHexeL)
 
 
-#declare dirsPentHexeL=array [60] {
+#declare dirsPentHexeD=array [60] {
 	 <  pent_hexe_c2,   pent_hexe_c1,  pent_hexe_c14>,
 	 <  pent_hexe_c2,  -pent_hexe_c1, -pent_hexe_c14>,
 	 < -pent_hexe_c2,  -pent_hexe_c1,  pent_hexe_c14>,
@@ -790,7 +790,7 @@ normalize(dirsPentHexeD)
 	 < -pent_hexe_c5,  pent_hexe_c10,   pent_hexe_c9>,
 	 < -pent_hexe_c5, -pent_hexe_c10,  -pent_hexe_c9>,
 }
-normalize(dirsPentHexeL)
+normalize(dirsPentHexeD)
 
 
 // Disdyakis Triacontahedron
@@ -1590,7 +1590,7 @@ intersect_shape_r(shTruncCubOct, dirsCE, scale_trunccuboct_square)
 	 < snub_cube_c1,  snub_cube_c1, -snub_cube_c1>,
 	 < snub_cube_c1,  snub_cube_c1,  snub_cube_c1>,
 }
-
+normalize(dirsSnubcubeTriL)
 
 #declare dirsSnubcubeTriD = array [32] {
 	 < snub_cube_c1, -snub_cube_c0,  snub_cube_c2>,
@@ -1626,6 +1626,7 @@ intersect_shape_r(shTruncCubOct, dirsCE, scale_trunccuboct_square)
 	 <-snub_cube_c1, -snub_cube_c1,  snub_cube_c1>,
 	 <-snub_cube_c1, -snub_cube_c1, -snub_cube_c1>,
 }
+normalize(dirsSnubcubeTriD)
 
 
 #declare shSnubcubeD = 0;
@@ -1682,6 +1683,287 @@ intersect_shape_r(shRhombIcosiDod, dirsDC, scale_rhombicosidod_tri)
 intersect_shape(shTruncIcosiDod, dirsDF)
 intersect_shape_r(shTruncIcosiDod, dirsDC, scale_truncicosidod_hex)
 intersect_shape_r(shTruncIcosiDod, dirsDE, scale_truncicosidod_square)
+
+
+
+// Snub Dodecahedron
+
+// Using dual Pentagonal Hexecontahedron for axes
+
+// 700569*x^12 - 1795770*x^10 + 1502955*x^8 - 423900*x^6 + 14175*x^4 - 2250*x^2 + 125
+#declare scale_snub_dod = 1.0485501227820063876378451964261032201567;
+
+// root of 4096*x^12 - 15360*x^10 + 18944*x^8 - 7168*x^6 + 1024*x^4 - 56*x^2 + 1
+#declare snub_dod_c0 = 0.1928937113523590221082625460605837062823;
+
+// root of 4096*x^12 + 3072*x^10 - 16128*x^8 - 17152*x^6 + 2176*x^4 - 84*x^2 + 1
+#declare snub_dod_c1 = 0.2184833701273212243655341571109971386064;
+
+// root of 4096*x^12 + 6144*x^10 + 4352*x^8 - 3456*x^6 + 672*x^4 - 48*x^2 + 1
+#declare snub_dod_c2 = 0.3748216581145622952666095166083447283408;
+
+// root of 4096*x^12 - 3072*x^10 + 9728*x^8 - 8960*x^6 + 2944*x^4 - 328*x^2 + 1
+#declare snub_dod_c3 = 0.5677153694669213173748720626689284346231;
+
+// root of 4096*x^12 - 1024*x^10 + 4096*x^8 - 4672*x^6 + 1392*x^4 - 128*x^2 + 1
+#declare snub_dod_c4 = 0.7283351769571914773606716298375207947627;
+
+// root of 4096*x^12 - 14336*x^10 + 14592*x^8 - 6016*x^6 + 992*x^4 - 48*x^2 + 1
+#declare snub_dod_c5 = 0.7554672605165955797055852535168633100732;
+
+// root of 4096*x^12 - 12288*x^10 + 16896*x^8 - 14528*x^6 + 6112*x^4 - 720*x^2 + 1
+#declare snub_dod_c6 = 0.8249575526762758462658111119883724512529;
+
+// root of 4096*x^12 - 4096*x^10 + 3840*x^8 - 14720*x^6 + 17040*x^4 - 6876*x^2 + 841
+#declare snub_dod_c7 = 0.9212288883095504994689341758981045010450;
+
+// root of 4096*x^12 - 16384*x^10 + 24832*x^8 - 17344*x^6 + 4992*x^4 - 212*x^2 + 1
+#declare snub_dod_c8 = 0.9599877013915838039943390681065513790685;
+
+// root of 4096*x^12 - 27648*x^10 + 72704*x^8 - 92160*x^6 + 54448*x^4 - 11292*x^2 + 361
+#declare snub_dod_c9 = 1.1370661338605041884096199842417348609624;
+
+// root of 3936256*x^12 - 7502848*x^10 + 3239168*x^8 - 452480*x^6 + 17264*x^4 + 208*x^2 + 1
+#declare snub_dod_c10 = 1.1671234364753339791721546854893244349813;
+
+// root of 4096*x^12 - 11264*x^10 + 9472*x^8 - 2944*x^6 + 432*x^4 - 32*x^2 + 1
+#declare snub_dod_c11 = 1.2223717049036230926628274726386442265306;
+
+// root of 4096*x^12 - 19456*x^10 + 40704*x^8 - 44288*x^6 + 21504*x^4 - 3420*x^2 + 121
+#declare snub_dod_c12 = 1.2720962825758121461381479403599137887779;
+
+// root of 4096*x^12 - 13312*x^10 + 4608*x^8 + 9920*x^6 - 96*x^4 - 1108*x^2 + 121
+#declare snub_dod_c13 = 1.5277030708585051213692111307754798136916;
+
+// root of 4096*x^12 - 13312*x^10 + 9216*x^8 - 9472*x^6 + 1872*x^4 - 100*x^2 + 1
+#declare snub_dod_c14 = 1.6469179406903744414047574569682585171187;
+
+// root of 4096*x^12 - 12288*x^10 - 768*x^8 + 384*x^6 + 272*x^4 - 36*x^2 + 1
+#declare snub_dod_c15 = 1.7461864409858263457347452878864769522980;
+
+// root of 4096*x^12 - 18432*x^10 + 16384*x^8 - 8960*x^6 + 8928*x^4 - 188*x^2 + 1
+#declare snub_dod_c16 = 1.8654013108176956657702916140792556557251;
+
+// root of 3936256*x^12 - 14764032*x^10 + 2619648*x^8 - 103040*x^6 - 736*x^4 + 32*x^2 + 1
+#declare snub_dod_c17 = 1.8884453892836691541835167035581489650177;
+
+// root of 4096*x^12 - 19456*x^10 + 14592*x^8 - 4736*x^6 + 752*x^4 - 48*x^2 + 1
+#declare snub_dod_c18 = 1.9778389654202186723684127261555075366037;
+
+// root of 4096*x^12 - 21504*x^10 + 16384*x^8 - 4672*x^6 + 624*x^4 - 40*x^2 + 1
+#declare snub_dod_c19 = 2.0970538352520879924039590523482862400308;
+
+#declare dirsSnubDodPentL = array [12] {
+	 <-snub_dod_c10,  0.0, -snub_dod_c17>,
+	 <-snub_dod_c10,  0.0,  snub_dod_c17>,
+	 < snub_dod_c10,  0.0, -snub_dod_c17>,
+	 < snub_dod_c10,  0.0,  snub_dod_c17>,
+	 <-snub_dod_c17, -snub_dod_c10,  0.0>,
+	 <-snub_dod_c17,  snub_dod_c10,  0.0>,
+	 < snub_dod_c17, -snub_dod_c10,  0.0>,
+	 < snub_dod_c17,  snub_dod_c10,  0.0>,
+	 < 0.0, -snub_dod_c17, -snub_dod_c10>,
+	 < 0.0, -snub_dod_c17,  snub_dod_c10>,
+	 < 0.0,  snub_dod_c17, -snub_dod_c10>,
+	 < 0.0,  snub_dod_c17,  snub_dod_c10>,
+}
+normalize(dirsSnubDodPentL)
+
+
+#declare dirsSnubDodPentD = array [12] {
+	 < snub_dod_c10,  0.0,  snub_dod_c17>,
+	 < snub_dod_c10,  0.0, -snub_dod_c17>,
+	 <-snub_dod_c10,  0.0,  snub_dod_c17>,
+	 <-snub_dod_c10,  0.0, -snub_dod_c17>,
+	 < snub_dod_c17,  snub_dod_c10,  0.0>,
+	 < snub_dod_c17, -snub_dod_c10,  0.0>,
+	 <-snub_dod_c17,  snub_dod_c10,  0.0>,
+	 <-snub_dod_c17, -snub_dod_c10,  0.0>,
+	 < 0.0,  snub_dod_c17,  snub_dod_c10>,
+	 < 0.0,  snub_dod_c17, -snub_dod_c10>,
+	 < 0.0, -snub_dod_c17,  snub_dod_c10>,
+	 < 0.0, -snub_dod_c17, -snub_dod_c10>,
+}
+normalize(dirsSnubDodPentD)
+
+
+#declare dirsSnubDodTriL = array [80] {
+	 < -snub_dod_c0,  -snub_dod_c1, -snub_dod_c19>,
+	 < -snub_dod_c0,   snub_dod_c1,  snub_dod_c19>,
+	 <  snub_dod_c0,   snub_dod_c1, -snub_dod_c19>,
+	 <  snub_dod_c0,  -snub_dod_c1,  snub_dod_c19>,
+	 <-snub_dod_c19,  -snub_dod_c0,  -snub_dod_c1>,
+	 <-snub_dod_c19,   snub_dod_c0,   snub_dod_c1>,
+	 < snub_dod_c19,   snub_dod_c0,  -snub_dod_c1>,
+	 < snub_dod_c19,  -snub_dod_c0,   snub_dod_c1>,
+	 < -snub_dod_c1, -snub_dod_c19,  -snub_dod_c0>,
+	 < -snub_dod_c1,  snub_dod_c19,   snub_dod_c0>,
+	 <  snub_dod_c1,  snub_dod_c19,  -snub_dod_c0>,
+	 <  snub_dod_c1, -snub_dod_c19,   snub_dod_c0>,
+	 < 0.0,  -snub_dod_c5, -snub_dod_c18>,
+	 < 0.0,  -snub_dod_c5,  snub_dod_c18>,
+	 < 0.0,   snub_dod_c5, -snub_dod_c18>,
+	 < 0.0,   snub_dod_c5,  snub_dod_c18>,
+	 <-snub_dod_c18,  0.0,  -snub_dod_c5>,
+	 <-snub_dod_c18,  0.0,   snub_dod_c5>,
+	 < snub_dod_c18,  0.0,  -snub_dod_c5>,
+	 < snub_dod_c18,  0.0,   snub_dod_c5>,
+	 < -snub_dod_c5, -snub_dod_c18,  0.0>,
+	 < -snub_dod_c5,  snub_dod_c18,  0.0>,
+	 <  snub_dod_c5, -snub_dod_c18,  0.0>,
+	 <  snub_dod_c5,  snub_dod_c18,  0.0>,
+	 < -snub_dod_c3,   snub_dod_c6, -snub_dod_c16>,
+	 < -snub_dod_c3,  -snub_dod_c6,  snub_dod_c16>,
+	 <  snub_dod_c3,  -snub_dod_c6, -snub_dod_c16>,
+	 <  snub_dod_c3,   snub_dod_c6,  snub_dod_c16>,
+	 <-snub_dod_c16,   snub_dod_c3,  -snub_dod_c6>,
+	 <-snub_dod_c16,  -snub_dod_c3,   snub_dod_c6>,
+	 < snub_dod_c16,  -snub_dod_c3,  -snub_dod_c6>,
+	 < snub_dod_c16,   snub_dod_c3,   snub_dod_c6>,
+	 < -snub_dod_c6,  snub_dod_c16,  -snub_dod_c3>,
+	 < -snub_dod_c6, -snub_dod_c16,   snub_dod_c3>,
+	 <  snub_dod_c6, -snub_dod_c16,  -snub_dod_c3>,
+	 <  snub_dod_c6,  snub_dod_c16,   snub_dod_c3>,
+	 < -snub_dod_c2,  -snub_dod_c9, -snub_dod_c15>,
+	 < -snub_dod_c2,   snub_dod_c9,  snub_dod_c15>,
+	 <  snub_dod_c2,   snub_dod_c9, -snub_dod_c15>,
+	 <  snub_dod_c2,  -snub_dod_c9,  snub_dod_c15>,
+	 <-snub_dod_c15,  -snub_dod_c2,  -snub_dod_c9>,
+	 <-snub_dod_c15,   snub_dod_c2,   snub_dod_c9>,
+	 < snub_dod_c15,   snub_dod_c2,  -snub_dod_c9>,
+	 < snub_dod_c15,  -snub_dod_c2,   snub_dod_c9>,
+	 < -snub_dod_c9, -snub_dod_c15,  -snub_dod_c2>,
+	 < -snub_dod_c9,  snub_dod_c15,   snub_dod_c2>,
+	 <  snub_dod_c9,  snub_dod_c15,  -snub_dod_c2>,
+	 <  snub_dod_c9, -snub_dod_c15,   snub_dod_c2>,
+	 < -snub_dod_c7,  -snub_dod_c8, -snub_dod_c14>,
+	 < -snub_dod_c7,   snub_dod_c8,  snub_dod_c14>,
+	 <  snub_dod_c7,   snub_dod_c8, -snub_dod_c14>,
+	 <  snub_dod_c7,  -snub_dod_c8,  snub_dod_c14>,
+	 <-snub_dod_c14,  -snub_dod_c7,  -snub_dod_c8>,
+	 <-snub_dod_c14,   snub_dod_c7,   snub_dod_c8>,
+	 < snub_dod_c14,   snub_dod_c7,  -snub_dod_c8>,
+	 < snub_dod_c14,  -snub_dod_c7,   snub_dod_c8>,
+	 < -snub_dod_c8, -snub_dod_c14,  -snub_dod_c7>,
+	 < -snub_dod_c8,  snub_dod_c14,   snub_dod_c7>,
+	 <  snub_dod_c8,  snub_dod_c14,  -snub_dod_c7>,
+	 <  snub_dod_c8, -snub_dod_c14,   snub_dod_c7>,
+	 < -snub_dod_c4,  snub_dod_c12, -snub_dod_c13>,
+	 < -snub_dod_c4, -snub_dod_c12,  snub_dod_c13>,
+	 <  snub_dod_c4, -snub_dod_c12, -snub_dod_c13>,
+	 <  snub_dod_c4,  snub_dod_c12,  snub_dod_c13>,
+	 <-snub_dod_c13,   snub_dod_c4, -snub_dod_c12>,
+	 <-snub_dod_c13,  -snub_dod_c4,  snub_dod_c12>,
+	 < snub_dod_c13,  -snub_dod_c4, -snub_dod_c12>,
+	 < snub_dod_c13,   snub_dod_c4,  snub_dod_c12>,
+	 <-snub_dod_c12,  snub_dod_c13,  -snub_dod_c4>,
+	 <-snub_dod_c12, -snub_dod_c13,   snub_dod_c4>,
+	 < snub_dod_c12, -snub_dod_c13,  -snub_dod_c4>,
+	 < snub_dod_c12,  snub_dod_c13,   snub_dod_c4>,
+	 <-snub_dod_c11, -snub_dod_c11, -snub_dod_c11>,
+	 <-snub_dod_c11, -snub_dod_c11,  snub_dod_c11>,
+	 <-snub_dod_c11,  snub_dod_c11, -snub_dod_c11>,
+	 <-snub_dod_c11,  snub_dod_c11,  snub_dod_c11>,
+	 < snub_dod_c11, -snub_dod_c11, -snub_dod_c11>,
+	 < snub_dod_c11, -snub_dod_c11,  snub_dod_c11>,
+	 < snub_dod_c11,  snub_dod_c11, -snub_dod_c11>,
+	 < snub_dod_c11,  snub_dod_c11,  snub_dod_c11>,
+}
+normalize(dirsSnubDodTriL)
+
+
+#declare dirsSnubDodTriD = array [80] {
+	 <  snub_dod_c0,   snub_dod_c1,  snub_dod_c19>,
+	 <  snub_dod_c0,  -snub_dod_c1, -snub_dod_c19>,
+	 < -snub_dod_c0,  -snub_dod_c1,  snub_dod_c19>,
+	 < -snub_dod_c0,   snub_dod_c1, -snub_dod_c19>,
+	 < snub_dod_c19,   snub_dod_c0,   snub_dod_c1>,
+	 < snub_dod_c19,  -snub_dod_c0,  -snub_dod_c1>,
+	 <-snub_dod_c19,  -snub_dod_c0,   snub_dod_c1>,
+	 <-snub_dod_c19,   snub_dod_c0,  -snub_dod_c1>,
+	 <  snub_dod_c1,  snub_dod_c19,   snub_dod_c0>,
+	 <  snub_dod_c1, -snub_dod_c19,  -snub_dod_c0>,
+	 < -snub_dod_c1, -snub_dod_c19,   snub_dod_c0>,
+	 < -snub_dod_c1,  snub_dod_c19,  -snub_dod_c0>,
+	 < 0.0,   snub_dod_c5,  snub_dod_c18>,
+	 < 0.0,   snub_dod_c5, -snub_dod_c18>,
+	 < 0.0,  -snub_dod_c5,  snub_dod_c18>,
+	 < 0.0,  -snub_dod_c5, -snub_dod_c18>,
+	 < snub_dod_c18,  0.0,   snub_dod_c5>,
+	 < snub_dod_c18,  0.0,  -snub_dod_c5>,
+	 <-snub_dod_c18,  0.0,   snub_dod_c5>,
+	 <-snub_dod_c18,  0.0,  -snub_dod_c5>,
+	 <  snub_dod_c5,  snub_dod_c18,  0.0>,
+	 <  snub_dod_c5, -snub_dod_c18,  0.0>,
+	 < -snub_dod_c5,  snub_dod_c18,  0.0>,
+	 < -snub_dod_c5, -snub_dod_c18,  0.0>,
+	 <  snub_dod_c3,  -snub_dod_c6,  snub_dod_c16>,
+	 <  snub_dod_c3,   snub_dod_c6, -snub_dod_c16>,
+	 < -snub_dod_c3,   snub_dod_c6,  snub_dod_c16>,
+	 < -snub_dod_c3,  -snub_dod_c6, -snub_dod_c16>,
+	 < snub_dod_c16,  -snub_dod_c3,   snub_dod_c6>,
+	 < snub_dod_c16,   snub_dod_c3,  -snub_dod_c6>,
+	 <-snub_dod_c16,   snub_dod_c3,   snub_dod_c6>,
+	 <-snub_dod_c16,  -snub_dod_c3,  -snub_dod_c6>,
+	 <  snub_dod_c6, -snub_dod_c16,   snub_dod_c3>,
+	 <  snub_dod_c6,  snub_dod_c16,  -snub_dod_c3>,
+	 < -snub_dod_c6,  snub_dod_c16,   snub_dod_c3>,
+	 < -snub_dod_c6, -snub_dod_c16,  -snub_dod_c3>,
+	 <  snub_dod_c2,   snub_dod_c9,  snub_dod_c15>,
+	 <  snub_dod_c2,  -snub_dod_c9, -snub_dod_c15>,
+	 < -snub_dod_c2,  -snub_dod_c9,  snub_dod_c15>,
+	 < -snub_dod_c2,   snub_dod_c9, -snub_dod_c15>,
+	 < snub_dod_c15,   snub_dod_c2,   snub_dod_c9>,
+	 < snub_dod_c15,  -snub_dod_c2,  -snub_dod_c9>,
+	 <-snub_dod_c15,  -snub_dod_c2,   snub_dod_c9>,
+	 <-snub_dod_c15,   snub_dod_c2,  -snub_dod_c9>,
+	 <  snub_dod_c9,  snub_dod_c15,   snub_dod_c2>,
+	 <  snub_dod_c9, -snub_dod_c15,  -snub_dod_c2>,
+	 < -snub_dod_c9, -snub_dod_c15,   snub_dod_c2>,
+	 < -snub_dod_c9,  snub_dod_c15,  -snub_dod_c2>,
+	 <  snub_dod_c7,   snub_dod_c8,  snub_dod_c14>,
+	 <  snub_dod_c7,  -snub_dod_c8, -snub_dod_c14>,
+	 < -snub_dod_c7,  -snub_dod_c8,  snub_dod_c14>,
+	 < -snub_dod_c7,   snub_dod_c8, -snub_dod_c14>,
+	 < snub_dod_c14,   snub_dod_c7,   snub_dod_c8>,
+	 < snub_dod_c14,  -snub_dod_c7,  -snub_dod_c8>,
+	 <-snub_dod_c14,  -snub_dod_c7,   snub_dod_c8>,
+	 <-snub_dod_c14,   snub_dod_c7,  -snub_dod_c8>,
+	 <  snub_dod_c8,  snub_dod_c14,   snub_dod_c7>,
+	 <  snub_dod_c8, -snub_dod_c14,  -snub_dod_c7>,
+	 < -snub_dod_c8, -snub_dod_c14,   snub_dod_c7>,
+	 < -snub_dod_c8,  snub_dod_c14,  -snub_dod_c7>,
+	 <  snub_dod_c4, -snub_dod_c12,  snub_dod_c13>,
+	 <  snub_dod_c4,  snub_dod_c12, -snub_dod_c13>,
+	 < -snub_dod_c4,  snub_dod_c12,  snub_dod_c13>,
+	 < -snub_dod_c4, -snub_dod_c12, -snub_dod_c13>,
+	 < snub_dod_c13,  -snub_dod_c4,  snub_dod_c12>,
+	 < snub_dod_c13,   snub_dod_c4, -snub_dod_c12>,
+	 <-snub_dod_c13,   snub_dod_c4,  snub_dod_c12>,
+	 <-snub_dod_c13,  -snub_dod_c4, -snub_dod_c12>,
+	 < snub_dod_c12, -snub_dod_c13,   snub_dod_c4>,
+	 < snub_dod_c12,  snub_dod_c13,  -snub_dod_c4>,
+	 <-snub_dod_c12,  snub_dod_c13,   snub_dod_c4>,
+	 <-snub_dod_c12, -snub_dod_c13,  -snub_dod_c4>,
+	 < snub_dod_c11,  snub_dod_c11,  snub_dod_c11>,
+	 < snub_dod_c11,  snub_dod_c11, -snub_dod_c11>,
+	 < snub_dod_c11, -snub_dod_c11,  snub_dod_c11>,
+	 < snub_dod_c11, -snub_dod_c11, -snub_dod_c11>,
+	 <-snub_dod_c11,  snub_dod_c11,  snub_dod_c11>,
+	 <-snub_dod_c11,  snub_dod_c11, -snub_dod_c11>,
+	 <-snub_dod_c11, -snub_dod_c11,  snub_dod_c11>,
+	 <-snub_dod_c11, -snub_dod_c11, -snub_dod_c11>,
+}
+normalize(dirsSnubDodTriD)
+
+
+#declare shSnubDodD = 0;
+#declare shSnubDodL = 0;
+intersect_shape(shSnubDodD, dirsSnubDodPentD)
+intersect_shape(shSnubDodL, dirsSnubDodPentL)
+intersect_shape_r(shSnubDodD, dirsSnubDodTriD, scale_snub_dod)
+intersect_shape_r(shSnubDodL, dirsSnubDodTriL, scale_snub_dod)
+
 
 
 // ============================= CUTS ONLY ======================

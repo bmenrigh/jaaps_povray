@@ -19,7 +19,7 @@ my $CUT_NUM_DISP = 4;
 my $SESSID = get_session_id();
 $SIG{CHLD} = "IGNORE";
 
-my $MAX_SHAPE_NUM = 53;
+my $MAX_SHAPE_NUM = 55;
 my $MAX_CUT_NUM = 41;
 my $MAX_COLOR_NUM = 20;
 
@@ -123,6 +123,8 @@ print '<p><b>Base shape:</b> ',
 			      51=>'Truncated Dodecahedron',
 			      52=>'Rhombicosidodecahedron',
 			      53=>'Truncated Icosidodecahedron',
+			      54=>'Snub Dodecahedron (dextro)',
+			      55=>'Snub Dodecahedron (laevo)',
 			     }, undef), "\n";
 
 print ' <b>Rotate (x, y, z):</b> ',

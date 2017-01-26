@@ -321,6 +321,8 @@ light_source {
 	#case (51) object{shATruncDod getShapeMaterialPreset(usermat)} #break
 	#case (52) object{shRhombIcosiDod getShapeMaterialPreset(usermat)} #break
 	#case (53) object{shTruncIcosiDod getShapeMaterialPreset(usermat)} #break
+	#case (54) object{shSnubDodD getShapeMaterialPreset(usermat)} #break
+	#case (55) object{shSnubDodL getShapeMaterialPreset(usermat)} #break
     #end
 #end
 
@@ -397,7 +399,7 @@ light_source {
 #declare globalScale = 1.8;
 
 // This scale value is the ratio of the circumscribed sphere to the inscribed sphere
-#declare shapeScale = array[54] {
+#declare shapeScale = array[56] {
     1.0000000000, //0: sphere
     0.3333333333, //1: tetrahedron
     0.5773502692, //2: cube
@@ -452,6 +454,8 @@ light_source {
     0.8385051474, //51: Truncated Dodecahedron
     0.9245941063, //52: Rhombicosidodecahedron
     0.9049441875, //53: Truncated Icosidodecahedron
+    0.9188614921, //54: Snub Dodecahedron (dextro)
+    0.9188614921, //55: Snub Dodecahedron (laevo)
 }
 
 
