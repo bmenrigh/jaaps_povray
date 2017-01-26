@@ -323,6 +323,11 @@ light_source {
 	#case (53) object{shTruncIcosiDod getShapeMaterialPreset(usermat)} #break
 	#case (54) object{shSnubDodD getShapeMaterialPreset(usermat)} #break
 	#case (55) object{shSnubDodL getShapeMaterialPreset(usermat)} #break
+	#case (56) object{shTriPrismSq getShapeMaterialPreset(usermat)} #break
+	#case (57) object{shPentPrismSq getShapeMaterialPreset(usermat)} #break
+	#case (58) object{shHexPrismSq getShapeMaterialPreset(usermat)} #break
+	#case (59) object{shHepPrismSq getShapeMaterialPreset(usermat)} #break
+	#case (60) object{shOctPrismSq getShapeMaterialPreset(usermat)} #break
     #end
 #end
 
@@ -399,7 +404,7 @@ light_source {
 #declare globalScale = 1.8;
 
 // This scale value is the ratio of the circumscribed sphere to the inscribed sphere
-#declare shapeScale = array[56] {
+#declare shapeScale = array[61] {
     1.0000000000, //0: sphere
     0.3333333333, //1: tetrahedron
     0.5773502692, //2: cube
@@ -456,6 +461,11 @@ light_source {
     0.9049441875, //53: Truncated Icosidodecahedron
     0.9188614921, //54: Snub Dodecahedron (dextro)
     0.9188614921, //55: Snub Dodecahedron (laevo)
+    0.3779644730, //56: Triangular Prism Square
+    0.5067318540, //57: Pentagonal Prism Square
+    0.4472135955, //58: Hexagonal Prism Square
+    0.3980324968, //59: Heptagonal Prism Square
+    0.3574067443, //60: Octagonal Prism Square
 }
 
 

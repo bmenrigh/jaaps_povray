@@ -1351,6 +1351,14 @@ normalize(dirsTrapRhomTria)
 // ============================= SHAPE ONLY ======================
 
 
+// Prism caps
+#declare dirsPrismCaps = array [2] {
+	 < 0,  1, 0>,
+	 < 0, -1, 0>,
+}
+normalize(dirsPrismCaps)
+
+
 // Triangular Prism
 
 // Sides
@@ -1360,24 +1368,32 @@ normalize(dirsTrapRhomTria)
 // ? 1 / dist(plane_line_intersect([0, 0, 1], [0, 0, 1], [sin((2 * Pi) / 6), 0, cos((2 * Pi) / 6)], [0, 0, 0]) + [0, 1, 0], [0, 0, 0])
 // %10 = 0.44721359549995793928183473374625524709
 
-#declare dirsTriPrism = array [5] {
-	 < 0,  1, 0>,
-	 < 0, -1, 0>,
+// sqrt(3)
+#declare scale_tri_prism = 1.7320508075688772935274463415058723670;
+
+#declare dirsTriPrism = array [3] {
 	 < 0.00000000000000000000000000000000000000,  0, 1.0000000000000000000000000000000000000>,
 	 < 0.86602540378443864676372317075293618347,  0, -0.50000000000000000000000000000000000000>,
 	 < -0.86602540378443864676372317075293618347,  0, -0.50000000000000000000000000000000000000>,
 }
 normalize(dirsTriPrism)
 
+
 #declare shTriPrism = 0;
 intersect_shape(shTriPrism, dirsTriPrism)
+intersect_shape_r(shTriPrism, dirsPrismCaps, 1)
+
+#declare shTriPrismSq = 0;
+intersect_shape(shTriPrismSq, dirsTriPrism)
+intersect_shape_r(shTriPrismSq, dirsPrismCaps, scale_tri_prism)
 
 
 // Pentagonal Prism
 
-#declare dirsPentPrism = array [7] {
-	 < 0,  1, 0>,
-	 < 0, -1, 0>,
+// (sqrt(5*(5+2*sqrt(5)))/10) / (1/2)
+#declare scale_pent_prism = 1.3763819204711735382072095819108876795;
+
+#declare dirsPentPrism = array [5] {
 	 < 0.00000000000000000000000000000000000000,  0, 1.0000000000000000000000000000000000000>,
 	 < 0.58778525229247312916870595463907276860,  0, -0.80901699437494742410229341718281905886>,
 	 < -0.58778525229247312916870595463907276860,  0, -0.80901699437494742410229341718281905886>,
@@ -1388,13 +1404,19 @@ normalize(dirsPentPrism)
 
 #declare shPentPrism = 0;
 intersect_shape(shPentPrism, dirsPentPrism)
+intersect_shape_r(shPentPrism, dirsPrismCaps, 1)
+
+#declare shPentPrismSq = 0;
+intersect_shape(shPentPrismSq, dirsPrismCaps)
+intersect_shape_r(shPentPrismSq, dirsPentPrism, scale_pent_prism)
 
 
 // Hexagonal Prism
 
-#declare dirsHexPrism = array [8] {
-	 < 0,  1, 0>,
-	 < 0, -1, 0>,
+// sqrt(3)
+#declare scale_hex_prism = 1.7320508075688772935274463415058723670;
+
+#declare dirsHexPrism = array [6] {
 	 < 0.00000000000000000000000000000000000000,  0, -1.0000000000000000000000000000000000000>,
 	 < 0.00000000000000000000000000000000000000,  0, 1.0000000000000000000000000000000000000>,
 	 < 0.86602540378443864676372317075293618347,  0, -0.50000000000000000000000000000000000000>,
@@ -1406,13 +1428,19 @@ normalize(dirsHexPrism)
 
 #declare shHexPrism = 0;
 intersect_shape(shHexPrism, dirsHexPrism)
+intersect_shape_r(shHexPrism, dirsPrismCaps, 1)
+
+#declare shHexPrismSq = 0;
+intersect_shape(shHexPrismSq, dirsPrismCaps)
+intersect_shape_r(shHexPrismSq, dirsHexPrism, scale_hex_prism)
 
 
 // Heptagonal Prism
 
-#declare dirsHepPrism = array [9] {
-	 < 0,  1, 0>,
-	 < 0, -1, 0>,
+// ((1/tan(Pi/7))/2) / (1/2)
+#declare scale_hep_prism = 2.0765213965723365671635388614858403307;
+
+#declare dirsHepPrism = array [7] {
 	 < 0.00000000000000000000000000000000000000,  0, 1.0000000000000000000000000000000000000>,
 	 < 0.43388373911755812047576833284835875461,  0, -0.90096886790241912623610231950744505116>,
 	 < -0.43388373911755812047576833284835875461,  0, -0.90096886790241912623610231950744505116>,
@@ -1425,13 +1453,19 @@ normalize(dirsHepPrism)
 
 #declare shHepPrism = 0;
 intersect_shape(shHepPrism, dirsHepPrism)
+intersect_shape_r(shHepPrism, dirsPrismCaps, 1)
+
+#declare shHepPrismSq = 0;
+intersect_shape(shHepPrismSq, dirsPrismCaps)
+intersect_shape_r(shHepPrismSq, dirsHepPrism, scale_hep_prism)
 
 
 // Octagonal Prism
 
-#declare dirsOctPrism = array [10] {
-	 < 0,  1, 0>,
-	 < 0, -1, 0>,
+// ((1+sqrt(2))/2) / (1/2)
+#declare scale_oct_prism = 2.4142135623730950488016887242096980786;
+
+#declare dirsOctPrism = array [8] {
 	 < 0.00000000000000000000000000000000000000,  0, -1.0000000000000000000000000000000000000>,
 	 < 0.00000000000000000000000000000000000000,  0, 1.0000000000000000000000000000000000000>,
 	 < 0.70710678118654752440084436210484903928,  0, -0.70710678118654752440084436210484903928>,
@@ -1445,6 +1479,11 @@ normalize(dirsOctPrism)
 
 #declare shOctPrism = 0;
 intersect_shape(shOctPrism, dirsOctPrism)
+intersect_shape_r(shOctPrism, dirsPrismCaps, 1)
+
+#declare shOctPrismSq = 0;
+intersect_shape(shOctPrismSq, dirsPrismCaps)
+intersect_shape_r(shOctPrismSq, dirsOctPrism, scale_oct_prism)
 
 
 // Truncated Cube (Equadistant)
