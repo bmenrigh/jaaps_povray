@@ -93,24 +93,27 @@ light_source {
 
 
 // This is the list of cuts to apply
-#declare tasks = array [8][4] {
+#declare tasks = array [8][10] {
 //a task is done equally on all directions of a regular direction-vector-set
 //it is specified by
 
-//1. symindex ( the direction-vector-set (axle-set) by index)
+// 1. symindex ( the direction-vector-set (axle-set) by index)
 
-//2. dividerValue based on Jaap's Sphere (scope 300 to 0) : depth
+// 2. dividerValue based on Jaap's Sphere (scope 300 to 0) : depth
 
-//3. the cone-apex (a float value). there are 5 cases:
+// 3. the cone-apex (a float value). there are 5 cases:
 	//1. under the origin (negative value)
 	//2. on the origin (0)
 	//3. between the origin and the divider (value between 0 and depth)
 	//4. on the divider (cone-apex == depth), planar cut
 	//5. above the divider (value higher than depth)
 
-//4. the color of the cut by index
+// 4. the color of the cut by index
 
-//the colums are symindex, dividerValue, coneapex, colorindex
+// 5-7 Are the rotations in x,y,z
+// 8-10 Are tre translations in x,y,z
+
+//the colums are symindex, dividerValue, coneapex, colorindex, rotx, roty, rotz, tranx, trany, tranz
       TEXT_CUT_0,
       TEXT_CUT_1,
       TEXT_CUT_2,
@@ -519,7 +522,7 @@ light_source {
 
 
 
-#macro subtract(dirsetIndex, dividerValue, coneApex, colIndex)
+#macro subtract(dirsetIndex, dividerValue, coneApex, colIndex, rotx, roty, rotz, tranx, trany, tranz)
     #local dirset = getDirset(dirsetIndex)
     #local dirset_size = dimension_size(dirset,1);
 
@@ -534,8 +537,8 @@ light_source {
 
 	#local subtrahendSolid = ConeShell(dirset[i], normDiv, normApx, gth)
 
-        #local subtrahendSolid = object{subtrahendSolid rotate<TEXTROTCX, TEXTROTCY, TEXTROTCZ>}
-        #local subtrahendSolid = object{subtrahendSolid translate<TEXTTRANSCX, TEXTTRANSCY, TEXTTRANSCZ>}
+        #local subtrahendSolid = object{subtrahendSolid rotate<rotx, roty, rotz>}
+        #local subtrahendSolid = object{subtrahendSolid translate<tranx, trany, tranz>}
 
         // here the cone shell is subtracted from the mainSolid
         #declare mainSolid=
@@ -556,7 +559,9 @@ light_source {
 #declare i = 0;
 #while(i < dimension_size(tasks,1))
     #if (tasks[i][1] >= 0) // Skip if -1
-        subtract(tasks[i][0], tasks[i][1], tasks[i][2], tasks[i][3])
+        subtract(tasks[i][0], tasks[i][1], tasks[i][2], tasks[i][3],
+	tasks[i][4], tasks[i][5], tasks[i][6], // rotations
+	tasks[i][7], tasks[i][8], tasks[i][9]) // translations
     #end
     #declare i = i + 1;
 #end

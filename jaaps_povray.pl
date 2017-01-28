@@ -268,6 +268,8 @@ print '</p>', "\n";
 
 for (my $i = 0; $i < $CUT_NUM_DISP; $i++) {
 
+    print '<p>--</p>', "\n";
+
     print '<p><b>Cut #', $i, ':</b> ';
     if ($i == 0) {
 	print $cgi_var->checkbox('use_' . $i, 'checked', 'on', 'Use'),
@@ -320,17 +322,17 @@ for (my $i = 0; $i < $CUT_NUM_DISP; $i++) {
 					 20=>'Scarlet',
 					}, 0);
     print '</p>', "\n";
-}
 
-print '<p><b>Rotate Cuts (x, y, z):</b> ',
-    $cgi_var->textfield('rotc_x', '0', 3, 5), ' ',
-    $cgi_var->textfield('rotc_y', '0', 3, 5), ' ',
-    $cgi_var->textfield('rotc_z', '0', 3, 5),
+    print '<p><b>Rotate Cuts (x, y, z):</b> ',
+    $cgi_var->textfield('rotc_x_' . $i, '0', 6, 8), ' ',
+    $cgi_var->textfield('rotc_y_' . $i, '0', 6, 8), ' ',
+    $cgi_var->textfield('rotc_z_' . $i, '0', 6, 8),
     ' <b>Translate Cuts (x, y, z):</b>',
-    $cgi_var->textfield('transc_x', '0', 3, 5), ' ',
-    $cgi_var->textfield('transc_y', '0', 3, 5), ' ',
-    $cgi_var->textfield('transc_z', '0', 3, 5),
+    $cgi_var->textfield('transc_x_' . $i, '0', 6, 8), ' ',
+    $cgi_var->textfield('transc_y_' . $i, '0', 6, 8), ' ',
+    $cgi_var->textfield('transc_z_' . $i, '0', 6, 8),
     '</p>', "\n";
+}
 
 print '<hr />', "\n";
 print $cgi_var->checkbox('zoomcam', '', 'on',
@@ -426,84 +428,6 @@ if (defined $cgi_var->param('action_button')) {
 	push @url_args, 'rot_z=' . $cgi_var->param('rot_z');
     }
 
-    # cuts rotate x
-    unless ((defined $cgi_var->param('rotc_x')) &&
-	    ($cgi_var->param('rotc_x') =~ m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-	    (abs($cgi_var->param('rotc_x')) <= 360)) {
-
-	html_warn('Cuts rotate x must be in the range [-360, 360]');
-	$replacements{'TEXTROTCX'} = 0;
-    }
-    else {
-	$replacements{'TEXTROTCX'} = $cgi_var->param('rotc_x');
-	push @url_args, 'rotc_x=' . $cgi_var->param('rotc_x');
-    }
-
-    # cuts rotate y
-    unless ((defined $cgi_var->param('rotc_y')) &&
-	    ($cgi_var->param('rotc_y') =~ m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-	    (abs($cgi_var->param('rotc_y')) <= 360)) {
-
-	html_warn('Cuts rotate y must be in the range [-360, 360]');
-	$replacements{'TEXTROTCY'} = 0;
-    }
-    else {
-	$replacements{'TEXTROTCY'} = $cgi_var->param('rotc_y');
-	push @url_args, 'rotc_y=' . $cgi_var->param('rotc_y');
-    }
-
-    # cuts rotate z
-    unless ((defined $cgi_var->param('rotc_z')) &&
-	    ($cgi_var->param('rotc_z') =~ m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-	    (abs($cgi_var->param('rotc_z')) <= 360)) {
-
-	html_warn('Cuts rotate z must be in the range [-360, 360]');
-	$replacements{'TEXTROTCZ'} = 0;
-    }
-    else {
-	$replacements{'TEXTROTCZ'} = $cgi_var->param('rotc_z');
-	push @url_args, 'rotc_z=' . $cgi_var->param('rotc_z');
-    }
-
-    # cuts translate x
-    unless ((defined $cgi_var->param('transc_x')) &&
-	    ($cgi_var->param('transc_x') =~ m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-	    (abs($cgi_var->param('transc_x')) <= 1)) {
-
-	html_warn('Cuts translation x must be in the range [-1, 1]');
-	$replacements{'TEXTTRANSCX'} = 0;
-    }
-    else {
-	$replacements{'TEXTTRANSCX'} = $cgi_var->param('transc_x');
-	push @url_args, 'transc_x=' . $cgi_var->param('transc_x');
-    }
-
-    # cuts translate y
-    unless ((defined $cgi_var->param('transc_y')) &&
-	    ($cgi_var->param('transc_y') =~ m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-	    (abs($cgi_var->param('transc_y')) <= 1)) {
-
-	html_warn('Cuts translation y must be in the range [-1, 1]');
-	$replacements{'TEXTTRANSCY'} = 0;
-    }
-    else {
-	$replacements{'TEXTTRANSCY'} = $cgi_var->param('transc_y');
-	push @url_args, 'transc_y=' . $cgi_var->param('transc_y');
-    }
-
-    # cuts translate z
-    unless ((defined $cgi_var->param('transc_z')) &&
-	    ($cgi_var->param('transc_z') =~ m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-	    (abs($cgi_var->param('transc_z')) <= 1)) {
-
-	html_warn('Cuts translation z must be in the range [-1, 1]');
-	$replacements{'TEXTTRANSCZ'} = 0;
-    }
-    else {
-	$replacements{'TEXTTRANSCZ'} = $cgi_var->param('transc_z');
-	push @url_args, 'transc_z=' . $cgi_var->param('transc_z');
-    }
-
     # Cut width
     unless ((defined $cgi_var->param('cut_width')) &&
 	    ($cgi_var->param('cut_width') =~ m/^[1-5]$/)) {
@@ -550,7 +474,7 @@ if (defined $cgi_var->param('action_button')) {
     #print 'got action: ', $action, "\n";
 
     for (my $i = 0; $i < $CUT_NUM; $i++) {
-	$replacements{'TEXT_CUT_' . $i} = '{1,-1,0,0}';
+	$replacements{'TEXT_CUT_' . $i} = '{1, -1, 0, 0, 0, 0, 0, 0, 0, 0}';
 	my $jdepth = 0;
 
 	if ((defined $cgi_var->param('use_' . $i)) &&
@@ -612,12 +536,51 @@ if (defined $cgi_var->param('action_button')) {
 		html_warn('Cut ' . $i . ' -- color malformed.');
 		next;
 	    }
-	    push @url_args, 'color_' . $i . '=' . $cgi_var->param('color_' . $i);
+	    push @url_args, 'color_' . $i . '=' .
+		$cgi_var->param('color_' . $i);
 
-	    $replacements{'TEXT_CUT_' . $i} = '{' . join(', ', ($cgi_var->param('sym_' . $i),
-								$jdepth,
-								$cgi_var->param('apex_' . $i),
-								$cgi_var->param('color_' . $i))) . '}';
+	    foreach my $dir ('x', 'y', 'z') {
+		# cuts rotation per dir
+		unless ((defined $cgi_var->param('rotc_' . $dir . '_' . $i)) &&
+			($cgi_var->param('rotc_' . $dir . '_' . $i) =~
+			 m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
+			(abs($cgi_var->param('rotc_' . $dir . '_' . $i)) <=
+			 360)) {
+
+		    html_warn('Cuts rotate ' . $dir . ' must be in the range [-360, 360]');
+		    next;
+		}
+		push @url_args, 'rotc_' . $dir . '_' . $i . '=' .
+		    $cgi_var->param('rotc_' . $dir . '_' . $i);
+
+		# Cuts translation per dir
+		unless ((defined $cgi_var->param('transc_' . $dir . '_' . $i)) &&
+			($cgi_var->param('transc_' . $dir . '_' . $i) =~
+			 m/^-?[0-9](?:\.[0-9]{1,5})?$/) &&
+			(abs($cgi_var->param('transc_' . $dir . '_' . $i)) <=
+			 1)) {
+
+		    html_warn('Cuts translation ' . $dir . ' must be in the range [-1, 1]');
+		    next;
+		}
+		push @url_args, 'transc_' . $dir . '_' . $i . '=' .
+		    $cgi_var->param('transc_' . $dir . '_' . $i);
+	    }
+
+
+	    $replacements{'TEXT_CUT_' . $i} =
+		'{' . join(', ', (
+			       $cgi_var->param('sym_' . $i),
+			       $jdepth,
+			       $cgi_var->param('apex_' . $i),
+			       $cgi_var->param('color_' . $i),
+			       $cgi_var->param('rotc_x_' . $i),
+			       $cgi_var->param('rotc_y_' . $i),
+			       $cgi_var->param('rotc_z_' . $i),
+			       $cgi_var->param('transc_x_' . $i),
+			       $cgi_var->param('transc_y_' . $i),
+			       $cgi_var->param('transc_z_' . $i),
+			   )) . '}';
 	} # end if use
     } # end for each cut
 
@@ -752,11 +715,13 @@ print '<p><a href="', $base_url, '?base_shape=7&cut_width=3&userbg=0&use_0=on&sy
 
 print '<p><a href="', $base_url, '?base_shape=2&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=260&apex_0=450&color_0=6&use_1=on&sym_1=2&type_1=1&depth_1=259&apex_1=0&color_1=4">Gelatinbrain\'s 3.1.33</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&rotc_x=0&rotc_y=0&rotc_z=0&transc_x=0.15&transc_y=0.3&transc_z=0.45&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0">Bump Cube</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&transc_x_0=0.15&transc_y_0=0.3&transc_z_0=0.45&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0">Bump Cube</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&rotc_x=0&rotc_y=45&rotc_z=0&transc_x=0&transc_y=0&transc_z=0&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0">Fisher Cube</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=0&rotc_y_0=45&rotc_z_0=0&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0">Fisher Cube</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&rotc_x=45&rotc_y=-19.3&rotc_z=45&transc_x=0&transc_y=0&transc_z=0&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=102&apex_0=102&color_0=0">Axis Cube</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=45&rotc_y_0=-19.3&rotc_z_0=45&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=102&apex_0=102&color_0=0">Axis Cube</a></p>', "\n";
+
+print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=90&rotc_y_0=125.3&rotc_z_0=135&cut_width=3&userbg=0&use_0=on&sym_0=21&type_0=1&depth_0=161&apex_0=161&color_0=19">Insanity Cubed</a></p>', "\n";
 
 
 print '<hr />', "\n";
