@@ -519,44 +519,33 @@ light_source {
 
 
 
-#macro subtract(dirsetIndex,dividerValue,coneApex,colIndex)
-    #local dirset=getDirset(dirsetIndex)
-    #local dirset_size=dimension_size(dirset,1);
+#macro subtract(dirsetIndex, dividerValue, coneApex, colIndex)
+    #local dirset = getDirset(dirsetIndex)
+    #local dirset_size = dimension_size(dirset,1);
 
-	//handle tetrahedron-corners-dirset special (like Jaap did in the Sphere-Applet)
-	#local neg=1;
-	/*#if(dirsetIndex = 1)
-		#if (dividerValue >= 150)
-			#local dividerValue = (dividerValue -150) * 2;
-		#else
-			#local dividerValue = (150 - dividerValue ) * 2;
-			#local neg=-1;
-		#end
-	#end*/
+    // divider-value in range 1 to 0
+    #local normDiv = dividerValue / 300.0;
+    #local normApx = coneApex / 300.0;
 
-    //divider-value in scope 1 to 0
-    #local normDiv= dividerValue/300;
-	#local normApx= coneApex    /300;
+    #local i = 0;
+    #while (i < dirset_size) // for each dirset axis
 
-    #local Count=0;
-    #while (Count<dirset_size) //loop through all directions of the direction-set
+    	#local dset=dirset[i];
 
-    	#local dset=dirset[Count]*neg;
-
-	#local subtrahendSolid= ConeShell(dirset[Count]*neg, normDiv, normApx, gth)
+	#local subtrahendSolid = ConeShell(dirset[i], normDiv, normApx, gth)
 
         #local subtrahendSolid = object{subtrahendSolid rotate<TEXTROTCX, TEXTROTCY, TEXTROTCZ>}
         #local subtrahendSolid = object{subtrahendSolid translate<TEXTTRANSCX, TEXTTRANSCY, TEXTTRANSCZ>}
 
-        //here the cone shell is subtracted from the mainSolid
+        // here the cone shell is subtracted from the mainSolid
         #declare mainSolid=
             difference{
                 object{mainSolid}
-                object {subtrahendSolid
+                object{subtrahendSolid
 		        getCutMaterial(usermat, divider_row_colors[colIndex])}
 	    };
 
-    #local Count=Count+1;
+    #local i = i + 1;
     #end
 
 #end
@@ -564,16 +553,18 @@ light_source {
 
 
 // This routine iterates through the tasks and does the cutting
-#declare Count=0;
-#while(Count < dimension_size(tasks,1))
-    #if (tasks[Count][1] >= 0 & tasks[Count][1] <= 300)// jump over if it is -1 or invalid
-        subtract(tasks[Count][0],tasks[Count][1],tasks[Count][2],tasks[Count][3])
+#declare i = 0;
+#while(i < dimension_size(tasks,1))
+    #if (tasks[i][1] >= 0) // Skip if -1
+        subtract(tasks[i][0], tasks[i][1], tasks[i][2], tasks[i][3])
     #end
-#declare Count=Count+1;
+    #declare i = i + 1;
 #end
 
-//show mainSolid
-object { mainSolid
-    scale ((shapeScale [shapeIndex]) * globalScale)
-    transform{  main_orientation}
+
+// show mainSolid
+object {
+       mainSolid
+       scale ((shapeScale [shapeIndex]) * globalScale)
+       transform{main_orientation} // This is where shape rotation happens
 }
