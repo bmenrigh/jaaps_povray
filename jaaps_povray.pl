@@ -15,7 +15,7 @@ chdir('/var/www/localhost/htdocs/render_data/') or
 
 
 my $CUT_NUM = 8;
-my $CUT_NUM_DISP = 4;
+my $CUT_NUM_DISP = 5;
 my $SESSID = get_session_id();
 $SIG{CHLD} = "IGNORE";
 
@@ -721,7 +721,9 @@ print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=0&rotc_y_0=45&rotc_z_0=
 
 print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=45&rotc_y_0=-19.3&rotc_z_0=45&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=102&apex_0=102&color_0=0">Axis Cube</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=90&rotc_y_0=125.3&rotc_z_0=135&cut_width=3&userbg=0&use_0=on&sym_0=21&type_0=1&depth_0=161&apex_0=161&color_0=19">Insanity Cubed</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=90&rotc_y_0=125.3&rotc_z_0=135&cut_width=3&userbg=0&use_0=on&sym_0=21&type_0=1&depth_0=161&apex_0=161&color_0=19">David Pitcher\'s Insanity Cubed</a></p>', "\n";
+
+print '<p><a href="', $base_url, '?base_shape=21&rot_x=-20&rot_y=25&rot_z=-8&cut_width=3&userbg=0&usermat=0&use_0=on&sym_0=21&type_0=1&depth_0=151&apex_0=151&color_0=18&rotc_x_0=0&transc_x_0=0&rotc_y_0=60&transc_y_0=0&rotc_z_0=0&transc_z_0=0&use_1=on&sym_1=35&type_1=1&depth_1=102&apex_1=102&color_1=18&rotc_x_1=0&transc_x_1=0&rotc_y_1=0&transc_y_1=0&rotc_z_1=0&transc_z_1=0">David Pitcher\'s Ultimate Insanity</a></p>', "\n";
 
 
 print '<hr />', "\n";
