@@ -3,7 +3,7 @@
 #include "colors.inc"
 #include "metals.inc"
 #include "shapesForUse.inc"
-#include "parse.inc"
+//#include "parse.inc"
 
 
 global_settings {
@@ -85,41 +85,17 @@ light_source {
   translate <100,150,100>
 }
 
-// -------------------------------------------
 
-
-
-// -------------------------------------------
-// in this section you can configure the script to your desire
-
+// This is the shape of the solid
 #declare shapeIndex=TEXTSHAPE;
-//to define the main object's shape use one of the following indieces
-    //0: sphere
-    //1: tetrahedron
-    //2: cube
-    //3: octahedron
-    //4: rhombic dodecahedron
-    //5: dodecahedron
-    //6: icosahedron
-    //7: rhombic triacontahedron
-    //8: Triakis Octahedron
-    //9: Deltoidal Icositetrahedron
 
 
-#declare tasks=array [8][4] {
+// This is the list of cuts to apply
+#declare tasks = array [8][4] {
 //a task is done equally on all directions of a regular direction-vector-set
 //it is specified by
 
-//1. symindex ( the direction-vector-set (axle-set) by index), the values can be:
-	//1: TC (tetrahedron corners)
-	//2: CF (cube faces)
-	//3: CC (cube corners)
-	//4: CE (cube edges)
-	//5: DF (dodecahedron faces)
-	//6: DC (dodecahedron corners)
-	//7: DE (dodecahedron edges)
-	//8: CW (Triakis Octahedron)
-	//9: DeltIcosi (Deltoidal Icositetrahedron)
+//1. symindex ( the direction-vector-set (axle-set) by index)
 
 //2. dividerValue based on Jaap's Sphere (scope 300 to 0) : depth
 
@@ -143,24 +119,14 @@ light_source {
       TEXT_CUT_7,
 }
 
-//alternative you can paste a parameter string from Jaap's Sphere's (secret) TextField here, this will overwrite the tasks array
-#declare paramstring = ""
-
-
-//the following values may not need to be changed:
-
 
 //choose the thickness of the gaps
 #declare gth=TEXTCUTWIDTH;
 
 
-
-
 //the orientation of the final main-object is defined here, and applied after all subtractions are done
 #declare main_orientation=transform{
-    rotate x*18.435
-    //rotate <-20,20,0 >
-    rotate <TEXTROTX,TEXTROTY,TEXTROTZ>
+	 rotate <TEXTROTX,TEXTROTY,TEXTROTZ>
 }
 
 
@@ -337,25 +303,6 @@ light_source {
 #end
 
 #declare mainSolid=getShape(shapeIndex)
-
-
-#if (strlen(paramstring)>0)
-    #declare dividerTable=parse(paramstring)
-    #declare tasks=array [16][4];
-    #local iRow=0;
-    #while (iRow<4)
-    	#local iDiv=1;
-    	#while (iDiv <= 4)
-    		#local iCut=iRow*4 + iDiv -1;
-    		#declare tasks[iCut][0]=dividerTable[iRow][0];
-    		#declare tasks[iCut][1]=dividerTable[iRow][iDiv];
-    		#declare tasks[iCut][2]=0;
-    		#declare tasks[iCut][3]=iRow;
-    		#local iDiv = iDiv + 1;
-    	#end
-    #local iRow=iRow+1;
-    #end
-#end
 
 
 #macro getDirset(dirsetIndex)
@@ -565,8 +512,6 @@ light_source {
     #local dirset=getDirset(dirsetIndex)
     #local dirset_size=dimension_size(dirset,1);
 
-
-
 	//handle tetrahedron-corners-dirset special (like Jaap did in the Sphere-Applet)
 	#local neg=1;
 	/*#if(dirsetIndex = 1)
@@ -607,8 +552,7 @@ light_source {
 
 
 
-
-
+// This routine iterates through the tasks and does the cutting
 #declare Count=0;
 #while(Count < dimension_size(tasks,1))
     #if (tasks[Count][1] >= 0 & tasks[Count][1] <= 300)// jump over if it is -1 or invalid
@@ -616,16 +560,6 @@ light_source {
     #end
 #declare Count=Count+1;
 #end
-
-
-
-
-
-// -------------------------------------------------------
-
-
-
-
 
 //show mainSolid
 object { mainSolid

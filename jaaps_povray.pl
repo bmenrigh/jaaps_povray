@@ -138,7 +138,7 @@ print '<p><b>Base shape:</b> ',
 			     }, undef), "\n";
 
 print ' <b>Rotate (x, y, z):</b> ',
-    $cgi_var->textfield('rot_x', '-20', 3, 5), ' ',
+    $cgi_var->textfield('rot_x', '0', 3, 5), ' ',
     $cgi_var->textfield('rot_y', '20', 3, 5), ' ',
     $cgi_var->textfield('rot_z', '0', 3, 5), "\n";
 print ' <b>Cut Thickness:</b> ',
