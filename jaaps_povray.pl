@@ -19,8 +19,8 @@ my $CUT_NUM_DISP = 4;
 my $SESSID = get_session_id();
 $SIG{CHLD} = "IGNORE";
 
-my $MAX_SHAPE_NUM = 60;
-my $MAX_CUT_NUM = 41;
+my $MAX_SHAPE_NUM = 65;
+my $MAX_CUT_NUM = 46;
 my $MAX_COLOR_NUM = 20;
 
 
@@ -130,6 +130,11 @@ print '<p><b>Base shape:</b> ',
 			      58=>'Hexagonal Prism (Square Sides)',
 			      59=>'Heptagonal Prism (Square Sides)',
 			      60=>'Octagonal Prism (Square Sides)',
+			      61=>'Square Antiprism',
+			      62=>'Pentagonal Antiprism',
+			      63=>'Hexagonal Antiprism',
+			      64=>'Heptagonal Antiprism',
+			      65=>'Octagonal Antiprism',
 			     }, undef), "\n";
 
 print ' <b>Rotate (x, y, z):</b> ',
@@ -229,6 +234,11 @@ for (my $i = 0; $i < $CUT_NUM_DISP; $i++) {
 					 39=>'Heptagonal Prism (Side Faces)',
 					 40=>'Octagonal Prism (Side Faces)',
 					 41=>'Tetrahedron (Corners)',
+					 42=>'Square Antiprism (Side Faces)',
+					 43=>'Pentagonal Antiprism (Side Faces)',
+					 44=>'Hexagonal Antiprism (Side Faces)',
+					 45=>'Heptagonal Antiprism (Side Faces)',
+					 46=>'Octagonal Antiprism (Side Faces)',
 					}, undef);
     print ' at depth';
     print ' ', $cgi_var->textfield('depth_' . $i, '200', 7, 7);

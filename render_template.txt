@@ -328,6 +328,11 @@ light_source {
 	#case (58) object{shHexPrismSq getShapeMaterialPreset(usermat)} #break
 	#case (59) object{shHepPrismSq getShapeMaterialPreset(usermat)} #break
 	#case (60) object{shOctPrismSq getShapeMaterialPreset(usermat)} #break
+	#case (61) object{shSquareAntiPrism getShapeMaterialPreset(usermat)} #break
+	#case (62) object{shPentAntiPrism getShapeMaterialPreset(usermat)} #break
+	#case (63) object{shHexAntiPrism getShapeMaterialPreset(usermat)} #break
+	#case (64) object{shHepAntiPrism getShapeMaterialPreset(usermat)} #break
+	#case (65) object{shOctAntiPrism getShapeMaterialPreset(usermat)} #break
     #end
 #end
 
@@ -396,6 +401,11 @@ light_source {
         #case (39) dirsCutsHepPrism #break
         #case (40) dirsCutsOctPrism #break
         #case (41) dirsTF #break
+        #case (42) dirsSquareAntiPrism #break
+        #case (43) dirsPentAntiPrism #break
+        #case (44) dirsHexAntiPrism #break
+        #case (45) dirsHepAntiPrism #break
+        #case (46) dirsOctAntiPrism #break
     #end
 #end
 
@@ -404,7 +414,7 @@ light_source {
 #declare globalScale = 1.8;
 
 // This scale value is the ratio of the circumscribed sphere to the inscribed sphere
-#declare shapeScale = array[61] {
+#declare shapeScale = array[66] {
     1.0000000000, //0: sphere
     0.3333333333, //1: tetrahedron
     0.5773502692, //2: cube
@@ -466,6 +476,11 @@ light_source {
     0.4472135955, //58: Hexagonal Prism Square
     0.3980324968, //59: Heptagonal Prism Square
     0.3574067443, //60: Octagonal Prism Square
+    0.5110810845, //61: Square Antiprism
+    0.4472135955, //62: Pentagonal Antiprism
+    0.3933198932, //63: Hexagonal Antiprism
+    0.3490502193, //64: Heptagonal Antiprism
+    0.3127099914, //65: Octagonal Antiprism
 }
 
 
