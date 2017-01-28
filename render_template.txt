@@ -2,6 +2,8 @@
 
 #include "colors.inc"
 #include "metals.inc"
+#include "textures.inc"
+#include "stones1.inc"
 #include "shapesForUse.inc"
 //#include "parse.inc"
 
@@ -16,20 +18,20 @@ global_settings {
 
 #declare camSquareOrtho= camera {
     orthographic    angle
-    location  <0.4, 2.0, -6.0>
+    location  <0, 0, -6.0>
     direction 1.5*z
     right     x
     up      y
-    look_at   <0.0, -0.01,  0.0>
+    look_at   <0, 0,  0>
 }
 
 #declare camSquareOrthoZoom= camera {
     orthographic    angle
-    location  <0.133, 0.666, -2.0>
+    location  <0, 0, -2.0>
     direction 1.5*z
     right     x
     up      y
-    look_at   <0.0, -0.01,  0.0>
+    look_at   <0, 0,  0>
 }
 
 #declare cam_4_3_ratio_Perspectiv= camera {
@@ -178,6 +180,9 @@ light_source {
 	      interior{ior 1.16}
 	  }            #break
 	#case (2) texture{ T_Gold_1C } #break
+	#case (3) texture{ PinkAlabaster } #break
+	#case (4) texture{ T_Stone17 } #break
+	#case (5) texture{ Cherry_Wood scale 0.1} #break
      #end
 #end
 
@@ -186,8 +191,10 @@ light_source {
     #switch (mtype)
         #case (0) getShapeMaterial(mtype, White)          #break
         #case (1) getShapeMaterial(mtype, rgb <0.1, 0.1, 0.1>) #break
-        #case (2) getShapeMaterial(mtype, White) #break
-
+        #case (2) getShapeMaterial(mtype, 0) #break
+        #case (3) getShapeMaterial(mtype, 0) #break
+        #case (4) getShapeMaterial(mtype, 0) #break
+        #case (5) getShapeMaterial(mtype, 0) #break
     #end
 #end
 
@@ -224,6 +231,10 @@ light_source {
 	      }
 	      interior{ior 1.16}
 	  }            #break
+
+        #case (3) texture{pigment {mcolor} finish {ambient 0.1 diffuse 0.4 reflection{0.5 metallic}}}          #break
+        #case (4) texture{pigment {mcolor} finish {ambient 0.1 diffuse 0.4 reflection{0.5 metallic}}}          #break
+        #case (5) texture{pigment {mcolor} finish {ambient 0.1 diffuse 0.4 reflection{0.5 metallic}}}          #break
 
     #end
 #end

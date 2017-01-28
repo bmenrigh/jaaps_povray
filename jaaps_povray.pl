@@ -138,9 +138,9 @@ print '<p><b>Base shape:</b> ',
 			     }, undef), "\n";
 
 print ' <b>Rotate (x, y, z):</b> ',
-    $cgi_var->textfield('rot_x', '0', 3, 5), ' ',
-    $cgi_var->textfield('rot_y', '20', 3, 5), ' ',
-    $cgi_var->textfield('rot_z', '0', 3, 5), "\n";
+    $cgi_var->textfield('rot_x', '-20', 3, 5), ' ',
+    $cgi_var->textfield('rot_y', '25', 3, 5), ' ',
+    $cgi_var->textfield('rot_z', '-8', 3, 5), "\n";
 print ' <b>Cut Thickness:</b> ',
         $cgi_var->scrolling_list('cut_width',
 				 [1,
@@ -159,12 +159,18 @@ print ' <b>Shape Material:</b> ',
         $cgi_var->scrolling_list('usermat',
 				 [0,
 				  1,
-				  2],
+				  2,
+				  3,
+				  4,
+				  5],
 				 ['0'],
 				 1, 0,
 				 {0=>'White Clay',
 				  1=>'Graphite',
-				  2=>'Gold'
+				  2=>'Gold',
+      				  3=>'Pink Alabaster',
+       				  4=>'White Marble',
+       				  5=>'Polished Cherry Wood',
 				 }, undef), "\n";
 print ' <b>Background:</b> ',
         $cgi_var->scrolling_list('userbg',
@@ -486,7 +492,7 @@ if (defined $cgi_var->param('action_button')) {
 
     # Material
     unless ((defined $cgi_var->param('usermat')) &&
-	    ($cgi_var->param('usermat') =~ m/^[0-2]$/)) {
+	    ($cgi_var->param('usermat') =~ m/^[0-5]$/)) {
 	html_warn('Material malformed.');
 	$replacements{'TEXTUSERMAT'} = '0';
     }
@@ -704,17 +710,17 @@ print '<p><a href="', $base_url, '?base_shape=2&sym_0=3&depth_0=83&apex_0=250">D
 
 print '<p><a href="', $base_url, '?base_shape=5&sym_0=5&depth_0=50&apex_0=280">Dreidel Pentultimate</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&rot_x=-20&rot_y=20&rot_z=0&cut_width=3&userbg=1&use_0=on&sym_0=2&type_0=1&depth_0=40&apex_0=40&color_0=0&use_1=on&sym_1=2&type_1=1&depth_1=150&apex_1=80&color_1=1&use_2=on&sym_2=2&type_2=1&depth_2=234&apex_2=0&color_2=2&use_3=on&sym_3=2&type_3=1&depth_3=250&apex_3=0&color_3=3">Carl Hoff\'s Real5x5x5</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&cut_width=3&userbg=1&use_0=on&sym_0=2&type_0=1&depth_0=40&apex_0=40&color_0=0&use_1=on&sym_1=2&type_1=1&depth_1=150&apex_1=80&color_1=1&use_2=on&sym_2=2&type_2=1&depth_2=234&apex_2=0&color_2=2&use_3=on&sym_3=2&type_3=1&depth_3=250&apex_3=0&color_3=3">Carl Hoff\'s Real5x5x5</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=7&rot_x=-20&rot_y=20&rot_z=0&cut_width=3&userbg=0&use_0=on&sym_0=6&type_0=1&depth_0=15&apex_0=15&color_0=7">Master Chopasaurus Triacontahedron</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=7&cut_width=3&userbg=0&use_0=on&sym_0=6&type_0=1&depth_0=15&apex_0=15&color_0=7">Master Chopasaurus Triacontahedron</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&rot_x=-20&rot_y=20&rot_z=0&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=260&apex_0=450&color_0=6&use_1=on&sym_1=2&type_1=1&depth_1=259&apex_1=0&color_1=4">Gelatinbrain\'s 3.1.33</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=260&apex_0=450&color_0=6&use_1=on&sym_1=2&type_1=1&depth_1=259&apex_1=0&color_1=4">Gelatinbrain\'s 3.1.33</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&rot_x=-20&rot_y=20&rot_z=0&rotc_x=0&rotc_y=0&rotc_z=0&transc_x=0.15&transc_y=0.3&transc_z=0.45&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0">Bump Cube</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&rotc_x=0&rotc_y=0&rotc_z=0&transc_x=0.15&transc_y=0.3&transc_z=0.45&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0">Bump Cube</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&rot_x=-20&rot_y=20&rot_z=0&rotc_x=0&rotc_y=45&rotc_z=0&transc_x=0&transc_y=0&transc_z=0&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0">Fisher Cube</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&rotc_x=0&rotc_y=45&rotc_z=0&transc_x=0&transc_y=0&transc_z=0&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0">Fisher Cube</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&rot_x=-20&rot_y=20&rot_z=0&rotc_x=45&rotc_y=-19.3&rotc_z=45&transc_x=0&transc_y=0&transc_z=0&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=102&apex_0=102&color_0=0">Axis Cube</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&rotc_x=45&rotc_y=-19.3&rotc_z=45&transc_x=0&transc_y=0&transc_z=0&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=102&apex_0=102&color_0=0">Axis Cube</a></p>', "\n";
 
 
 print '<hr />', "\n";
