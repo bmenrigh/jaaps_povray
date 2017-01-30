@@ -537,10 +537,25 @@ light_source {
 	    	    	   Base_Point, Base_Radius,
 			   Cap_Point, Cap_Radius
 		   }
-	    difference{
-		   object{coneobj translate tr1}
-		   object{coneobj translate tr2}
-	    }
+	    #if (normApx > normDiv)
+	    		 // Under extreme circumstances like a depth of
+			 // 299 and apex of 1000 the cone cap can extend
+			 // through the surface beacuse of the translation
+			 // so we need to clip the cone so the cap is always
+			 // inside of the solid
+			 intersection {
+			 	      plane {coneDirection, (1.0 - (offst *  0.5))}
+				      difference{
+					object{coneobj translate tr1}
+		   	   		object{coneobj translate tr2}
+				      }
+		         }
+  	    #else
+	    	    difference{
+		    	   object{coneobj translate tr1}
+		   	   object{coneobj translate tr2}
+		    }
+	    #end
 	#end
 
 #end
