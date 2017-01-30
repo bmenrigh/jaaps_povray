@@ -711,33 +711,33 @@ print '<p><a href="', $base_url, '?base_shape=2&sym_0=2&depth_0=100&apex_0=100">
 
 print '<p><a href="', $base_url, '?base_shape=2&sym_0=3&depth_0=0&apex_0=0">Skewb</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=5&sym_0=5&depth_0=189&apex_0=189">Megaminx</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=5&sym_0=5&depth_0=186&apex_0=186">Megaminx</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&sym_0=4&depth_0=214&apex_0=214">Helicopter Cube</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&sym_0=4&depth_0=212&apex_0=212">Helicopter Cube</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&sym_0=4&depth_0=214&apex_0=100">Curvy Copter</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&sym_0=4&depth_0=212.2&apex_0=100">Curvy Copter</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&sym_0=4&depth_0=214&apex_0=150&use_1=on&sym_1=4&depth_1=240&apex_1=160&color_1=0">Master Curvy Copter</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&sym_0=4&depth_0=212.2&apex_0=150&use_1=on&sym_1=4&depth_1=240&apex_1=160&color_1=0">Master Curvy Copter</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&sym_0=3&depth_0=83&apex_0=250">Dreidel Skewb</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&sym_0=3&depth_0=79.5&apex_0=250">Dreidel Skewb</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=5&sym_0=5&depth_0=50&apex_0=280">Dreidel Pentultimate</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=5&sym_0=5&depth_0=44.5&apex_0=280">Dreidel Pentultimate</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&cut_width=3&userbg=1&use_0=on&sym_0=2&type_0=1&depth_0=40&apex_0=40&color_0=0&use_1=on&sym_1=2&type_1=1&depth_1=150&apex_1=80&color_1=1&use_2=on&sym_2=2&type_2=1&depth_2=234&apex_2=0&color_2=2&use_3=on&sym_3=2&type_3=1&depth_3=250&apex_3=0&color_3=3">Carl Hoff\'s Real5x5x5</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&cut_width=3&userbg=1&use_0=on&sym_0=2&type_0=1&depth_0=40&apex_0=40&color_0=0&use_1=on&sym_1=2&type_1=1&depth_1=150&apex_1=80&color_1=1&use_2=on&sym_2=2&type_2=1&depth_2=232&apex_2=0&color_2=2&use_3=on&sym_3=2&type_3=1&depth_3=250&apex_3=0&color_3=3">Carl Hoff\'s Real5x5x5</a></p>', "\n";
 
 print '<p><a href="', $base_url, '?base_shape=7&cut_width=3&userbg=0&use_0=on&sym_0=6&type_0=1&depth_0=15&apex_0=15&color_0=7">Master Chopasaurus Triacontahedron</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=260&apex_0=450&color_0=6&use_1=on&sym_1=2&type_1=1&depth_1=259&apex_1=0&color_1=4">Gelatinbrain\'s 3.1.33</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=260&apex_0=450&color_0=6&use_1=on&sym_1=2&type_1=1&depth_1=254&apex_1=0&color_1=4">Gelatinbrain\'s 3.1.33</a></p>', "\n";
 
 print '<p><a href="', $base_url, '?base_shape=2&transc_x_0=0.15&transc_y_0=0.3&transc_z_0=0.45&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0">Bump Cube</a></p>', "\n";
 
 print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=0&rotc_y_0=45&rotc_z_0=0&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0">Fisher Cube</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=45&rotc_y_0=-19.3&rotc_z_0=45&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=102&apex_0=102&color_0=0">Axis Cube</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=45&rotc_y_0=-19.3&rotc_z_0=45&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0">Axis Cube</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=90&rotc_y_0=125.3&rotc_z_0=135&cut_width=3&userbg=0&use_0=on&sym_0=21&type_0=1&depth_0=161&apex_0=161&color_0=19">David Pitcher\'s Insanity Cubed</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=90&rotc_y_0=125.3&rotc_z_0=135&cut_width=3&userbg=0&use_0=on&sym_0=21&type_0=1&depth_0=160&apex_0=160&color_0=19">David Pitcher\'s Insanity Cubed</a></p>', "\n";
 
-print '<p><a href="', $base_url, '?base_shape=21&rot_x=-20&rot_y=25&rot_z=-8&cut_width=3&userbg=0&usermat=0&use_0=on&sym_0=21&type_0=1&depth_0=151&apex_0=151&color_0=18&rotc_x_0=0&transc_x_0=0&rotc_y_0=60&transc_y_0=0&rotc_z_0=0&transc_z_0=0&use_1=on&sym_1=35&type_1=1&depth_1=102&apex_1=102&color_1=18&rotc_x_1=0&transc_x_1=0&rotc_y_1=0&transc_y_1=0&rotc_z_1=0&transc_z_1=0">David Pitcher\'s Ultimate Insanity</a></p>', "\n";
+print '<p><a href="', $base_url, '?base_shape=21&rot_x=-20&rot_y=25&rot_z=-8&cut_width=3&userbg=0&usermat=0&use_0=on&sym_0=21&type_0=1&depth_0=150&apex_0=150&color_0=18&rotc_x_0=0&transc_x_0=0&rotc_y_0=60&transc_y_0=0&rotc_z_0=0&transc_z_0=0&use_1=on&sym_1=35&type_1=1&depth_1=99&apex_1=99&color_1=18&rotc_x_1=0&transc_x_1=0&rotc_y_1=0&transc_y_1=0&rotc_z_1=0&transc_z_1=0">David Pitcher\'s Ultimate Insanity</a></p>', "\n";
 
 print '<p><a href="', $base_url, '?base_shape=57&usermat=0&rot_x=-30&rot_y=25&rot_z=-16&cut_width=5&userbg=0&use_0=on&sym_0=22&type_0=1&depth_0=110&apex_0=50&color_0=15&rotc_x_0=0&transc_x_0=0&rotc_y_0=0&transc_y_0=0&rotc_z_0=0&transc_z_0=0">Greg\'s Pentex</a></p>', "\n";
 
