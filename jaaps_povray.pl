@@ -226,6 +226,10 @@ print ' <b>Shape Material:</b> ',
        				  5=>'Polished Cherry Wood',
 				 }, undef), "\n";
 print '</p>', "\n";
+print '<p>';
+print $cgi_var->checkbox('crosssection', '', 'on',
+			 'Slice shape in half for cross-sectional view'), "\n";
+print '</p>', "\n";
 print '<hr />', "\n";
 
 print $cgi_var->h3('Define Scene:');
@@ -389,6 +393,27 @@ if (defined $cgi_var->param('action_button')) {
 	push @url_args, 'base_shape=' . $cgi_var->param('base_shape');
     }
 
+    # Material
+    unless ((defined $cgi_var->param('usermat')) &&
+	    ($cgi_var->param('usermat') =~ m/^[0-5]$/)) {
+	html_warn('Material malformed.');
+	$replacements{'TEXTUSERMAT'} = '0';
+    }
+    else {
+	$replacements{'TEXTUSERMAT'} = $cgi_var->param('usermat');
+	push @url_args, 'usermat=' . $cgi_var->param('usermat');
+    }
+
+    # Cross section view
+    if ((defined $cgi_var->param('crosssection')) &&
+	($cgi_var->param('crosssection') eq 'on')) {
+	$replacements{'TEXTCROSSSECTION'} = '1';
+	push @url_args, 'crosssection=' . $cgi_var->param('crossesection');
+    }
+    else {
+	$replacements{'TEXTCROSSSECTION'} = '0';
+    }
+
     # rotate x
     unless ((defined $cgi_var->param('rot_x')) &&
 	    ($cgi_var->param('rot_x') =~ m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
@@ -448,17 +473,6 @@ if (defined $cgi_var->param('action_button')) {
     else {
 	$replacements{'TEXTUSERBG'} = $cgi_var->param('userbg');
 	push @url_args, 'userbg=' . $cgi_var->param('userbg');
-    }
-
-    # Material
-    unless ((defined $cgi_var->param('usermat')) &&
-	    ($cgi_var->param('usermat') =~ m/^[0-5]$/)) {
-	html_warn('Material malformed.');
-	$replacements{'TEXTUSERMAT'} = '0';
-    }
-    else {
-	$replacements{'TEXTUSERMAT'} = $cgi_var->param('usermat');
-	push @url_args, 'usermat=' . $cgi_var->param('usermat');
     }
 
     # Camera

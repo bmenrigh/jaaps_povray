@@ -247,76 +247,87 @@ light_source {
 
 #macro getShape(index)
     #switch (index)
-        #case (0) object{shSphere getShapeMaterialPreset(usermat)} #break
-        #case (1) object{shTet getShapeMaterialPreset(usermat)} #break
-        #case (2) object{shCube getShapeMaterialPreset(usermat)} #break
-        #case (3) object{shOct getShapeMaterialPreset(usermat)} #break
-        #case (4) object{shRhDod getShapeMaterialPreset(usermat)} #break
-        #case (5) object{shDod getShapeMaterialPreset(usermat)} #break
-        #case (6) object{shIco getShapeMaterialPreset(usermat)} #break
-        #case (7) object{shRhTriacon getShapeMaterialPreset(usermat)} #break
-        #case (8) object{shCW getShapeMaterialPreset(usermat)} #break
-        #case (9) object{shDeltIcosi getShapeMaterialPreset(usermat)} #break
-        #case (10) object{shDeltHex getShapeMaterialPreset(usermat)} #break
-        #case (11) object{shTriaTet getShapeMaterialPreset(usermat)} #break
-        #case (12) object{shTetraHex getShapeMaterialPreset(usermat)} #break
-        #case (13) object{shPentIcosiD getShapeMaterialPreset(usermat)} #break
-        #case (14) object{shPentIcosiL getShapeMaterialPreset(usermat)} #break
-        #case (15) object{shDisdyDodeca getShapeMaterialPreset(usermat)} #break
-        #case (16) object{shPentaDodeca getShapeMaterialPreset(usermat)} #break
-        #case (17) object{shTriaIcosa getShapeMaterialPreset(usermat)} #break
-	#case (18) object{shPentHexeD getShapeMaterialPreset(usermat)} #break
-	#case (19) object{shPentHexeL getShapeMaterialPreset(usermat)} #break
-	#case (20) object{shDisdyTria getShapeMaterialPreset(usermat)} #break
-	#case (21) object{shTriDipyra getShapeMaterialPreset(usermat)} #break
-	#case (22) object{shPentDipyra getShapeMaterialPreset(usermat)} #break
-	#case (23) object{shHexDipyra getShapeMaterialPreset(usermat)} #break
-	#case (24) object{shHepDipyra getShapeMaterialPreset(usermat)} #break
-	#case (25) object{shOctDipyra getShapeMaterialPreset(usermat)} #break
-	#case (26) object{shTetraTrapezo getShapeMaterialPreset(usermat)} #break
-	#case (27) object{shPentTrapezo getShapeMaterialPreset(usermat)} #break
-	#case (28) object{shHexTrapezo getShapeMaterialPreset(usermat)} #break
-	#case (29) object{shHeptTrapezo getShapeMaterialPreset(usermat)} #break
-	#case (30) object{shOctTrapezo getShapeMaterialPreset(usermat)} #break
-	#case (31) object{shTrapRhomDod getShapeMaterialPreset(usermat)} #break
-	#case (32) object{shPseuDeltIcosi getShapeMaterialPreset(usermat)} #break
-	#case (33) object{shTrapRhomTria getShapeMaterialPreset(usermat)} #break
-	#case (34) object{shTriPrism getShapeMaterialPreset(usermat)} #break
-	#case (35) object{shPentPrism getShapeMaterialPreset(usermat)} #break
-	#case (36) object{shHexPrism getShapeMaterialPreset(usermat)} #break
-	#case (37) object{shHepPrism getShapeMaterialPreset(usermat)} #break
-	#case (38) object{shOctPrism getShapeMaterialPreset(usermat)} #break
-	#case (39) object{shTruncCube getShapeMaterialPreset(usermat)} #break
-	#case (40) object{shTruncDod getShapeMaterialPreset(usermat)} #break
-	#case (41) object{shCubocto getShapeMaterialPreset(usermat)} #break
-	#case (42) object{shIcosidod getShapeMaterialPreset(usermat)} #break
-	#case (43) object{shTrunctet getShapeMaterialPreset(usermat)} #break
-	#case (44) object{shTruncoct getShapeMaterialPreset(usermat)} #break
-	#case (45) object{shATrunccube getShapeMaterialPreset(usermat)} #break
-	#case (46) object{shRhomCubOct getShapeMaterialPreset(usermat)} #break
-	#case (47) object{shTruncCubOct getShapeMaterialPreset(usermat)} #break
-	#case (48) object{shSnubcubeD getShapeMaterialPreset(usermat)} #break
-	#case (49) object{shSnubcubeL getShapeMaterialPreset(usermat)} #break
-	#case (50) object{shTruncIcosa getShapeMaterialPreset(usermat)} #break
-	#case (51) object{shATruncDod getShapeMaterialPreset(usermat)} #break
-	#case (52) object{shRhombIcosiDod getShapeMaterialPreset(usermat)} #break
-	#case (53) object{shTruncIcosiDod getShapeMaterialPreset(usermat)} #break
-	#case (54) object{shSnubDodD getShapeMaterialPreset(usermat)} #break
-	#case (55) object{shSnubDodL getShapeMaterialPreset(usermat)} #break
-	#case (56) object{shTriPrismSq getShapeMaterialPreset(usermat)} #break
-	#case (57) object{shPentPrismSq getShapeMaterialPreset(usermat)} #break
-	#case (58) object{shHexPrismSq getShapeMaterialPreset(usermat)} #break
-	#case (59) object{shHepPrismSq getShapeMaterialPreset(usermat)} #break
-	#case (60) object{shOctPrismSq getShapeMaterialPreset(usermat)} #break
-	#case (61) object{shSquareAntiPrism getShapeMaterialPreset(usermat)} #break
-	#case (62) object{shPentAntiPrism getShapeMaterialPreset(usermat)} #break
-	#case (63) object{shHexAntiPrism getShapeMaterialPreset(usermat)} #break
-	#case (64) object{shHepAntiPrism getShapeMaterialPreset(usermat)} #break
-	#case (65) object{shOctAntiPrism getShapeMaterialPreset(usermat)} #break
+        #case (0) shSphere #break
+        #case (1) shTet #break
+        #case (2) shCube #break
+        #case (3) shOct #break
+        #case (4) shRhDod #break
+        #case (5) shDod #break
+        #case (6) shIco #break
+        #case (7) shRhTriacon #break
+        #case (8) shCW #break
+        #case (9) shDeltIcosi #break
+        #case (10) shDeltHex #break
+        #case (11) shTriaTet #break
+        #case (12) shTetraHex #break
+        #case (13) shPentIcosiD #break
+        #case (14) shPentIcosiL #break
+        #case (15) shDisdyDodeca #break
+        #case (16) shPentaDodeca #break
+        #case (17) shTriaIcosa #break
+	#case (18) shPentHexeD #break
+	#case (19) shPentHexeL #break
+	#case (20) shDisdyTria #break
+	#case (21) shTriDipyra #break
+	#case (22) shPentDipyra #break
+	#case (23) shHexDipyra #break
+	#case (24) shHepDipyra #break
+	#case (25) shOctDipyra #break
+	#case (26) shTetraTrapezo #break
+	#case (27) shPentTrapezo #break
+	#case (28) shHexTrapezo #break
+	#case (29) shHeptTrapezo #break
+	#case (30) shOctTrapezo #break
+	#case (31) shTrapRhomDod #break
+	#case (32) shPseuDeltIcosi #break
+	#case (33) shTrapRhomTria #break
+	#case (34) shTriPrism #break
+	#case (35) shPentPrism #break
+	#case (36) shHexPrism #break
+	#case (37) shHepPrism #break
+	#case (38) shOctPrism #break
+	#case (39) shTruncCube #break
+	#case (40) shTruncDod #break
+	#case (41) shCubocto #break
+	#case (42) shIcosidod #break
+	#case (43) shTrunctet #break
+	#case (44) shTruncoct #break
+	#case (45) shATrunccube #break
+	#case (46) shRhomCubOct #break
+	#case (47) shTruncCubOct #break
+	#case (48) shSnubcubeD #break
+	#case (49) shSnubcubeL #break
+	#case (50) shTruncIcosa #break
+	#case (51) shATruncDod #break
+	#case (52) shRhombIcosiDod #break
+	#case (53) shTruncIcosiDod #break
+	#case (54) shSnubDodD #break
+	#case (55) shSnubDodL #break
+	#case (56) shTriPrismSq #break
+	#case (57) shPentPrismSq #break
+	#case (58) shHexPrismSq #break
+	#case (59) shHepPrismSq #break
+	#case (60) shOctPrismSq #break
+	#case (61) shSquareAntiPrism #break
+	#case (62) shPentAntiPrism #break
+	#case (63) shHexAntiPrism #break
+	#case (64) shHepAntiPrism #break
+	#case (65) shOctAntiPrism #break
     #end
 #end
 
-#declare mainSolid=getShape(shapeIndex)
+
+#declare mainSolid = getShape(shapeIndex)
+
+#declare crosssection = TEXTCROSSSECTION;
+// The crosssectional view slices the solid in half through the origin
+#if(crosssection = 1)
+	#declare mainSolid = intersection{object{mainSolid}
+			                  plane {<0, 0, -1>, 0}};
+#end
+
+#declare mainSolid = object{mainSolid getShapeMaterialPreset(usermat)}
+
 
 
 #macro getDirset(dirsetIndex)
