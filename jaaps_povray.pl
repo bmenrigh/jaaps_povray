@@ -764,13 +764,19 @@ print '</p>', "\n";
 print '<img src="../render_data/render_cone_clipping.png" />', "\n";
 
 print '<hr />', "\n";
-print $cgi_var->h3('Authors:');
+print $cgi_var->h3('Credits:');
 print '<p>Twisty Renderer is based on Jaap Scherphuis\'s ',
     '<a href="http://www.jaapsch.net/puzzles/sphere.htm">',
-    'Sphere Symmetry Applet</a>.  The POV-Ray code to do the rendering is ',
-    'written by <a href="http://twistypuzzles.com/forum/memberlist.php',
-    '?mode=viewprofile&u=6109">Stef-n</a>.  The web interface is ',
-    'by Brandon Enright.</p>', "\n";
+    'Sphere Symmetry Applet</a>.  The POV-Ray code to do the rendering was ',
+    'originally written by ',
+    '<a href="http://twistypuzzles.com/forum/memberlist.php',
+    '?mode=viewprofile&u=6109">Stef-n</a>.  Much of the analysis of which ',
+    'polyhedra to include was done by Matt Galla.  ',
+    'Many of the polyhedra would not have been possible to impliment without ',
+    'David McCooey\'s <a href="http://dmccooey.com/polyhedra/">',
+    'Visual Polyhedra</a> site. ',
+    'The web interface is by Brandon Enright.</p>',
+    "\n";
 print '<p>All bugs, inqueries, and complaints should be directed to Brandon ',
     'at &lt;twisty_renderer atsymbol brandonenright.net&gt;</p>', "\n";
 print '<hr />', "\n";
