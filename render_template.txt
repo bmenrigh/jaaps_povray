@@ -527,11 +527,14 @@ light_source {
 
         //cone is plane
 	#if(normApx = normDiv)
-	    cylinder{
-		Base_Point + tr1,
-		Base_Point + tr2,
-		scal
-	    }
+		 intersection {
+		               plane {coneDirection, 0.999}
+	    		       cylinder{
+					Base_Point + tr1,
+					Base_Point + tr2,
+					scal
+	    		       }
+		 }
 	#else
 	    #local coneobj = cone{
 	    	    	   Base_Point, Base_Radius,
