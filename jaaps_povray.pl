@@ -190,6 +190,36 @@ sub html_warn {
 }
 
 
+sub is_float_range {
+    my $f = shift;
+    my $min = shift;
+    my $max = shift;
+
+    return 0 unless ($f =~ m/^-?\d*\.?\d*$/);
+    return 0 unless ($f =~ m/\d/);
+
+    return 0 unless ($f >= $min);
+    return 0 unless ($f <= $max);
+
+    return 1;
+}
+
+
+sub is_int_range {
+    my $f = shift;
+    my $min = shift;
+    my $max = shift;
+
+    return 0 unless ($f =~ m/^\d+$/);
+
+    return 0 unless ($f >= $min);
+    return 0 unless ($f <= $max);
+
+    return 1;
+}
+
+
+
 ########
 if (defined $cgi_var->param('action_button')) {
     if ($cgi_var->param('action_button') eq 'Reset') {
@@ -206,7 +236,8 @@ print '<p><b>Base shape:</b> ',
 			     [map {$_->{'num'}} @shapes],
 			     ['5'],
 			     1, 0,
-			     {map {$_->{'num'} => $_->{'name'}} @shapes}, undef), "\n";
+			     {map {$_->{'num'} => $_->{'name'}} @shapes},
+			     undef), "\n";
 
 print ' <b>Shape Material:</b> ',
         $cgi_var->scrolling_list('usermat',
@@ -296,7 +327,8 @@ for (my $i = 0; $i < $CUT_NUM_DISP; $i++) {
 					['1'],
 					1, 0,
 					{1=>'Jaap\'s [0 .. 300]',
-					 2=>'Degrees from center [0 .. 90]'}, undef);
+					 2=>'Degrees from center [0 .. 90]'},
+					undef);
     print ' with apex at';
     print ' ', $cgi_var->textfield('apex_' . $i, '0', 5, 5);
     print ' ', $cgi_var->scrolling_list('color_' . $i,
@@ -373,7 +405,8 @@ if (defined $cgi_var->param('action_button')) {
     if ($cgi_var->param('action_button') eq 'Slow Preview') {
 	$action = 'slow';
     }
-    if ($cgi_var->param('action_button') eq 'Submit High Resolution Render Job') {
+    if ($cgi_var->param('action_button') eq
+	'Submit High Resolution Render Job') {
 	$action = 'job';
     }
 
@@ -382,9 +415,9 @@ if (defined $cgi_var->param('action_button')) {
 
     # base shape
     unless ((defined $cgi_var->param('base_shape')) &&
-	    ($cgi_var->param('base_shape') =~ m/^[0-9]+$/) &&
-	    (int($cgi_var->param('base_shape')) >= 0) &&
-	    (int($cgi_var->param('base_shape')) <= $MAX_SHAPE_NUM)) {
+	    (is_int_range($cgi_var->param('base_shape'),
+			  0, $MAX_SHAPE_NUM) == 1)) {
+
 	html_warn('Base shape malformed.');
 	$replacements{'TEXTSHAPE'} = 5;
     }
@@ -395,7 +428,9 @@ if (defined $cgi_var->param('action_button')) {
 
     # Material
     unless ((defined $cgi_var->param('usermat')) &&
-	    ($cgi_var->param('usermat') =~ m/^[0-5]$/)) {
+	    (is_int_range($cgi_var->param('usermat'),
+			  0, 5) == 1)) {
+
 	html_warn('Material malformed.');
 	$replacements{'TEXTUSERMAT'} = '0';
     }
@@ -414,48 +449,28 @@ if (defined $cgi_var->param('action_button')) {
 	$replacements{'TEXTCROSSSECTION'} = '0';
     }
 
-    # rotate x
-    unless ((defined $cgi_var->param('rot_x')) &&
-	    ($cgi_var->param('rot_x') =~ m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-	    (abs($cgi_var->param('rot_x')) <= 360)) {
+    foreach my $dir ('x', 'y', 'z') {
+	# rotate by direction $dir
+	unless ((defined $cgi_var->param('rot_' . $dir)) &&
+		(is_float_range($cgi_var->param('rot_' . $dir),
+				-360, 360) == 1)) {
 
-	html_warn('Rotate x must be in the range [-360, 360]');
-	$replacements{'TEXTROTX'} = 20;
-    }
-    else {
-	$replacements{'TEXTROTX'} = $cgi_var->param('rot_x');
-	push @url_args, 'rot_x=' . $cgi_var->param('rot_x');
-    }
-
-    # rotate y
-    unless ((defined $cgi_var->param('rot_y')) &&
-	    ($cgi_var->param('rot_y') =~ m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-	    (abs($cgi_var->param('rot_y')) <= 360)) {
-
-	html_warn('Rotate y must be in the range [-360, 360]');
-	$replacements{'TEXTROTY'} = 20;
-    }
-    else {
-	$replacements{'TEXTROTY'} = $cgi_var->param('rot_y');
-	push @url_args, 'rot_y=' . $cgi_var->param('rot_y');
-    }
-
-    # rotate z
-    unless ((defined $cgi_var->param('rot_z')) &&
-	    ($cgi_var->param('rot_z') =~ m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-	    (abs($cgi_var->param('rot_z')) <= 360)) {
-
-	html_warn('Rotate z must be in the range [-360, 360]');
-	$replacements{'TEXTROTZ'} = 0;
-    }
-    else {
-	$replacements{'TEXTROTZ'} = $cgi_var->param('rot_z');
-	push @url_args, 'rot_z=' . $cgi_var->param('rot_z');
+	    html_warn('Rotate ' . $dir . ' must be in the range [-360, 360]');
+	    $replacements{'TEXTROT' . uc($dir)} = '0';
+	}
+	else {
+	    $replacements{'TEXTROT' . uc($dir)} =
+		$cgi_var->param('rot_' . $dir);
+	    push @url_args, 'rot_' . $dir . '=' .
+		$cgi_var->param('rot_' . $dir);
+	}
     }
 
     # Cut width
     unless ((defined $cgi_var->param('cut_width')) &&
-	    ($cgi_var->param('cut_width') =~ m/^[1-5]$/)) {
+	    (is_int_range($cgi_var->param('cut_width'),
+			  1, 5) == 1)) {
+
 	html_warn('Cut thickness malformed.');
 	$replacements{'TEXTCUTWIDTH'} = '0.015';
     }
@@ -466,7 +481,9 @@ if (defined $cgi_var->param('action_button')) {
 
     # Background
     unless ((defined $cgi_var->param('userbg')) &&
-	    ($cgi_var->param('userbg') =~ m/^[0-2]$/)) {
+	    (is_int_range($cgi_var->param('userbg'),
+			  0, 2) == 1)) {
+
 	html_warn('Background malformed.');
 	$replacements{'TEXTUSERBG'} = '0';
     }
@@ -497,16 +514,18 @@ if (defined $cgi_var->param('action_button')) {
 	    push @url_args, 'use_' . $i . '=' . $cgi_var->param('use_' . $i);
 
 	    unless ((defined $cgi_var->param('sym_' . $i)) &&
-		    ($cgi_var->param('sym_' . $i) =~ m/^[0-9]+$/) &&
-		    (int($cgi_var->param('sym_' . $i)) >= 1) &&
-		    (int($cgi_var->param('sym_' . $i)) <= $MAX_CUT_NUM)) {
+		    (is_int_range($cgi_var->param('sym_' . $i),
+				  1, $MAX_CUT_NUM) == 1)) {
+
 		html_warn('Cut ' . $i . ' -- symmetry malformed.');
 		next;
 	    }
 	    push @url_args, 'sym_' . $i . '=' . $cgi_var->param('sym_' . $i);
 
 	    unless ((defined $cgi_var->param('type_' . $i)) &&
-		    ($cgi_var->param('type_' . $i) =~ m/^[12]$/)) {
+		    (is_int_range($cgi_var->param('type_' . $i),
+				  1, 2) == 1)) {
+
 		html_warn('Cut Type ' . $i . ' -- type not defined.');
 		next;
 	    }
@@ -514,39 +533,45 @@ if (defined $cgi_var->param('action_button')) {
 
 	    if ($cgi_var->param('type_' . $i) == 1) {
 		unless ((defined $cgi_var->param('depth_' . $i)) &&
-			($cgi_var->param('depth_' . $i) =~ m/^[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-			(abs($cgi_var->param('depth_' . $i)) <= 300)) {
-		    #html_warn('got depth: ' . $cgi_var->param('depth_' . $i));
-		    html_warn('Cut ' . $i . ' -- depth malformed (must be in the range [0, 300]).');
+			(is_float_range($cgi_var->param('depth_' . $i),
+					0, 300) == 1)) {
+
+		    html_warn('Cut ' . $i . ' -- depth malformed ' .
+			      '(must be in the range [0, 300]).');
 		    next;
 		}
-		$jdepth = abs($cgi_var->param('depth_' . $i));
+		$jdepth = $cgi_var->param('depth_' . $i);
 	    }
 
 	    if ($cgi_var->param('type_' . $i) == 2) {
 		unless ((defined $cgi_var->param('depth_' . $i)) &&
-			($cgi_var->param('depth_' . $i) =~ m/^[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-			(abs($cgi_var->param('depth_' . $i)) <= 90)) {
-		    #html_warn('got depth: ' . $cgi_var->param('depth_' . $i));
-		    html_warn('Cut ' . $i . ' -- depth angle malformed (must be in the range [0, 90]).');
+			(is_float_range($cgi_var->param('depth_' . $i),
+					0, 90) == 1)) {
+
+		    html_warn('Cut ' . $i . ' -- depth angle malformed ' .
+			      '(must be in the range [0, 90]).');
 		    next;
 		}
-		$jdepth = sin(deg2rad(90.0 - abs($cgi_var->param('depth_' . $i)))) * 300.0;
+		$jdepth = (sin(deg2rad(90.0 - $cgi_var->param('depth_' . $i)))
+			   * 300.0);
 	    }
-	    push @url_args, 'depth_' . $i . '=' . $cgi_var->param('depth_' . $i);
+	    push @url_args, 'depth_' . $i . '=' .
+		$cgi_var->param('depth_' . $i);
 
 	    unless ((defined $cgi_var->param('apex_' . $i)) &&
-		    ($cgi_var->param('apex_' . $i) =~ m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-		    (abs($cgi_var->param('apex_' . $i)) <= 1000)) {
-		html_warn('Cut ' . $i . ' -- apex malformed (must be in the range [-1000, 1000]).');
+		    (is_float_range($cgi_var->param('apex_' . $i),
+				    -1000, 1000) == 1)) {
+
+		html_warn('Cut ' . $i . ' -- apex malformed ' .
+			  '(must be in the range [-1000, 1000]).');
 		next;
 	    }
 	    push @url_args, 'apex_' . $i . '=' . $cgi_var->param('apex_' . $i);
 
 	    unless ((defined $cgi_var->param('color_' . $i)) &&
-		    ($cgi_var->param('color_' . $i) =~ m/^[0-9]+$/) &&
-		    (int($cgi_var->param('color_' . $i)) >= 0) &&
-		    (int($cgi_var->param('color_' . $i)) <= $MAX_COLOR_NUM)) {
+		    (is_int_range($cgi_var->param('color_' . $i),
+				  0, $MAX_COLOR_NUM) == 1)) {
+
 		html_warn('Cut ' . $i . ' -- color malformed.');
 		next;
 	    }
@@ -556,25 +581,26 @@ if (defined $cgi_var->param('action_button')) {
 	    foreach my $dir ('x', 'y', 'z') {
 		# cuts rotation per dir
 		unless ((defined $cgi_var->param('rotc_' . $dir . '_' . $i)) &&
-			($cgi_var->param('rotc_' . $dir . '_' . $i) =~
-			 m/^-?[0-9]{1,4}(?:\.[0-9]{1,5})?$/) &&
-			(abs($cgi_var->param('rotc_' . $dir . '_' . $i)) <=
-			 360)) {
+			(is_float_range($cgi_var->param('rotc_' .
+							$dir . '_' . $i),
+					-360, 360) == 1)) {
 
-		    html_warn('Cuts rotate ' . $dir . ' must be in the range [-360, 360]');
+		    html_warn('Cuts rotate ' . $dir .
+			      ' must be in the range [-360, 360]');
 		    next;
 		}
 		push @url_args, 'rotc_' . $dir . '_' . $i . '=' .
 		    $cgi_var->param('rotc_' . $dir . '_' . $i);
 
 		# Cuts translation per dir
-		unless ((defined $cgi_var->param('transc_' . $dir . '_' . $i)) &&
-			($cgi_var->param('transc_' . $dir . '_' . $i) =~
-			 m/^-?[0-9](?:\.[0-9]{1,5})?$/) &&
-			(abs($cgi_var->param('transc_' . $dir . '_' . $i)) <=
-			 1)) {
+		unless ((defined $cgi_var->param('transc_' . $dir .
+						 '_' . $i)) &&
+			(is_float_range($cgi_var->param('transc_' .
+							$dir . '_' . $i),
+					-1, 1) == 1)) {
 
-		    html_warn('Cuts translation ' . $dir . ' must be in the range [-1, 1]');
+		    html_warn('Cuts translation ' . $dir .
+			      ' must be in the range [-1, 1]');
 		    next;
 		}
 		push @url_args, 'transc_' . $dir . '_' . $i . '=' .
@@ -642,10 +668,12 @@ if (defined $cgi_var->param('action_button')) {
     elsif ($action eq 'job') {
 
 	unless ((defined $cgi_var->param('render_email')) &&
-		($cgi_var->param('render_email') =~ m/^[\w\d._-]{1,40}@[\w\d.-]{3,80}$/) &&
+		($cgi_var->param('render_email') =~
+		 m/^[\w\d._-]{1,40}@[\w\d.-]{3,80}$/) &&
 		($cgi_var->param('render_email') ne 'user@domain.com')) {
 
-	    html_warn('You must provide a valid email address for the render results to be sent to you.');
+	    html_warn('You must provide a valid email address for ' .
+		      'the render results to be sent to you.');
 	}
 	else {
 
@@ -691,8 +719,11 @@ if (defined $cgi_var->param('action_button')) {
 		exit(0);
 	    }
 
-	    print '<p><b><font color="#0000ff"><h1>A render job has been submitted',
-	    ' and the results will be emailed to you.  Please allow at least an hour for the render to complete.</h1></font></b></p>', "\n";
+	    print '<p><b><font color="#0000ff"><h1>A render job has been ',
+	    'submitted and the results will be emailed to you.  ',
+	    'Please allow at least 2 hours for the render to complete.',
+	    '</h1></font></b></p>', "\n";
+
 	    $link = 1;
 	}
 
@@ -786,7 +817,8 @@ print $cgi_var->end_html();
 
 sub get_session_id {
 
-    open(URANDOM, '<', '/dev/urandom') or die 'Unable to open urandom: ', $?, "\n";
+    open(URANDOM, '<', '/dev/urandom') or
+	die 'Unable to open urandom: ', $?, "\n";
 
     my $rand;
     read(URANDOM, $rand, 16);
