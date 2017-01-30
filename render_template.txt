@@ -475,51 +475,50 @@ light_source {
 
 
 #macro ConeShell (
-	coneDirection, //a normalized direction from the direction-set
-	normDiv,  //divider value in the scope 1 to 0
-	normApx, //same scale as normDiv -----------new---------------
+	coneDirection, // a normalized direction from the direction-set
+	normDiv,  // divider value in the range 1 to 0
+	normApx,  // divider value the range 1 to 0
 	gth)	  // gap thickness
 
 	//at the divider = depth of cut
 	#local Base_Point = coneDirection * normDiv;
-	#local Base_Radius = sqrt(1- normDiv*normDiv );
+	#local Base_Radius = sqrt(1 - (normDiv * normDiv));
 
 	//cone vertex
 	#local Cap_Point = coneDirection * normApx;
 
 	//half opening angle
-	#local hoa = atan(Base_Radius/vlength(Base_Point-Cap_Point));
+	#local hoa = atan(Base_Radius / vlength(Base_Point - Cap_Point));
 
         //offset to gain the gap-thickness
 	#local offst = gth / sin(hoa);
 
 	//make cone big enough
-	#local scal=100;
-	#local coneHeight= Base_Point - Cap_Point ;
+	#local scal = 100;
+	#local coneHeight = Base_Point - Cap_Point;
 
 	//Base_Point is translated, Cap_Point is kept
 	#local Base_Point = coneHeight * scal + Cap_Point;
 	#local Base_Radius = Base_Radius * scal;
 
         #if (normApx > normDiv )
-            #local offst = -offst;
             //for translating the main-cone
-            #local tr1=coneDirection * (offst * 0.5 );
+            #local tr1 = coneDirection * (offst * 0.5);
             //for translating the subtrahend-cone
-            #local tr2=coneDirection * (offst *  1.5 );
+            #local tr2 = coneDirection * (offst *  -0.5);
         #else
             //for translating the main-cone
-            #local tr1=coneDirection * (offst * -1.0 );
+            #local tr1 = coneDirection * (offst * -0.5);
             //for translating the subtrahend-cone
-            #local tr2=coneDirection * (offst *  0.0 );
+            #local tr2 = coneDirection * (offst *  0.5);
         #end
 
-	#local Cap_Radius=0;
+	#local Cap_Radius = 0;
 
 	//clip cone-cap if it is outside
-	#if(normApx <0)
-		#local Cap_Radius=tan(hoa)*vlength(Cap_Point);
-		#local Cap_Point=<0,0,0>;
+	#if(normApx < 0)
+		#local Cap_Radius = tan(hoa) * vlength(Cap_Point);
+		#local Cap_Point = <0, 0, 0>;
 	#end
 	#if(normApx > normDiv)
 		#local Cap_Radius = tan(hoa) * vlength(coneHeight);
@@ -528,16 +527,19 @@ light_source {
 
         //cone is plane
 	#if(normApx = normDiv)
-		cylinder{
-			Base_Point + tr1,
-			Base_Point + tr2,
-			scal
-		}
+	    cylinder{
+		Base_Point + tr1,
+		Base_Point + tr2,
+		scal
+	    }
 	#else
-	    #local retobj=cone{ Base_Point, Base_Radius, Cap_Point, Cap_Radius }
-		difference{
-	        object{retobj translate tr1}
-	        object{retobj translate tr2}
+	    #local coneobj = cone{
+	    	    	   Base_Point, Base_Radius,
+			   Cap_Point, Cap_Radius
+		   }
+	    difference{
+		   object{coneobj translate tr1}
+		   object{coneobj translate tr2}
 	    }
 	#end
 
