@@ -739,6 +739,8 @@ print '<p><a href="', $base_url, '?base_shape=2&rotc_x_0=90&rotc_y_0=125.3&rotc_
 
 print '<p><a href="', $base_url, '?base_shape=21&rot_x=-20&rot_y=25&rot_z=-8&cut_width=3&userbg=0&usermat=0&use_0=on&sym_0=21&type_0=1&depth_0=151&apex_0=151&color_0=18&rotc_x_0=0&transc_x_0=0&rotc_y_0=60&transc_y_0=0&rotc_z_0=0&transc_z_0=0&use_1=on&sym_1=35&type_1=1&depth_1=102&apex_1=102&color_1=18&rotc_x_1=0&transc_x_1=0&rotc_y_1=0&transc_y_1=0&rotc_z_1=0&transc_z_1=0">David Pitcher\'s Ultimate Insanity</a></p>', "\n";
 
+print '<p><a href="', $base_url, '?base_shape=57&usermat=0&rot_x=-30&rot_y=25&rot_z=-16&cut_width=5&userbg=0&use_0=on&sym_0=22&type_0=1&depth_0=110&apex_0=50&color_0=15&rotc_x_0=0&transc_x_0=0&rotc_y_0=0&transc_y_0=0&rotc_z_0=0&transc_z_0=0">Greg\'s Pentex</a></p>', "\n";
+
 
 print '<hr />', "\n";
 print $cgi_var->h3('Information:');

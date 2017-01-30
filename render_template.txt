@@ -75,16 +75,28 @@ sky_sphere {
 }
 #end
 
+// Behind, up, and to the left of the view
 light_source {
   <0, 0, 0>            // light's position (translated below)
   color rgb <1, 1, 1>  // light's color
   translate <-30,30, -30>
 }
 
+// soft light from the right
 light_source {
-  <0, 0, 0>            // light's position (translated below)
-  color rgb <1, 1, 1>  // light's color
-  translate <100,150,100>
+  <10, 0, 0>           // light's position (pointed below)
+  color rgb <0.2, 0.2, 0.2>  // light's color at .2 intensity
+  parallel
+  point_at <0, 0, 0>
+}
+
+
+// very soft light from the back
+light_source {
+  <0, 0, -10>           // light's position (pointed below)
+  color rgb <0.1, 0.1, 0.1>  // light's color at .1 intensity
+  parallel
+  point_at <0, 0, 0>
 }
 
 
