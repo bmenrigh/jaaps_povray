@@ -414,7 +414,7 @@ if (defined $cgi_var->param('action_button')) {
     # Parse the base shape settings
 
     # base shape
-    unless ((defined $cgi_var->param('base_shape')) &&
+    unless ((defined scalar $cgi_var->param('base_shape')) &&
 	    (is_int_range($cgi_var->param('base_shape'),
 			  0, $MAX_SHAPE_NUM) == 1)) {
 
@@ -427,7 +427,7 @@ if (defined $cgi_var->param('action_button')) {
     }
 
     # Material
-    unless ((defined $cgi_var->param('usermat')) &&
+    unless ((defined scalar $cgi_var->param('usermat')) &&
 	    (is_int_range($cgi_var->param('usermat'),
 			  0, 5) == 1)) {
 
@@ -440,7 +440,7 @@ if (defined $cgi_var->param('action_button')) {
     }
 
     # Cross section view
-    if ((defined $cgi_var->param('crosssection')) &&
+    if ((defined scalar $cgi_var->param('crosssection')) &&
 	($cgi_var->param('crosssection') eq 'on')) {
 	$replacements{'TEXTCROSSSECTION'} = '1';
 	push @url_args, 'crosssection=' . $cgi_var->param('crossesection');
@@ -451,7 +451,7 @@ if (defined $cgi_var->param('action_button')) {
 
     foreach my $dir ('x', 'y', 'z') {
 	# rotate by direction $dir
-	unless ((defined $cgi_var->param('rot_' . $dir)) &&
+	unless ((defined scalar $cgi_var->param('rot_' . $dir)) &&
 		(is_float_range($cgi_var->param('rot_' . $dir),
 				-360, 360) == 1)) {
 
@@ -467,7 +467,7 @@ if (defined $cgi_var->param('action_button')) {
     }
 
     # Cut width
-    unless ((defined $cgi_var->param('cut_width')) &&
+    unless ((defined scalar $cgi_var->param('cut_width')) &&
 	    (is_int_range($cgi_var->param('cut_width'),
 			  1, 5) == 1)) {
 
@@ -480,7 +480,7 @@ if (defined $cgi_var->param('action_button')) {
     }
 
     # Background
-    unless ((defined $cgi_var->param('userbg')) &&
+    unless ((defined scalar $cgi_var->param('userbg')) &&
 	    (is_int_range($cgi_var->param('userbg'),
 			  0, 2) == 1)) {
 
@@ -493,7 +493,7 @@ if (defined $cgi_var->param('action_button')) {
     }
 
     # Camera
-    if ((defined $cgi_var->param('zoomcam')) &&
+    if ((defined scalar $cgi_var->param('zoomcam')) &&
 	($cgi_var->param('zoomcam') eq 'on')) {
 	$replacements{'TEXTZOOMCAM'} = '1';
 	push @url_args, 'zoomcam=' . $cgi_var->param('zoomcam');
@@ -508,12 +508,12 @@ if (defined $cgi_var->param('action_button')) {
 	$replacements{'TEXT_CUT_' . $i} = '{1, -1, 0, 0, 0, 0, 0, 0, 0, 0}';
 	my $jdepth = 0;
 
-	if ((defined $cgi_var->param('use_' . $i)) &&
+	if ((defined scalar $cgi_var->param('use_' . $i)) &&
 	    ($cgi_var->param('use_' . $i) eq 'on')) {
 
 	    push @url_args, 'use_' . $i . '=' . $cgi_var->param('use_' . $i);
 
-	    unless ((defined $cgi_var->param('sym_' . $i)) &&
+	    unless ((defined scalar $cgi_var->param('sym_' . $i)) &&
 		    (is_int_range($cgi_var->param('sym_' . $i),
 				  1, $MAX_CUT_NUM) == 1)) {
 
@@ -522,7 +522,7 @@ if (defined $cgi_var->param('action_button')) {
 	    }
 	    push @url_args, 'sym_' . $i . '=' . $cgi_var->param('sym_' . $i);
 
-	    unless ((defined $cgi_var->param('type_' . $i)) &&
+	    unless ((defined scalar $cgi_var->param('type_' . $i)) &&
 		    (is_int_range($cgi_var->param('type_' . $i),
 				  1, 2) == 1)) {
 
@@ -532,7 +532,7 @@ if (defined $cgi_var->param('action_button')) {
 	    push @url_args, 'type_' . $i . '=' . $cgi_var->param('type_' . $i);
 
 	    if ($cgi_var->param('type_' . $i) == 1) {
-		unless ((defined $cgi_var->param('depth_' . $i)) &&
+		unless ((defined scalar $cgi_var->param('depth_' . $i)) &&
 			(is_float_range($cgi_var->param('depth_' . $i),
 					0, 300) == 1)) {
 
@@ -544,7 +544,7 @@ if (defined $cgi_var->param('action_button')) {
 	    }
 
 	    if ($cgi_var->param('type_' . $i) == 2) {
-		unless ((defined $cgi_var->param('depth_' . $i)) &&
+		unless ((defined scalar $cgi_var->param('depth_' . $i)) &&
 			(is_float_range($cgi_var->param('depth_' . $i),
 					0, 90) == 1)) {
 
@@ -558,7 +558,7 @@ if (defined $cgi_var->param('action_button')) {
 	    push @url_args, 'depth_' . $i . '=' .
 		$cgi_var->param('depth_' . $i);
 
-	    unless ((defined $cgi_var->param('apex_' . $i)) &&
+	    unless ((defined scalar $cgi_var->param('apex_' . $i)) &&
 		    (is_float_range($cgi_var->param('apex_' . $i),
 				    -1000, 1000) == 1)) {
 
@@ -568,7 +568,7 @@ if (defined $cgi_var->param('action_button')) {
 	    }
 	    push @url_args, 'apex_' . $i . '=' . $cgi_var->param('apex_' . $i);
 
-	    unless ((defined $cgi_var->param('color_' . $i)) &&
+	    unless ((defined scalar $cgi_var->param('color_' . $i)) &&
 		    (is_int_range($cgi_var->param('color_' . $i),
 				  0, $MAX_COLOR_NUM) == 1)) {
 
@@ -580,7 +580,7 @@ if (defined $cgi_var->param('action_button')) {
 
 	    foreach my $dir ('x', 'y', 'z') {
 		# cuts rotation per dir
-		unless ((defined $cgi_var->param('rotc_' . $dir . '_' . $i)) &&
+		unless ((defined scalar $cgi_var->param('rotc_' . $dir . '_' . $i)) &&
 			(is_float_range($cgi_var->param('rotc_' .
 							$dir . '_' . $i),
 					-360, 360) == 1)) {
@@ -593,7 +593,7 @@ if (defined $cgi_var->param('action_button')) {
 		    $cgi_var->param('rotc_' . $dir . '_' . $i);
 
 		# Cuts translation per dir
-		unless ((defined $cgi_var->param('transc_' . $dir .
+		unless ((defined scalar $cgi_var->param('transc_' . $dir .
 						 '_' . $i)) &&
 			(is_float_range($cgi_var->param('transc_' .
 							$dir . '_' . $i),
@@ -667,7 +667,7 @@ if (defined $cgi_var->param('action_button')) {
     }
     elsif ($action eq 'job') {
 
-	unless ((defined $cgi_var->param('render_email')) &&
+	unless ((defined scalar $cgi_var->param('render_email')) &&
 		($cgi_var->param('render_email') =~
 		 m/^[\w\d._-]{1,40}@[\w\d.-]{3,80}$/) &&
 		($cgi_var->param('render_email') ne 'user@domain.com')) {
