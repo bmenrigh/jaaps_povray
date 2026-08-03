@@ -1,0 +1,2673 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>TwistyVision — live puzzle geometry</title>
+  <script>
+    (() => {
+      let theme;
+      try { theme = localStorage.getItem('twistyvision-theme'); } catch {}
+      if (theme !== 'light' && theme !== 'dark') {
+        theme = typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f4f1e9;
+      --muted: #aaa9a1;
+      --panel: rgba(24, 25, 29, .92);
+      --panel-2: #202126;
+      --line: rgba(255,255,255,.11);
+      --accent: #f1a64b;
+      --accent-2: #6ecfc3;
+      --danger: #ff6d66;
+      --shadow: 0 20px 70px rgba(0,0,0,.36);
+      --body-background:
+        radial-gradient(circle at 13% 8%, rgba(80,108,102,.25), transparent 34rem),
+        radial-gradient(circle at 92% 88%, rgba(142,91,44,.17), transparent 36rem),
+        #111216;
+      --stage-bg: #090b0f;
+      --control-bg: #15161a;
+      --label: #d7d4ca;
+      --check-ink: #dedbd2;
+      --action-bg: rgba(22,23,27,.76);
+      --overlay-bg: rgba(8,9,12,.72);
+      --faint-surface: rgba(255,255,255,.018);
+      --primary-ink: #15120e;
+      --danger-ink: #ffaaa5;
+      --danger-line: rgba(255,109,102,.25);
+      --danger-bg: rgba(255,109,102,.06);
+      --dialog-bg: #1b1c21;
+      --copy-ink: #cac8c0;
+      --download-ink: #c9ccff;
+      --download-line: rgba(137,142,238,.38);
+      --download-bg: rgba(113,118,218,.13);
+      --download-hover: rgba(113,118,218,.2);
+      --link-ink: #9de3da;
+      --link-hover: #c0f4ee;
+      --contact-bg: rgba(255,255,255,.035);
+    }
+
+    html[data-theme="light"] {
+      color-scheme: light;
+      --ink: #202631;
+      --muted: #687383;
+      --panel: rgba(255,253,248,.94);
+      --panel-2: #f0f2f5;
+      --line: rgba(35,47,65,.15);
+      --accent: #dc922f;
+      --accent-2: #287f76;
+      --danger: #c94a43;
+      --shadow: 0 20px 60px rgba(43,54,72,.14);
+      --body-background:
+        radial-gradient(circle at 13% 8%, rgba(69,145,134,.16), transparent 34rem),
+        radial-gradient(circle at 92% 88%, rgba(220,146,47,.14), transparent 36rem),
+        linear-gradient(145deg, #fffaf1, #f5f8fc 55%, #edf4f3);
+      --stage-bg: #dfe5e7;
+      --control-bg: rgba(255,255,255,.9);
+      --label: #424c5b;
+      --check-ink: #343d4b;
+      --action-bg: rgba(255,255,255,.76);
+      --faint-surface: rgba(35,47,65,.025);
+      --primary-ink: #24180b;
+      --danger-ink: #ad3833;
+      --danger-line: rgba(185,55,49,.25);
+      --danger-bg: rgba(201,74,67,.07);
+      --dialog-bg: #fffdf8;
+      --copy-ink: #4d5868;
+      --download-ink: #424a9d;
+      --download-line: rgba(76,85,176,.3);
+      --download-bg: rgba(88,98,196,.09);
+      --download-hover: rgba(88,98,196,.15);
+      --link-ink: #1c746b;
+      --link-hover: #115a53;
+      --contact-bg: rgba(35,47,65,.04);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--body-background);
+      font: 15px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button, select, input, textarea { color: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      width: min(1540px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 430px;
+      gap: 18px;
+    }
+
+    .stage {
+      position: sticky;
+      top: 20px;
+      height: calc(100vh - 40px);
+      min-height: 560px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--stage-bg);
+      box-shadow: var(--shadow);
+    }
+
+    #preview {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: inherit;
+      touch-action: none;
+    }
+    .stage > :not(canvas) {
+      text-shadow:
+        0 1px 2px rgba(0,0,0,.98),
+        0 0 7px rgba(0,0,0,.92),
+        0 0 16px rgba(0,0,0,.72);
+    }
+
+    .brand {
+      position: absolute;
+      left: 26px;
+      top: 22px;
+      pointer-events: none;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 4px 0 0; font-size: clamp(24px, 3vw, 42px); line-height: 1; letter-spacing: -.045em; }
+    .brand h1 { color: #f4f1e9; }
+    .brand p { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
+
+    .stage-tools {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .glass-button, .action {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--action-bg);
+      padding: 9px 12px;
+      font-weight: 700;
+      transition: .18s ease;
+    }
+    .glass-button:hover, .action:hover { border-color: rgba(255,255,255,.3); transform: translateY(-1px); }
+    .glass-button { color: #f4f1e9; border-color: rgba(255,255,255,.16); background: rgba(22,23,27,.76); }
+    html[data-theme="light"] .action:hover { border-color: rgba(35,47,65,.3); }
+
+    button.theme-switch {
+      position: relative;
+      width: 64px;
+      height: 36px;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(24,25,29,.88);
+      box-shadow: 0 5px 14px rgba(0,0,0,.24);
+      padding: 0 8px;
+      font-size: 15px;
+    }
+    button.theme-switch::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 2px 7px rgba(23,32,51,.22);
+      transition: transform .2s ease;
+    }
+    .theme-switch span { position: relative; z-index: 1; width: 18px; line-height: 1; text-align: center; }
+    .theme-sun { color: #d98d0b; }
+    .theme-moon { color: #72819a; }
+    html[data-theme="dark"] .theme-switch::after { transform: translateX(28px); background: #cbd5e3; }
+    html[data-theme="dark"] .theme-moon { color: #4a5b76; }
+    html[data-theme="light"] button.theme-switch { background: rgba(255,255,255,.78); box-shadow: 0 5px 14px rgba(23,32,51,.16); }
+    .theme-switch:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 3px; }
+
+    .hint {
+      position: absolute;
+      left: 50%;
+      bottom: 19px;
+      transform: translateX(-50%);
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #aaa9a1;
+      background: var(--overlay-bg);
+      font-size: 12px;
+      white-space: nowrap;
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .status {
+      position: absolute;
+      inset: auto 18px 18px auto;
+      padding: 7px 10px;
+      border-radius: 8px;
+      color: #9cded6;
+      background: var(--overlay-bg);
+      font-size: 11px;
+      opacity: 0;
+      transition: opacity .2s;
+      pointer-events: none;
+    }
+    .status.show { opacity: 1; }
+
+    .renderer-loading {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: calc(100% - 40px);
+      padding: 10px 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 999px;
+      color: #e5e2da;
+      background: rgba(8,9,12,.78);
+      box-shadow: 0 10px 34px rgba(0,0,0,.28);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+      transition: opacity .2s ease;
+    }
+    .renderer-loading[hidden] { display: none; }
+    .renderer-loading-spinner {
+      width: 15px;
+      height: 15px;
+      flex: 0 0 auto;
+      border: 2px solid rgba(255,255,255,.24);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: renderer-spin .75s linear infinite;
+    }
+    @keyframes renderer-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .renderer-loading-spinner { animation: none; } }
+
+    .controls { display: flex; flex-direction: column; gap: 14px; }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-head { padding: 17px 18px 0; }
+    .panel-head h2 { margin: 0; font-size: 16px; letter-spacing: -.02em; }
+    .panel-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 16px 18px 18px; }
+
+    .field { display: grid; gap: 7px; }
+    .panel-body > .field + .field,
+    .panel-body > .field + .row,
+    .panel-body > .row + .field,
+    .panel-body > .row + .row { margin-top: 14px; }
+    label, .label { color: var(--label); font-size: 12px; font-weight: 700; line-height: 1.2; }
+    select, input[type="number"], input[type="text"], textarea {
+      min-width: 0;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      outline: none;
+      background: var(--control-bg);
+      padding: 9px 10px;
+    }
+    textarea { min-height: 82px; resize: vertical; font: 11px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    select { height: 42px; }
+    select:focus, input:focus, textarea:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(110,207,195,.1); outline: none; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+    .row { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); align-items: start; gap: 10px; }
+    .row > .field { margin-top: 0; }
+    .triple { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+    .axis-input { position: relative; }
+    .axis-input span { position: absolute; top: 9px; left: 9px; color: var(--muted); font-size: 11px; pointer-events: none; }
+    .axis-input input { padding-left: 25px; }
+
+    .number-slider { display: grid; gap: 4px; }
+    .number-slider input[type="range"] {
+      height: 12px;
+      margin: 0;
+      cursor: ew-resize;
+    }
+    .number-slider.is-locked { opacity: .45; }
+    .number-slider.is-locked input { cursor: not-allowed; }
+    .axis-input .number-slider input[type="number"] { padding-left: 25px; }
+    .axis-input .number-slider input[type="range"] { padding: 0; }
+
+    .cut-mode {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--control-bg);
+    }
+    .cut-mode button {
+      border: 0;
+      border-radius: 7px;
+      color: var(--muted);
+      background: transparent;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .cut-mode button[aria-pressed="true"] {
+      color: var(--primary-ink);
+      background: var(--accent);
+    }
+    .cut-mode button:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+    .export-size { grid-template-columns: repeat(auto-fit,minmax(64px,1fr)); }
+    .export-size button { display: grid; gap: 2px; padding-inline: 5px; }
+    .export-size button[hidden] { display: none; }
+    .export-size button small { font-size: 9px; font-weight: 650; opacity: .82; }
+    .preview-export-size {
+      display: grid;
+      gap: 2px;
+      border-radius: 7px;
+      color: var(--primary-ink);
+      background: var(--accent);
+      padding: 7px 10px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .preview-export-size[hidden] { display: none; }
+    .preview-export-size small { font-size: 9px; font-weight: 650; opacity: .82; }
+    .export-size-field + .actions { margin-top: 14px; }
+
+    .slice-label, .range-ends { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .slice-value { color: var(--accent-2); font-size: 11px; font-weight: 800; }
+    .range-ends { color: var(--muted); font-size: 10px; font-weight: 600; }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--check-ink);
+      font-size: 13px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .check input { width: 17px; height: 17px; accent-color: var(--accent); }
+
+    .configuration-panel { border-color: rgba(241,166,75,.3); }
+    .configuration-panel select { border-color: rgba(241,166,75,.28); }
+    .cuts { display: grid; gap: 9px; }
+    details.cut {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--faint-surface);
+    }
+    details.cut[open] { border-color: color-mix(in srgb, var(--line), var(--ink) 20%); }
+    .cut summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 9px 11px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cut summary::-webkit-details-marker { display: none; }
+    .cut summary::after { content: "+"; margin-left: auto; color: var(--muted); font-size: 19px; font-weight: 400; }
+    .cut[open] summary::after { content: "−"; }
+    .cut-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--cut-color); box-shadow: 0 0 15px color-mix(in srgb, var(--cut-color), transparent 35%); }
+    .cut-title { font-weight: 800; }
+    .cut-summary { color: var(--muted); font-size: 11px; }
+    .cut-fields { padding: 2px 12px 14px; border-top: 1px solid var(--line); }
+    .cut-fields .field { margin-top: 12px; }
+
+    .swatch-select { display: grid; grid-template-columns: 38px 1fr; gap: 8px; }
+    .swatch { border: 1px solid var(--line); border-radius: 9px; background: var(--cut-color); }
+
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .action.primary { color: var(--primary-ink); border-color: transparent; background: var(--accent); }
+    .action.subtle { background: transparent; }
+    .action.download-action {
+      grid-column: 1 / -1;
+      color: var(--download-ink);
+      border-color: var(--download-line);
+      background: var(--download-bg);
+    }
+    .action.download-action:hover { border-color: var(--download-line); background: var(--download-hover); }
+    .action.renderer-link { grid-column: 1 / -1; color: var(--link-ink); border-color: rgba(110,207,195,.35); text-align: center; text-decoration: none; }
+    .action.danger { color: var(--danger-ink); border-color: var(--danger-line); background: var(--danger-bg); }
+    .action:disabled { cursor: default; opacity: .42; transform: none; }
+    .saved-buttons { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; margin-top: 10px; }
+    .saved-buttons.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .saved-subhead + .saved-buttons { margin-top: 0; }
+    .saved-divider { height: 1px; margin: 16px 0; background: var(--line); }
+    .saved-subhead { margin: 0 0 9px; color: var(--label); font-size: 12px; font-weight: 800; }
+    .saved-panel > summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 17px 18px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .saved-panel[open] > summary { padding-bottom: 0; }
+    .saved-panel > summary::-webkit-details-marker { display: none; }
+    .saved-panel > summary::after { content: "+"; margin-left: auto; color: var(--muted); font-size: 22px; font-weight: 400; }
+    .saved-panel[open] > summary::after { content: "−"; }
+    .saved-panel-title { display: block; font-size: 16px; font-weight: 700; letter-spacing: -.02em; }
+    .saved-panel-description { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; }
+
+    .about-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border: 0;
+      background: transparent;
+      padding: 17px 18px;
+      text-align: left;
+    }
+    .about-toggle::after { content: "+"; margin-left: auto; color: var(--muted); font-size: 22px; font-weight: 400; }
+    .about-toggle[aria-expanded="true"]::after { content: "−"; }
+    .about-toggle:hover .saved-panel-title { color: var(--accent); }
+    .about-toggle:focus-visible { outline: 2px solid var(--accent-2); outline-offset: -4px; border-radius: 18px; }
+    .about-content {
+      grid-column: 1;
+      padding: 28px 32px 32px;
+      border-color: rgba(110,207,195,.3);
+    }
+    .about-content[hidden] { display: none; }
+    .app.about-open {
+      grid-template-rows: calc(100vh - 40px) auto;
+      align-items: start;
+    }
+    .app.about-open .stage {
+      position: relative;
+      grid-column: 1;
+      grid-row: 1;
+      top: 0;
+    }
+    .app.about-open .controls {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+    .app.about-open .about-content {
+      grid-column: 1;
+      grid-row: 2;
+    }
+    .about-content-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .about-content h2 { margin: 0; font-size: clamp(22px, 3vw, 32px); letter-spacing: -.035em; }
+    .about-content-copy { max-width: 100ch; }
+    .about-content p { margin: 18px 0 0; color: var(--copy-ink); font-size: 14px; line-height: 1.75; }
+    .about-content a { color: var(--link-ink); text-underline-offset: 3px; }
+    .about-content a:hover { color: var(--link-hover); }
+    .about-contact {
+      display: inline-block;
+      margin-left: .25em;
+      padding: 2px 7px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink) !important;
+      background: var(--contact-bg);
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+      text-decoration: none;
+    }
+
+    .confirm-dialog {
+      width: min(420px, calc(100vw - 32px));
+      margin: auto;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      color: var(--ink);
+      background: var(--dialog-bg);
+      box-shadow: 0 28px 90px rgba(0,0,0,.7);
+    }
+    .confirm-dialog::backdrop {
+      background: rgba(5,6,8,.72);
+      backdrop-filter: blur(5px);
+    }
+    .confirm-dialog form { padding: 22px; }
+    .confirm-dialog-heading { display: flex; align-items: center; gap: 12px; }
+    .confirm-dialog-icon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 34px;
+      height: 34px;
+      border-radius: 50%;
+      color: #ffaaa5;
+      background: rgba(255,109,102,.1);
+      font-weight: 850;
+    }
+    .confirm-dialog h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+    .confirm-dialog p { margin: 14px 0 0; color: var(--muted); font-size: 13px; }
+    .confirm-dialog strong { color: var(--ink); overflow-wrap: anywhere; }
+    .confirm-dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+    .confirm-dialog-actions .action { min-width: 92px; }
+    .confirm-dialog-actions .danger { color: #21100f; border-color: transparent; background: #f07b74; }
+
+    .footer { color: #777872; padding: 4px 7px 24px; font-size: 11px; text-align: center; }
+
+    #error {
+      display: none;
+      position: absolute;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%,-50%);
+      max-width: 440px;
+      padding: 20px;
+      border: 1px solid rgba(255,109,102,.35);
+      border-radius: 14px;
+      color: #ffd2cf;
+      background: #261515;
+      text-align: center;
+    }
+
+    @media (max-width: 960px) {
+      .app { grid-template-columns: 1fr; padding: 10px; }
+      .stage {
+        position: sticky;
+        top: 10px;
+        z-index: 20;
+        align-self: start;
+        height: 38vh;
+        height: clamp(210px,38svh,360px);
+        min-height: 210px;
+        box-shadow: 0 16px 42px rgba(0,0,0,.42);
+      }
+      .controls { width: 100%; }
+      .app.about-open { grid-template-rows: auto; }
+      .app.about-open .stage { grid-column: 1; grid-row: 1; }
+      .app.about-open .about-content { grid-column: 1; grid-row: 2; }
+      .app.about-open .controls { grid-column: 1; grid-row: 3; }
+    }
+    @media (max-width: 520px) {
+      .stage {
+        top: 6px;
+        height: 36vh;
+        height: clamp(190px,36svh,300px);
+        min-height: 190px;
+        border-radius: 17px;
+      }
+      .brand { display: block; left: 12px; top: 10px; }
+      .brand h1 { font-size: 18px; }
+      .brand p { display: none; }
+      .stage-tools { left: auto; right: 9px; top: 8px; justify-content: flex-end; gap: 4px; }
+      .stage-tools .glass-button { padding: 6px; font-size: 10px; }
+      .stage-tools .theme-switch { width: 50px; height: 28px; padding: 0 6px; font-size: 12px; }
+      .stage-tools .theme-switch::after { left: 3px; top: 3px; width: 20px; height: 20px; }
+      .stage-tools .theme-switch span { width: 14px; }
+      html[data-theme="dark"] .stage-tools .theme-switch::after { transform: translateX(24px); }
+      .hint { display: none; }
+      .app { padding: 6px; gap: 8px; }
+      .panel { border-radius: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="stage" aria-label="Interactive 3D preview">
+      <canvas id="preview"></canvas>
+      <div class="brand">
+        <h1>TwistyVision</h1>
+      </div>
+      <div class="stage-tools">
+        <button class="glass-button" id="homeView" type="button">Reset view</button>
+        <button class="glass-button" id="toggleMotion" type="button">Auto-rotate: off</button>
+        <button class="theme-switch" id="themeSwitch" type="button" aria-label="Switch to light theme" aria-pressed="true" title="Switch to light theme"><span class="theme-sun" aria-hidden="true">☀</span><span class="theme-moon" aria-hidden="true">☾</span></button>
+      </div>
+      <div class="hint">Drag to rotate · wheel or pinch to zoom · double-click to reset view</div>
+      <div class="status" id="status" role="status"></div>
+      <div class="renderer-loading" id="rendererLoading" role="status" aria-live="polite">
+        <span class="renderer-loading-spinner" aria-hidden="true"></span>
+        <span id="rendererLoadingText">Preparing preview…</span>
+      </div>
+      <div id="error"></div>
+    </section>
+
+    <aside class="controls">
+      <details class="panel saved-panel configuration-panel" id="configurationPanel" open>
+        <summary>
+          <span>
+            <span class="saved-panel-title">Configurations</span>
+            <span class="saved-panel-description">Choose a built-in puzzle or manage your own saved configurations.</span>
+          </span>
+        </summary>
+        <div class="panel-body">
+          <div class="field">
+            <label for="configuration">Configuration</label>
+            <select id="configuration"></select>
+          </div>
+          <div class="field">
+            <label for="savedName">User configuration name</label>
+            <input id="savedName" type="text" maxlength="100" placeholder="My puzzle">
+          </div>
+          <div class="saved-buttons">
+            <button class="action primary" id="saveConfiguration" type="button">Save current</button>
+            <button class="action" id="loadConfiguration" type="button" disabled>Load</button>
+            <button class="action danger" id="deleteConfiguration" type="button" disabled>Delete</button>
+          </div>
+
+          <div class="saved-divider"></div>
+          <p class="saved-subhead">User collection</p>
+          <div class="saved-buttons two">
+            <button class="action" id="downloadConfigurations" type="button">Download JSON</button>
+            <button class="action" id="uploadConfigurations" type="button">Upload JSON</button>
+            <input id="configurationFile" type="file" accept="application/json,.json" hidden>
+          </div>
+
+          <div class="saved-divider"></div>
+          <div class="field">
+            <label for="shareCode">Clipboard share code</label>
+            <textarea id="shareCode" spellcheck="false" placeholder="Copy the current configuration or paste a share code here."></textarea>
+          </div>
+          <div class="saved-buttons two">
+            <button class="action" id="exportClipboard" type="button">Copy current</button>
+            <button class="action" id="importClipboard" type="button">Paste &amp; import</button>
+          </div>
+        </div>
+      </details>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Solid</h2>
+          <p>The base is the region enclosed by its face planes.</p>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label for="base_shape">Base shape</label>
+            <select id="base_shape" name="base_shape"></select>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="usermat">Material</label>
+              <select id="usermat" name="usermat">
+                <option value="0">White clay</option>
+                <option value="1">Graphite</option>
+                <option value="2">Gold</option>
+                <option value="3">Pink alabaster</option>
+                <option value="4">White marble</option>
+                <option value="5">Cherry wood</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="userbg">Background</label>
+              <select id="userbg" name="userbg">
+                <option value="0">Midnight</option>
+                <option value="1">Studio white</option>
+                <option value="2">Sky</option>
+                <option value="3">Transparent</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label class="slice-label" for="slice"><span>Cross-section slice</span><output class="slice-value" id="sliceReadout" for="slice">No slicing</output></label>
+            <input id="slice" name="slice" type="range" min="0" max="100" step="0.1">
+            <div class="range-ends"><span>Fully sliced</span><span>Through origin</span><span>No slicing</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Scene</h2>
+          <p>These values remain compatible with the original query string.</p>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <span class="label">Rotate shape (x, y, z)</span>
+            <div class="triple" id="sceneRotation"></div>
+          </div>
+          <div class="field">
+            <label class="check"><input id="fast_render" name="fast_render" type="checkbox"> Fast rendering <span style="color:var(--muted);font-weight:500">(simpler shadows and lighting)</span></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Cuts</h2>
+          <p>Each direction in a symmetry set subtracts one thin cone shell.</p>
+        </div>
+        <div class="panel-body">
+          <div class="field" style="margin-bottom:12px">
+            <label for="cut_width">Cut thickness</label>
+            <select id="cut_width" name="cut_width">
+              <option value="1">1 · Thin</option>
+              <option value="2">2</option>
+              <option value="3">3 · Normal</option>
+              <option value="4">4</option>
+              <option value="5">5 · Thick</option>
+            </select>
+          </div>
+          <div class="cuts" id="cuts"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-body">
+          <div class="field export-size-field">
+            <span class="label" id="exportSizeLabel">PNG export size</span>
+            <div class="cut-mode export-size" role="group" aria-labelledby="exportSizeLabel">
+              <div class="preview-export-size" id="previewExportSize" hidden><span>Preview</span><small id="previewExportDimensions"></small></div>
+              <button type="button" id="nativeExportSize" data-export-size="native" aria-pressed="false" hidden><span>Native</span><small id="nativeExportDimensions"></small></button>
+              <button type="button" id="normalExportSize" data-export-size="normal" aria-pressed="false"><span>Normal</span><small>1024 × 1024</small></button>
+              <button type="button" id="largeExportSize" data-export-size="large" aria-pressed="false"><span>Large</span><small>1440 × 1440</small></button>
+              <button type="button" id="hugeExportSize" data-export-size="huge" aria-pressed="false"><span>Huge</span><small>2880 × 2880</small></button>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="action download-action" id="download" type="button">Download PNG</button>
+            <button class="action primary" id="copyLink" type="button">Get link to configuration</button>
+            <button class="action subtle" id="reset" type="button">Reset everything</button>
+            <a class="action renderer-link" id="rendererLink" href="https://www.brandonenright.net/cgi-bin/jaaps_povray.pl" target="_blank" rel="noopener noreferrer">Load in Twisty Renderer ↗</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <button class="about-toggle" id="aboutToggle" type="button" aria-expanded="false" aria-controls="aboutContent">
+          <span>
+            <span class="saved-panel-title">About TwistyVision</span>
+            <span class="saved-panel-description">Credits, origins, and contact information.</span>
+          </span>
+        </button>
+      </section>
+    </aside>
+
+    <section class="panel about-content" id="aboutContent" aria-labelledby="aboutTitle" hidden>
+      <div class="about-content-header">
+        <h2 id="aboutTitle">Credits</h2>
+        <button class="action subtle" id="closeAbout" type="button">Close</button>
+      </div>
+      <div class="about-content-copy">
+        <p>
+          TwistyVision is based on
+          <a href="https://www.brandonenright.net/cgi-bin/jaaps_povray.pl" target="_blank" rel="noopener noreferrer">Twisty Renderer</a>,
+          which itself is based on Jaap Scherphuis’s
+          <a href="https://www.jaapsch.net/puzzles/sphere.htm" target="_blank" rel="noopener noreferrer">Sphere Symmetry Applet</a>.
+          The Twisty Renderer POV-Ray code used for rendering was originally written by Stef-n. Much of the analysis determining which polyhedra to include was done by Matt Galla. Many of the polyhedra would not have been practical to implement without David McCooey’s
+          <a href="https://www.dmccooey.com/polyhedra/" target="_blank" rel="noopener noreferrer">Visual Polyhedra</a> site.
+        </p>
+        <p>
+          TwistyVision is a modern remake that performs
+          <a href="https://en.wikipedia.org/wiki/Ray_marching" target="_blank" rel="noopener noreferrer">ray marching</a>
+          directly in WebGL, providing an immediate interactive preview in the browser.
+        </p>
+        <p>
+          Bugs, inquiries, and complaints should be directed to Brandon at
+          <span class="about-contact">twisty_renderer-＠-brandonenright.net</span>.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="confirm-dialog" id="deleteDialog" aria-labelledby="deleteDialogTitle" aria-describedby="deleteDialogMessage">
+    <form method="dialog">
+      <div class="confirm-dialog-heading">
+        <span class="confirm-dialog-icon" aria-hidden="true">!</span>
+        <h2 id="deleteDialogTitle">Delete configuration?</h2>
+      </div>
+      <p id="deleteDialogMessage"><strong id="deleteConfigurationName"></strong> will be removed from this browser. This can’t be undone.</p>
+      <div class="confirm-dialog-actions">
+        <button class="action" type="submit" value="cancel" autofocus>Cancel</button>
+        <button class="action danger" type="submit" value="delete">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+  (() => {
+    'use strict';
+
+    const $ = (id) => document.getElementById(id);
+    const TAU = Math.PI * 2;
+    const DEG = Math.PI / 180;
+    const geometryCatalog = {"vectors":{"dirsCC":[[0.57735027,0.57735027,0.57735027],[-0.57735027,-0.57735027,-0.57735027],[-0.57735027,0.57735027,0.57735027],[0.57735027,-0.57735027,-0.57735027],[0.57735027,-0.57735027,0.57735027],[-0.57735027,0.57735027,-0.57735027],[0.57735027,0.57735027,-0.57735027],[-0.57735027,-0.57735027,0.57735027]],"dirsCE":[[0,0.70710678,0.70710678],[0,-0.70710678,-0.70710678],[0,-0.70710678,0.70710678],[0,0.70710678,-0.70710678],[0.70710678,0.70710678,0],[-0.70710678,-0.70710678,0],[-0.70710678,0.70710678,0],[0.70710678,-0.70710678,0],[0.70710678,0,0.70710678],[-0.70710678,0,-0.70710678],[0.70710678,0,-0.70710678],[-0.70710678,0,0.70710678]],"dirsCF":[[0,0,1.0],[0,0,-1.0],[0,1.0,0],[0,-1.0,0],[1.0,0,0],[-1.0,0,0]],"dirsCW":[[0.28108464,0.67859834,-0.67859834],[-0.28108464,0.67859834,-0.67859834],[-0.67859834,0.67859834,-0.28108464],[-0.67859834,0.67859834,0.28108464],[-0.28108464,0.67859834,0.67859834],[0.28108464,0.67859834,0.67859834],[0.67859834,0.67859834,0.28108464],[0.67859834,0.67859834,-0.28108464],[0.67859834,0.28108464,-0.67859834],[-0.67859834,0.28108464,-0.67859834],[-0.67859834,0.28108464,0.67859834],[0.67859834,0.28108464,0.67859834],[0.67859834,-0.28108464,-0.67859834],[-0.67859834,-0.28108464,-0.67859834],[-0.67859834,-0.28108464,0.67859834],[0.67859834,-0.28108464,0.67859834],[0.28108464,-0.67859834,-0.67859834],[-0.28108464,-0.67859834,-0.67859834],[-0.67859834,-0.67859834,-0.28108464],[-0.67859834,-0.67859834,0.28108464],[-0.28108464,-0.67859834,0.67859834],[0.28108464,-0.67859834,0.67859834],[0.67859834,-0.67859834,0.28108464],[0.67859834,-0.67859834,-0.28108464]],"dirsCutsDihe":[[0,1.0,0],[0,-1.0,0]],"dirsCutsHepPrism":[[0,0,1.0],[0.43388374,0,-0.90096887],[-0.43388374,0,-0.90096887],[0.78183148,0,0.6234898],[-0.78183148,0,0.6234898],[0.97492791,0,-0.22252093],[-0.97492791,0,-0.22252093]],"dirsCutsHexPrism":[[0,0,-1.0],[0,0,1.0],[0.8660254,0,-0.5],[-0.8660254,0,-0.5],[0.8660254,0,0.5],[-0.8660254,0,0.5]],"dirsCutsOctPrism":[[0,0,-1.0],[0,0,1.0],[0.70710678,0,-0.70710678],[-0.70710678,0,-0.70710678],[0.70710678,0,0.70710678],[-0.70710678,0,0.70710678],[1.0,0,0],[-1.0,0,0]],"dirsCutsPentPrism":[[0,0,1.0],[0.58778525,0,-0.80901699],[-0.58778525,0,-0.80901699],[0.95105652,0,0.30901699],[-0.95105652,0,0.30901699]],"dirsCutsSquarePrism":[[0,0,-1.0],[0,0,1.0],[1.0,0,0],[-1.0,0,0]],"dirsCutsTriPrism":[[0,0,1.0],[0.8660254,0,-0.5],[-0.8660254,0,-0.5]],"dirsDC":[[0.57735027,0.57735027,0.57735027],[-0.57735027,-0.57735027,-0.57735027],[-0.57735027,0.57735027,0.57735027],[0.57735027,-0.57735027,-0.57735027],[0.57735027,-0.57735027,0.57735027],[-0.57735027,0.57735027,-0.57735027],[0.57735027,0.57735027,-0.57735027],[-0.57735027,-0.57735027,0.57735027],[0,0.35682209,0.93417236],[0,-0.35682209,-0.93417236],[0,-0.35682209,0.93417236],[0,0.35682209,-0.93417236],[0.35682209,0.93417236,0],[-0.35682209,-0.93417236,0],[-0.35682209,0.93417236,0],[0.35682209,-0.93417236,0],[0.93417236,0,0.35682209],[-0.93417236,0,-0.35682209],[0.93417236,0,-0.35682209],[-0.93417236,0,0.35682209]],"dirsDE":[[0,0,1.0],[0,0,-1.0],[0,1.0,0],[0,-1.0,0],[1.0,0,0],[-1.0,0,0],[0.5,0.80901699,0.30901699],[0.30901699,0.5,0.80901699],[0.80901699,0.30901699,0.5],[0.5,0.80901699,-0.30901699],[0.30901699,0.5,-0.80901699],[0.80901699,0.30901699,-0.5],[0.5,-0.80901699,0.30901699],[0.30901699,-0.5,0.80901699],[0.80901699,-0.30901699,0.5],[0.5,-0.80901699,-0.30901699],[0.30901699,-0.5,-0.80901699],[0.80901699,-0.30901699,-0.5],[-0.5,0.80901699,0.30901699],[-0.30901699,0.5,0.80901699],[-0.80901699,0.30901699,0.5],[-0.5,0.80901699,-0.30901699],[-0.30901699,0.5,-0.80901699],[-0.80901699,0.30901699,-0.5],[-0.5,-0.80901699,0.30901699],[-0.30901699,-0.5,0.80901699],[-0.80901699,-0.30901699,0.5],[-0.5,-0.80901699,-0.30901699],[-0.30901699,-0.5,-0.80901699],[-0.80901699,-0.30901699,-0.5]],"dirsDF":[[0,0.85065081,0.52573111],[0,-0.85065081,-0.52573111],[0,-0.85065081,0.52573111],[0,0.85065081,-0.52573111],[0.85065081,0.52573111,0],[-0.85065081,-0.52573111,0],[-0.85065081,0.52573111,0],[0.85065081,-0.52573111,0],[0.52573111,0,0.85065081],[-0.52573111,0,-0.85065081],[0.52573111,0,-0.85065081],[-0.52573111,0,0.85065081]],"dirsDeltHex":[[0.22391898,0.22391898,0.94853602],[0.22391898,0.22391898,-0.94853602],[0.22391898,-0.22391898,0.94853602],[0.22391898,-0.22391898,-0.94853602],[-0.22391898,0.22391898,0.94853602],[-0.22391898,0.22391898,-0.94853602],[-0.22391898,-0.22391898,0.94853602],[-0.22391898,-0.22391898,-0.94853602],[0.94853602,0.22391898,0.22391898],[0.94853602,0.22391898,-0.22391898],[0.94853602,-0.22391898,0.22391898],[0.94853602,-0.22391898,-0.22391898],[-0.94853602,0.22391898,0.22391898],[-0.94853602,0.22391898,-0.22391898],[-0.94853602,-0.22391898,0.22391898],[-0.94853602,-0.22391898,-0.22391898],[0.22391898,0.94853602,0.22391898],[0.22391898,0.94853602,-0.22391898],[0.22391898,-0.94853602,0.22391898],[0.22391898,-0.94853602,-0.22391898],[-0.22391898,0.94853602,0.22391898],[-0.22391898,0.94853602,-0.22391898],[-0.22391898,-0.94853602,0.22391898],[-0.22391898,-0.94853602,-0.22391898],[0,0.5862275,0.81014648],[0,0.5862275,-0.81014648],[0,-0.5862275,0.81014648],[0,-0.5862275,-0.81014648],[0.81014648,0,0.5862275],[0.81014648,0,-0.5862275],[-0.81014648,0,0.5862275],[-0.81014648,0,-0.5862275],[0.5862275,0.81014648,0],[0.5862275,-0.81014648,0],[-0.5862275,0.81014648,0],[-0.5862275,-0.81014648,0],[0.5862275,0.36230852,0.72461704],[0.5862275,0.36230852,-0.72461704],[0.5862275,-0.36230852,0.72461704],[0.5862275,-0.36230852,-0.72461704],[-0.5862275,0.36230852,0.72461704],[-0.5862275,0.36230852,-0.72461704],[-0.5862275,-0.36230852,0.72461704],[-0.5862275,-0.36230852,-0.72461704],[0.72461704,0.5862275,0.36230852],[0.72461704,0.5862275,-0.36230852],[0.72461704,-0.5862275,0.36230852],[0.72461704,-0.5862275,-0.36230852],[-0.72461704,0.5862275,0.36230852],[-0.72461704,0.5862275,-0.36230852],[-0.72461704,-0.5862275,0.36230852],[-0.72461704,-0.5862275,-0.36230852],[0.36230852,0.72461704,0.5862275],[0.36230852,0.72461704,-0.5862275],[0.36230852,-0.72461704,0.5862275],[0.36230852,-0.72461704,-0.5862275],[-0.36230852,0.72461704,0.5862275],[-0.36230852,0.72461704,-0.5862275],[-0.36230852,-0.72461704,0.5862275],[-0.36230852,-0.72461704,-0.5862275]],"dirsDeltIcosi":[[0.35740674,0.35740674,0.86285621],[0.35740674,0.35740674,-0.86285621],[0.35740674,-0.35740674,0.86285621],[0.35740674,-0.35740674,-0.86285621],[-0.35740674,0.35740674,0.86285621],[-0.35740674,0.35740674,-0.86285621],[-0.35740674,-0.35740674,0.86285621],[-0.35740674,-0.35740674,-0.86285621],[0.35740674,0.86285621,0.35740674],[0.35740674,-0.86285621,0.35740674],[0.35740674,0.86285621,-0.35740674],[0.35740674,-0.86285621,-0.35740674],[-0.35740674,0.86285621,0.35740674],[-0.35740674,-0.86285621,0.35740674],[-0.35740674,0.86285621,-0.35740674],[-0.35740674,-0.86285621,-0.35740674],[0.86285621,0.35740674,0.35740674],[-0.86285621,0.35740674,0.35740674],[0.86285621,0.35740674,-0.35740674],[-0.86285621,0.35740674,-0.35740674],[0.86285621,-0.35740674,0.35740674],[-0.86285621,-0.35740674,0.35740674],[0.86285621,-0.35740674,-0.35740674],[-0.86285621,-0.35740674,-0.35740674]],"dirsDisdyDodeca":[[0.520841,0.21573941,0.82594259],[0.520841,0.21573941,-0.82594259],[0.520841,-0.21573941,0.82594259],[0.520841,-0.21573941,-0.82594259],[-0.520841,0.21573941,0.82594259],[-0.520841,0.21573941,-0.82594259],[-0.520841,-0.21573941,0.82594259],[-0.520841,-0.21573941,-0.82594259],[0.82594259,0.520841,0.21573941],[0.82594259,0.520841,-0.21573941],[0.82594259,-0.520841,0.21573941],[0.82594259,-0.520841,-0.21573941],[-0.82594259,0.520841,0.21573941],[-0.82594259,0.520841,-0.21573941],[-0.82594259,-0.520841,0.21573941],[-0.82594259,-0.520841,-0.21573941],[0.21573941,0.82594259,0.520841],[0.21573941,0.82594259,-0.520841],[0.21573941,-0.82594259,0.520841],[0.21573941,-0.82594259,-0.520841],[-0.21573941,0.82594259,0.520841],[-0.21573941,0.82594259,-0.520841],[-0.21573941,-0.82594259,0.520841],[-0.21573941,-0.82594259,-0.520841],[0.21573941,0.520841,0.82594259],[0.21573941,0.520841,-0.82594259],[0.21573941,-0.520841,0.82594259],[0.21573941,-0.520841,-0.82594259],[-0.21573941,0.520841,0.82594259],[-0.21573941,0.520841,-0.82594259],[-0.21573941,-0.520841,0.82594259],[-0.21573941,-0.520841,-0.82594259],[0.82594259,0.21573941,0.520841],[0.82594259,0.21573941,-0.520841],[0.82594259,-0.21573941,0.520841],[0.82594259,-0.21573941,-0.520841],[-0.82594259,0.21573941,0.520841],[-0.82594259,0.21573941,-0.520841],[-0.82594259,-0.21573941,0.520841],[-0.82594259,-0.21573941,-0.520841],[0.520841,0.82594259,0.21573941],[0.520841,0.82594259,-0.21573941],[0.520841,-0.82594259,0.21573941],[0.520841,-0.82594259,-0.21573941],[-0.520841,0.82594259,0.21573941],[-0.520841,0.82594259,-0.21573941],[-0.520841,-0.82594259,0.21573941],[-0.520841,-0.82594259,-0.21573941]],"dirsDisdyTria":[[0.13149609,0.13149609,0.98255664],[0.13149609,0.13149609,-0.98255664],[0.13149609,-0.13149609,0.98255664],[0.13149609,-0.13149609,-0.98255664],[-0.13149609,0.13149609,0.98255664],[-0.13149609,0.13149609,-0.98255664],[-0.13149609,-0.13149609,0.98255664],[-0.13149609,-0.13149609,-0.98255664],[0.98255664,0.13149609,0.13149609],[0.98255664,0.13149609,-0.13149609],[0.98255664,-0.13149609,0.13149609],[0.98255664,-0.13149609,-0.13149609],[-0.98255664,0.13149609,0.13149609],[-0.98255664,0.13149609,-0.13149609],[-0.98255664,-0.13149609,0.13149609],[-0.98255664,-0.13149609,-0.13149609],[0.13149609,0.98255664,0.13149609],[0.13149609,0.98255664,-0.13149609],[0.13149609,-0.98255664,0.13149609],[0.13149609,-0.98255664,-0.13149609],[-0.13149609,0.98255664,0.13149609],[-0.13149609,0.98255664,-0.13149609],[-0.13149609,-0.98255664,0.13149609],[-0.13149609,-0.98255664,-0.13149609],[0.26299218,0.34426123,0.90128759],[0.26299218,0.34426123,-0.90128759],[0.26299218,-0.34426123,0.90128759],[0.26299218,-0.34426123,-0.90128759],[-0.26299218,0.34426123,0.90128759],[-0.26299218,0.34426123,-0.90128759],[-0.26299218,-0.34426123,0.90128759],[-0.26299218,-0.34426123,-0.90128759],[0.90128759,0.26299218,0.34426123],[0.90128759,0.26299218,-0.34426123],[0.90128759,-0.26299218,0.34426123],[0.90128759,-0.26299218,-0.34426123],[-0.90128759,0.26299218,0.34426123],[-0.90128759,0.26299218,-0.34426123],[-0.90128759,-0.26299218,0.34426123],[-0.90128759,-0.26299218,-0.34426123],[0.34426123,0.90128759,0.26299218],[0.34426123,0.90128759,-0.26299218],[0.34426123,-0.90128759,0.26299218],[0.34426123,-0.90128759,-0.26299218],[-0.34426123,0.90128759,0.26299218],[-0.34426123,0.90128759,-0.26299218],[-0.34426123,-0.90128759,0.26299218],[-0.34426123,-0.90128759,-0.26299218],[0.13149609,0.55702637,0.82001854],[0.13149609,0.55702637,-0.82001854],[0.13149609,-0.55702637,0.82001854],[0.13149609,-0.55702637,-0.82001854],[-0.13149609,0.55702637,0.82001854],[-0.13149609,0.55702637,-0.82001854],[-0.13149609,-0.55702637,0.82001854],[-0.13149609,-0.55702637,-0.82001854],[0.82001854,0.13149609,0.55702637],[0.82001854,0.13149609,-0.55702637],[0.82001854,-0.13149609,0.55702637],[0.82001854,-0.13149609,-0.55702637],[-0.82001854,0.13149609,0.55702637],[-0.82001854,0.13149609,-0.55702637],[-0.82001854,-0.13149609,0.55702637],[-0.82001854,-0.13149609,-0.55702637],[0.55702637,0.82001854,0.13149609],[0.55702637,0.82001854,-0.13149609],[0.55702637,-0.82001854,0.13149609],[0.55702637,-0.82001854,-0.13149609],[-0.55702637,0.82001854,0.13149609],[-0.55702637,0.82001854,-0.13149609],[-0.55702637,-0.82001854,0.13149609],[-0.55702637,-0.82001854,-0.13149609],[0.47575731,0.42553028,0.7697915],[0.47575731,0.42553028,-0.7697915],[0.47575731,-0.42553028,0.7697915],[0.47575731,-0.42553028,-0.7697915],[-0.47575731,0.42553028,0.7697915],[-0.47575731,0.42553028,-0.7697915],[-0.47575731,-0.42553028,0.7697915],[-0.47575731,-0.42553028,-0.7697915],[0.7697915,0.47575731,0.42553028],[0.7697915,0.47575731,-0.42553028],[0.7697915,-0.47575731,0.42553028],[0.7697915,-0.47575731,-0.42553028],[-0.7697915,0.47575731,0.42553028],[-0.7697915,0.47575731,-0.42553028],[-0.7697915,-0.47575731,0.42553028],[-0.7697915,-0.47575731,-0.42553028],[0.42553028,0.7697915,0.47575731],[0.42553028,0.7697915,-0.47575731],[0.42553028,-0.7697915,0.47575731],[0.42553028,-0.7697915,-0.47575731],[-0.42553028,0.7697915,0.47575731],[-0.42553028,0.7697915,-0.47575731],[-0.42553028,-0.7697915,0.47575731],[-0.42553028,-0.7697915,-0.47575731],[0.34426123,0.63829542,0.68852245],[0.34426123,0.63829542,-0.68852245],[0.34426123,-0.63829542,0.68852245],[0.34426123,-0.63829542,-0.68852245],[-0.34426123,0.63829542,0.68852245],[-0.34426123,0.63829542,-0.68852245],[-0.34426123,-0.63829542,0.68852245],[-0.34426123,-0.63829542,-0.68852245],[0.68852245,0.34426123,0.63829542],[0.68852245,0.34426123,-0.63829542],[0.68852245,-0.34426123,0.63829542],[0.68852245,-0.34426123,-0.63829542],[-0.68852245,0.34426123,0.63829542],[-0.68852245,0.34426123,-0.63829542],[-0.68852245,-0.34426123,0.63829542],[-0.68852245,-0.34426123,-0.63829542],[0.63829542,0.68852245,0.34426123],[0.63829542,0.68852245,-0.34426123],[0.63829542,-0.68852245,0.34426123],[0.63829542,-0.68852245,-0.34426123],[-0.63829542,0.68852245,0.34426123],[-0.63829542,0.68852245,-0.34426123],[-0.63829542,-0.68852245,0.34426123],[-0.63829542,-0.68852245,-0.34426123]],"dirsHepAntiPrism":[[0,-0.13177643,0.99127946],[0.43010004,0.13177643,0.89311193],[0.77501349,-0.13177643,0.61805264],[0.96642602,0.13177643,0.22058043],[0.96642602,-0.13177643,-0.22058043],[0.77501349,0.13177643,-0.61805264],[0.43010004,-0.13177643,-0.89311193],[0,0.13177643,-0.99127946],[-0.43010004,-0.13177643,-0.89311193],[-0.77501349,0.13177643,-0.61805264],[-0.96642602,-0.13177643,-0.22058043],[-0.96642602,0.13177643,0.22058043],[-0.77501349,-0.13177643,0.61805264],[-0.43010004,0.13177643,0.89311193]],"dirsHepDipyra":[[0,0.3980325,0.91737132],[0.3980325,0.3980325,-0.826523],[-0.3980325,0.3980325,-0.826523],[0.71722978,0.3980325,0.57197166],[-0.71722978,0.3980325,0.57197166],[0.8943709,0.3980325,-0.20413432],[-0.8943709,0.3980325,-0.20413432],[0,-0.3980325,0.91737132],[0.3980325,-0.3980325,-0.826523],[-0.3980325,-0.3980325,-0.826523],[0.71722978,-0.3980325,0.57197166],[-0.71722978,-0.3980325,0.57197166],[0.8943709,-0.3980325,-0.20413432],[-0.8943709,-0.3980325,-0.20413432]],"dirsHepPrism":[[0,0,1.0],[0.43388374,0,-0.90096887],[-0.43388374,0,-0.90096887],[0.78183148,0,0.6234898],[-0.78183148,0,0.6234898],[0.97492791,0,-0.22252093],[-0.97492791,0,-0.22252093]],"dirsHeptTrapezo":[[0,0.34905022,0.93710402],[0.4065942,0.34905022,-0.84430155],[-0.4065942,0.34905022,-0.84430155],[0.73265743,0.34905022,0.5842748],[-0.73265743,0.34905022,0.5842748],[0.91360887,0.34905022,-0.20852526],[-0.91360887,0.34905022,-0.20852526],[-0.4065942,-0.34905022,0.84430155],[0.73265743,-0.34905022,-0.5842748],[0,-0.34905022,-0.93710402],[0.4065942,-0.34905022,0.84430155],[-0.91360887,-0.34905022,0.20852526],[0.91360887,-0.34905022,0.20852526],[-0.73265743,-0.34905022,-0.5842748]],"dirsHexAntiPrism":[[0,-0.15470054,0.98796141],[0.4939807,0.15470054,0.85559968],[0.85559968,-0.15470054,0.4939807],[0.98796141,0.15470054,0],[0.85559968,-0.15470054,-0.4939807],[0.4939807,0.15470054,-0.85559968],[0,-0.15470054,-0.98796141],[-0.4939807,0.15470054,-0.85559968],[-0.85559968,-0.15470054,-0.4939807],[-0.98796141,0.15470054,0],[-0.85559968,-0.15470054,0.4939807],[-0.4939807,0.15470054,0.85559968]],"dirsHexDipyra":[[0,0.4472136,0.89442719],[0.77459667,0.4472136,0.4472136],[0.77459667,0.4472136,-0.4472136],[0,0.4472136,-0.89442719],[-0.77459667,0.4472136,-0.4472136],[-0.77459667,0.4472136,0.4472136],[0,-0.4472136,0.89442719],[0.77459667,-0.4472136,0.4472136],[0.77459667,-0.4472136,-0.4472136],[0,-0.4472136,-0.89442719],[-0.77459667,-0.4472136,-0.4472136],[-0.77459667,-0.4472136,0.4472136]],"dirsHexPrism":[[0,0,-1.0],[0,0,1.0],[0.8660254,0,-0.5],[-0.8660254,0,-0.5],[0.8660254,0,0.5],[-0.8660254,0,0.5]],"dirsHexTrapezo":[[0,0.39331989,0.91940169],[0,0.39331989,-0.91940169],[0.79622522,0.39331989,-0.45970084],[-0.79622522,0.39331989,-0.45970084],[0.79622522,0.39331989,0.45970084],[-0.79622522,0.39331989,0.45970084],[0.45970084,-0.39331989,-0.79622522],[-0.45970084,-0.39331989,0.79622522],[0.91940169,-0.39331989,0],[-0.45970084,-0.39331989,-0.79622522],[0.45970084,-0.39331989,0.79622522],[-0.91940169,-0.39331989,0]],"dirsOctAntiPrism":[[0,-0.11484211,0.99338376],[0.38015151,0.11484211,0.91776692],[0.70242839,-0.11484211,0.70242839],[0.91776692,0.11484211,0.38015151],[0.99338376,-0.11484211,0],[0.91776692,0.11484211,-0.38015151],[0.70242839,-0.11484211,-0.70242839],[0.38015151,0.11484211,-0.91776692],[0,-0.11484211,-0.99338376],[-0.38015151,0.11484211,-0.91776692],[-0.70242839,-0.11484211,-0.70242839],[-0.91776692,0.11484211,-0.38015151],[-0.99338376,-0.11484211,0],[-0.91776692,0.11484211,0.38015151],[-0.70242839,-0.11484211,0.70242839],[-0.38015151,0.11484211,0.91776692]],"dirsOctDipyra":[[0,0.35740674,0.93394883],[0,0.35740674,-0.93394883],[0.66040155,0.35740674,0.66040155],[0.66040155,0.35740674,-0.66040155],[-0.66040155,0.35740674,0.66040155],[-0.66040155,0.35740674,-0.66040155],[0.93394883,0.35740674,0],[-0.93394883,0.35740674,0],[0,-0.35740674,0.93394883],[0,-0.35740674,-0.93394883],[0.66040155,-0.35740674,0.66040155],[0.66040155,-0.35740674,-0.66040155],[-0.66040155,-0.35740674,0.66040155],[-0.66040155,-0.35740674,-0.66040155],[0.93394883,-0.35740674,0],[-0.93394883,-0.35740674,0]],"dirsOctPrism":[[0,0,-1.0],[0,0,1.0],[0.70710678,0,-0.70710678],[-0.70710678,0,-0.70710678],[0.70710678,0,0.70710678],[-0.70710678,0,0.70710678],[1.0,0,0],[-1.0,0,0]],"dirsOctTrapezo":[[0,0.31270999,-0.94984865],[0,0.31270999,0.94984865],[0.67164442,0.31270999,-0.67164442],[-0.67164442,0.31270999,-0.67164442],[0.67164442,0.31270999,0.67164442],[-0.67164442,0.31270999,0.67164442],[0.94984865,0.31270999,0],[-0.94984865,0.31270999,0],[0.36349134,-0.31270999,-0.87754573],[-0.36349134,-0.31270999,0.87754573],[0.87754573,-0.31270999,-0.36349134],[-0.36349134,-0.31270999,-0.87754573],[0.36349134,-0.31270999,0.87754573],[-0.87754573,-0.31270999,0.36349134],[0.87754573,-0.31270999,0.36349134],[-0.87754573,-0.31270999,-0.36349134]],"dirsPentAntiPrism":[[0,-0.18759247,0.98224695],[0.57735027,0.18759247,0.79465447],[0.93417236,-0.18759247,0.303531],[0.93417236,0.18759247,-0.303531],[0.57735027,-0.18759247,-0.79465447],[0,0.18759247,-0.98224695],[-0.57735027,-0.18759247,-0.79465447],[-0.93417236,0.18759247,-0.303531],[-0.93417236,-0.18759247,0.303531],[-0.57735027,0.18759247,0.79465447]],"dirsPentDipyra":[[0,0.50673185,0.86210372],[0.81990936,0.50673185,0.2664047],[-0.81990936,0.50673185,0.2664047],[0.50673185,0.50673185,-0.69745656],[-0.50673185,0.50673185,-0.69745656],[0,-0.50673185,0.86210372],[0.81990936,-0.50673185,0.2664047],[-0.81990936,-0.50673185,0.2664047],[0.50673185,-0.50673185,-0.69745656],[-0.50673185,-0.50673185,-0.69745656]],"dirsPentHexeD":[[0.17386361,0.15349999,0.97273285],[0.17386361,-0.15349999,-0.97273285],[-0.17386361,-0.15349999,0.97273285],[-0.17386361,0.15349999,-0.97273285],[0.97273285,0.17386361,0.15349999],[0.97273285,-0.17386361,-0.15349999],[-0.97273285,-0.17386361,0.15349999],[-0.97273285,0.17386361,-0.15349999],[0.15349999,0.97273285,0.17386361],[0.15349999,-0.97273285,-0.17386361],[-0.15349999,-0.97273285,0.17386361],[-0.15349999,0.97273285,-0.17386361],[0.26333868,-0.29827371,0.91743421],[0.26333868,0.29827371,-0.91743421],[-0.26333868,0.29827371,0.91743421],[-0.26333868,-0.29827371,-0.91743421],[0.91743421,-0.26333868,0.29827371],[0.91743421,0.26333868,-0.29827371],[-0.91743421,0.26333868,0.29827371],[-0.91743421,-0.26333868,-0.29827371],[0.29827371,-0.91743421,0.26333868],[0.29827371,0.91743421,-0.26333868],[-0.29827371,0.91743421,0.26333868],[-0.29827371,-0.91743421,-0.26333868],[0.08947508,0.57959093,0.8099806],[0.08947508,-0.57959093,-0.8099806],[-0.08947508,-0.57959093,0.8099806],[-0.08947508,0.57959093,-0.8099806],[0.8099806,0.08947508,0.57959093],[0.8099806,-0.08947508,-0.57959093],[-0.8099806,-0.08947508,0.57959093],[-0.8099806,0.08947508,-0.57959093],[0.57959093,0.8099806,0.08947508],[0.57959093,-0.8099806,-0.08947508],[-0.57959093,-0.8099806,0.08947508],[-0.57959093,0.8099806,-0.08947508],[0.51170689,0.39314192,0.76393422],[0.51170689,-0.39314192,-0.76393422],[-0.51170689,-0.39314192,0.76393422],[-0.51170689,0.39314192,-0.76393422],[0.76393422,0.51170689,0.39314192],[0.76393422,-0.51170689,-0.39314192],[-0.76393422,-0.51170689,0.39314192],[-0.76393422,0.51170689,-0.39314192],[0.39314192,0.76393422,0.51170689],[0.39314192,-0.76393422,-0.51170689],[-0.39314192,-0.76393422,0.51170689],[-0.39314192,0.76393422,-0.51170689],[0.6564806,-0.33784328,0.67445914],[0.6564806,0.33784328,-0.67445914],[-0.6564806,0.33784328,0.67445914],[-0.6564806,-0.33784328,-0.67445914],[0.67445914,-0.6564806,0.33784328],[0.67445914,0.6564806,-0.33784328],[-0.67445914,0.6564806,0.33784328],[-0.67445914,-0.6564806,-0.33784328],[0.33784328,-0.67445914,0.6564806],[0.33784328,0.67445914,-0.6564806],[-0.33784328,0.67445914,0.6564806],[-0.33784328,-0.67445914,-0.6564806]],"dirsPentHexeL":[[0.17386361,-0.15349999,0.97273285],[0.17386361,0.15349999,-0.97273285],[-0.17386361,0.15349999,0.97273285],[-0.17386361,-0.15349999,-0.97273285],[0.97273285,-0.17386361,0.15349999],[0.97273285,0.17386361,-0.15349999],[-0.97273285,0.17386361,0.15349999],[-0.97273285,-0.17386361,-0.15349999],[0.15349999,-0.97273285,0.17386361],[0.15349999,0.97273285,-0.17386361],[-0.15349999,0.97273285,0.17386361],[-0.15349999,-0.97273285,-0.17386361],[0.26333868,0.29827371,0.91743421],[0.26333868,-0.29827371,-0.91743421],[-0.26333868,-0.29827371,0.91743421],[-0.26333868,0.29827371,-0.91743421],[0.91743421,0.26333868,0.29827371],[0.91743421,-0.26333868,-0.29827371],[-0.91743421,-0.26333868,0.29827371],[-0.91743421,0.26333868,-0.29827371],[0.29827371,0.91743421,0.26333868],[0.29827371,-0.91743421,-0.26333868],[-0.29827371,-0.91743421,0.26333868],[-0.29827371,0.91743421,-0.26333868],[0.08947508,-0.57959093,0.8099806],[0.08947508,0.57959093,-0.8099806],[-0.08947508,0.57959093,0.8099806],[-0.08947508,-0.57959093,-0.8099806],[0.8099806,-0.08947508,0.57959093],[0.8099806,0.08947508,-0.57959093],[-0.8099806,0.08947508,0.57959093],[-0.8099806,-0.08947508,-0.57959093],[0.57959093,-0.8099806,0.08947508],[0.57959093,0.8099806,-0.08947508],[-0.57959093,0.8099806,0.08947508],[-0.57959093,-0.8099806,-0.08947508],[0.51170689,-0.39314192,0.76393422],[0.51170689,0.39314192,-0.76393422],[-0.51170689,0.39314192,0.76393422],[-0.51170689,-0.39314192,-0.76393422],[0.76393422,-0.51170689,0.39314192],[0.76393422,0.51170689,-0.39314192],[-0.76393422,0.51170689,0.39314192],[-0.76393422,-0.51170689,-0.39314192],[0.39314192,-0.76393422,0.51170689],[0.39314192,0.76393422,-0.51170689],[-0.39314192,0.76393422,0.51170689],[-0.39314192,-0.76393422,-0.51170689],[0.6564806,0.33784328,0.67445914],[0.6564806,-0.33784328,-0.67445914],[-0.6564806,-0.33784328,0.67445914],[-0.6564806,0.33784328,-0.67445914],[0.67445914,0.6564806,0.33784328],[0.67445914,-0.6564806,-0.33784328],[-0.67445914,-0.6564806,0.33784328],[-0.67445914,0.6564806,-0.33784328],[0.33784328,0.67445914,0.6564806],[0.33784328,-0.67445914,-0.6564806],[-0.33784328,-0.67445914,0.6564806],[-0.33784328,0.67445914,-0.6564806]],"dirsPentIcosiD":[[0.85034021,0.46232063,0.25135865],[0.85034021,-0.46232063,-0.25135865],[-0.85034021,-0.46232063,0.25135865],[-0.85034021,0.46232063,-0.25135865],[0.25135865,0.85034021,0.46232063],[0.25135865,-0.85034021,-0.46232063],[-0.25135865,-0.85034021,0.46232063],[-0.25135865,0.85034021,-0.46232063],[0.46232063,0.25135865,0.85034021],[0.46232063,-0.25135865,-0.85034021],[-0.46232063,-0.25135865,0.85034021],[-0.46232063,0.25135865,-0.85034021],[0.46232063,-0.85034021,0.25135865],[0.46232063,0.85034021,-0.25135865],[-0.46232063,0.85034021,0.25135865],[-0.46232063,-0.85034021,-0.25135865],[0.25135865,-0.46232063,0.85034021],[0.25135865,0.46232063,-0.85034021],[-0.25135865,0.46232063,0.85034021],[-0.25135865,-0.46232063,-0.85034021],[0.85034021,-0.25135865,0.46232063],[0.85034021,0.25135865,-0.46232063],[-0.85034021,0.25135865,0.46232063],[-0.85034021,-0.25135865,-0.46232063]],"dirsPentIcosiL":[[0.85034021,-0.46232063,0.25135865],[0.85034021,0.46232063,-0.25135865],[-0.85034021,0.46232063,0.25135865],[-0.85034021,-0.46232063,-0.25135865],[0.25135865,-0.85034021,0.46232063],[0.25135865,0.85034021,-0.46232063],[-0.25135865,0.85034021,0.46232063],[-0.25135865,-0.85034021,-0.46232063],[0.46232063,-0.25135865,0.85034021],[0.46232063,0.25135865,-0.85034021],[-0.46232063,0.25135865,0.85034021],[-0.46232063,-0.25135865,-0.85034021],[0.46232063,0.85034021,0.25135865],[0.46232063,-0.85034021,-0.25135865],[-0.46232063,-0.85034021,0.25135865],[-0.46232063,0.85034021,-0.25135865],[0.25135865,0.46232063,0.85034021],[0.25135865,-0.46232063,-0.85034021],[-0.25135865,-0.46232063,0.85034021],[-0.25135865,0.46232063,-0.85034021],[0.85034021,0.25135865,0.46232063],[0.85034021,-0.25135865,-0.46232063],[-0.85034021,-0.25135865,0.46232063],[-0.85034021,0.25135865,-0.46232063]],"dirsPentPrism":[[0,0,1.0],[0.58778525,0,-0.80901699],[-0.58778525,0,-0.80901699],[0.95105652,0,0.30901699],[-0.95105652,0,0.30901699]],"dirsPentTrapezo":[[0,0.4472136,0.89442719],[0.52573111,0.4472136,-0.7236068],[-0.52573111,0.4472136,-0.7236068],[0.85065081,0.4472136,0.2763932],[-0.85065081,0.4472136,0.2763932],[-0.52573111,-0.4472136,0.7236068],[0.85065081,-0.4472136,-0.2763932],[0,-0.4472136,-0.89442719],[0.52573111,-0.4472136,0.7236068],[-0.85065081,-0.4472136,-0.2763932]],"dirsPentaDodeca":[[0.20177411,0,0.97943209],[0.20177411,0,-0.97943209],[-0.20177411,0,0.97943209],[-0.20177411,0,-0.97943209],[0.97943209,0.20177411,0],[0.97943209,-0.20177411,0],[-0.97943209,0.20177411,0],[-0.97943209,-0.20177411,0],[0,0.97943209,0.20177411],[0,0.97943209,-0.20177411],[0,-0.97943209,0.20177411],[0,-0.97943209,-0.20177411],[0.40354821,0.32647736,0.85472883],[0.40354821,0.32647736,-0.85472883],[0.40354821,-0.32647736,0.85472883],[0.40354821,-0.32647736,-0.85472883],[-0.40354821,0.32647736,0.85472883],[-0.40354821,0.32647736,-0.85472883],[-0.40354821,-0.32647736,0.85472883],[-0.40354821,-0.32647736,-0.85472883],[0.85472883,0.40354821,0.32647736],[0.85472883,0.40354821,-0.32647736],[0.85472883,-0.40354821,0.32647736],[0.85472883,-0.40354821,-0.32647736],[-0.85472883,0.40354821,0.32647736],[-0.85472883,0.40354821,-0.32647736],[-0.85472883,-0.40354821,0.32647736],[-0.85472883,-0.40354821,-0.32647736],[0.32647736,0.85472883,0.40354821],[0.32647736,0.85472883,-0.40354821],[0.32647736,-0.85472883,0.40354821],[0.32647736,-0.85472883,-0.40354821],[-0.32647736,0.85472883,0.40354821],[-0.32647736,0.85472883,-0.40354821],[-0.32647736,-0.85472883,0.40354821],[-0.32647736,-0.85472883,-0.40354821],[0.20177411,0.65295472,0.73002557],[0.20177411,0.65295472,-0.73002557],[0.20177411,-0.65295472,0.73002557],[0.20177411,-0.65295472,-0.73002557],[-0.20177411,0.65295472,0.73002557],[-0.20177411,0.65295472,-0.73002557],[-0.20177411,-0.65295472,0.73002557],[-0.20177411,-0.65295472,-0.73002557],[0.73002557,0.20177411,0.65295472],[0.73002557,0.20177411,-0.65295472],[0.73002557,-0.20177411,0.65295472],[0.73002557,-0.20177411,-0.65295472],[-0.73002557,0.20177411,0.65295472],[-0.73002557,0.20177411,-0.65295472],[-0.73002557,-0.20177411,0.65295472],[-0.73002557,-0.20177411,-0.65295472],[0.65295472,0.73002557,0.20177411],[0.65295472,0.73002557,-0.20177411],[0.65295472,-0.73002557,0.20177411],[0.65295472,-0.73002557,-0.20177411],[-0.65295472,0.73002557,0.20177411],[-0.65295472,0.73002557,-0.20177411],[-0.65295472,-0.73002557,0.20177411],[-0.65295472,-0.73002557,-0.20177411]],"dirsPrismCaps":[[0,1.0,0],[0,-1.0,0]],"dirsPseuDeltIcosi":[[-0.35740674,-0.86285621,-0.35740674],[-0.35740674,-0.86285621,0.35740674],[0,0.86285621,-0.50544947],[0,0.86285621,0.50544947],[0.35740674,-0.86285621,-0.35740674],[0.35740674,-0.86285621,0.35740674],[-0.50544947,0.86285621,0],[0.50544947,0.86285621,0],[0.35740674,-0.35740674,0.86285621],[0.35740674,0.35740674,0.86285621],[-0.35740674,-0.35740674,0.86285621],[-0.35740674,0.35740674,0.86285621],[-0.86285621,-0.35740674,0.35740674],[-0.86285621,0.35740674,0.35740674],[-0.86285621,-0.35740674,-0.35740674],[-0.86285621,0.35740674,-0.35740674],[-0.35740674,-0.35740674,-0.86285621],[-0.35740674,0.35740674,-0.86285621],[0.35740674,-0.35740674,-0.86285621],[0.35740674,0.35740674,-0.86285621],[0.86285621,-0.35740674,-0.35740674],[0.86285621,0.35740674,-0.35740674],[0.86285621,-0.35740674,0.35740674],[0.86285621,0.35740674,0.35740674]],"dirsSnubDodPentD":[[0.52573111,0,0.85065081],[0.52573111,0,-0.85065081],[-0.52573111,0,0.85065081],[-0.52573111,0,-0.85065081],[0.85065081,0.52573111,0],[0.85065081,-0.52573111,0],[-0.85065081,0.52573111,0],[-0.85065081,-0.52573111,0],[0,0.85065081,0.52573111],[0,0.85065081,-0.52573111],[0,-0.85065081,0.52573111],[0,-0.85065081,-0.52573111]],"dirsSnubDodPentL":[[-0.52573111,0,-0.85065081],[-0.52573111,0,0.85065081],[0.52573111,0,-0.85065081],[0.52573111,0,0.85065081],[-0.85065081,-0.52573111,0],[-0.85065081,0.52573111,0],[0.85065081,-0.52573111,0],[0.85065081,0.52573111,0],[0,-0.85065081,-0.52573111],[0,-0.85065081,0.52573111],[0,0.85065081,-0.52573111],[0,0.85065081,0.52573111]],"dirsSnubDodTriD":[[0.0911075,0.10319401,0.99047989],[0.0911075,-0.10319401,-0.99047989],[-0.0911075,-0.10319401,0.99047989],[-0.0911075,0.10319401,-0.99047989],[0.99047989,0.0911075,0.10319401],[0.99047989,-0.0911075,-0.10319401],[-0.99047989,-0.0911075,0.10319401],[-0.99047989,0.0911075,-0.10319401],[0.10319401,0.99047989,0.0911075],[0.10319401,-0.99047989,-0.0911075],[-0.10319401,-0.99047989,0.0911075],[-0.10319401,0.99047989,-0.0911075],[0,0.35682209,0.93417236],[0,0.35682209,-0.93417236],[0,-0.35682209,0.93417236],[0,-0.35682209,-0.93417236],[0.93417236,0,0.35682209],[0.93417236,0,-0.35682209],[-0.93417236,0,0.35682209],[-0.93417236,0,-0.35682209],[0.35682209,0.93417236,0],[0.35682209,-0.93417236,0],[-0.35682209,0.93417236,0],[-0.35682209,-0.93417236,0],[0.26814317,-0.38964373,0.88106584],[0.26814317,0.38964373,-0.88106584],[-0.26814317,0.38964373,0.88106584],[-0.26814317,-0.38964373,-0.88106584],[0.88106584,-0.26814317,0.38964373],[0.88106584,0.26814317,-0.38964373],[-0.88106584,0.26814317,0.38964373],[-0.88106584,-0.26814317,-0.38964373],[0.38964373,-0.88106584,0.26814317],[0.38964373,0.88106584,-0.26814317],[-0.38964373,0.88106584,0.26814317],[-0.38964373,-0.88106584,-0.26814317],[0.17703566,0.53705877,0.8247583],[0.17703566,-0.53705877,-0.8247583],[-0.17703566,-0.53705877,0.8247583],[-0.17703566,0.53705877,-0.8247583],[0.8247583,0.17703566,0.53705877],[0.8247583,-0.17703566,-0.53705877],[-0.8247583,-0.17703566,0.53705877],[-0.8247583,0.17703566,-0.53705877],[0.53705877,0.8247583,0.17703566],[0.53705877,-0.8247583,-0.17703566],[-0.53705877,-0.8247583,0.17703566],[-0.53705877,0.8247583,-0.17703566],[0.43511458,0.45342113,0.77787183],[0.43511458,-0.45342113,-0.77787183],[-0.43511458,-0.45342113,0.77787183],[-0.43511458,0.45342113,-0.77787183],[0.77787183,0.43511458,0.45342113],[0.77787183,-0.43511458,-0.45342113],[-0.77787183,-0.43511458,0.45342113],[-0.77787183,0.43511458,-0.45342113],[0.45342113,0.77787183,0.43511458],[0.45342113,-0.77787183,-0.43511458],[-0.45342113,-0.77787183,0.43511458],[-0.45342113,0.77787183,-0.43511458],[0.34400707,-0.60083617,0.7215643],[0.34400707,0.60083617,-0.7215643],[-0.34400707,0.60083617,0.7215643],[-0.34400707,-0.60083617,-0.7215643],[0.7215643,-0.34400707,0.60083617],[0.7215643,0.34400707,-0.60083617],[-0.7215643,0.34400707,0.60083617],[-0.7215643,-0.34400707,-0.60083617],[0.60083617,-0.7215643,0.34400707],[0.60083617,0.7215643,-0.34400707],[-0.60083617,0.7215643,0.34400707],[-0.60083617,-0.7215643,-0.34400707],[0.57735027,0.57735027,0.57735027],[0.57735027,0.57735027,-0.57735027],[0.57735027,-0.57735027,0.57735027],[0.57735027,-0.57735027,-0.57735027],[-0.57735027,0.57735027,0.57735027],[-0.57735027,0.57735027,-0.57735027],[-0.57735027,-0.57735027,0.57735027],[-0.57735027,-0.57735027,-0.57735027]],"dirsSnubDodTriL":[[-0.0911075,-0.10319401,-0.99047989],[-0.0911075,0.10319401,0.99047989],[0.0911075,0.10319401,-0.99047989],[0.0911075,-0.10319401,0.99047989],[-0.99047989,-0.0911075,-0.10319401],[-0.99047989,0.0911075,0.10319401],[0.99047989,0.0911075,-0.10319401],[0.99047989,-0.0911075,0.10319401],[-0.10319401,-0.99047989,-0.0911075],[-0.10319401,0.99047989,0.0911075],[0.10319401,0.99047989,-0.0911075],[0.10319401,-0.99047989,0.0911075],[0,-0.35682209,-0.93417236],[0,-0.35682209,0.93417236],[0,0.35682209,-0.93417236],[0,0.35682209,0.93417236],[-0.93417236,0,-0.35682209],[-0.93417236,0,0.35682209],[0.93417236,0,-0.35682209],[0.93417236,0,0.35682209],[-0.35682209,-0.93417236,0],[-0.35682209,0.93417236,0],[0.35682209,-0.93417236,0],[0.35682209,0.93417236,0],[-0.26814317,0.38964373,-0.88106584],[-0.26814317,-0.38964373,0.88106584],[0.26814317,-0.38964373,-0.88106584],[0.26814317,0.38964373,0.88106584],[-0.88106584,0.26814317,-0.38964373],[-0.88106584,-0.26814317,0.38964373],[0.88106584,-0.26814317,-0.38964373],[0.88106584,0.26814317,0.38964373],[-0.38964373,0.88106584,-0.26814317],[-0.38964373,-0.88106584,0.26814317],[0.38964373,-0.88106584,-0.26814317],[0.38964373,0.88106584,0.26814317],[-0.17703566,-0.53705877,-0.8247583],[-0.17703566,0.53705877,0.8247583],[0.17703566,0.53705877,-0.8247583],[0.17703566,-0.53705877,0.8247583],[-0.8247583,-0.17703566,-0.53705877],[-0.8247583,0.17703566,0.53705877],[0.8247583,0.17703566,-0.53705877],[0.8247583,-0.17703566,0.53705877],[-0.53705877,-0.8247583,-0.17703566],[-0.53705877,0.8247583,0.17703566],[0.53705877,0.8247583,-0.17703566],[0.53705877,-0.8247583,0.17703566],[-0.43511458,-0.45342113,-0.77787183],[-0.43511458,0.45342113,0.77787183],[0.43511458,0.45342113,-0.77787183],[0.43511458,-0.45342113,0.77787183],[-0.77787183,-0.43511458,-0.45342113],[-0.77787183,0.43511458,0.45342113],[0.77787183,0.43511458,-0.45342113],[0.77787183,-0.43511458,0.45342113],[-0.45342113,-0.77787183,-0.43511458],[-0.45342113,0.77787183,0.43511458],[0.45342113,0.77787183,-0.43511458],[0.45342113,-0.77787183,0.43511458],[-0.34400707,0.60083617,-0.7215643],[-0.34400707,-0.60083617,0.7215643],[0.34400707,-0.60083617,-0.7215643],[0.34400707,0.60083617,0.7215643],[-0.7215643,0.34400707,-0.60083617],[-0.7215643,-0.34400707,0.60083617],[0.7215643,-0.34400707,-0.60083617],[0.7215643,0.34400707,0.60083617],[-0.60083617,0.7215643,-0.34400707],[-0.60083617,-0.7215643,0.34400707],[0.60083617,-0.7215643,-0.34400707],[0.60083617,0.7215643,0.34400707],[-0.57735027,-0.57735027,-0.57735027],[-0.57735027,-0.57735027,0.57735027],[-0.57735027,0.57735027,-0.57735027],[-0.57735027,0.57735027,0.57735027],[0.57735027,-0.57735027,-0.57735027],[0.57735027,-0.57735027,0.57735027],[0.57735027,0.57735027,-0.57735027],[0.57735027,0.57735027,0.57735027]],"dirsSnubcubeTriD":[[0.57735027,-0.17066344,0.79846143],[0.57735027,0.17066344,-0.79846143],[-0.57735027,0.17066344,0.79846143],[-0.57735027,-0.17066344,-0.79846143],[0.79846143,-0.57735027,0.17066344],[0.79846143,0.57735027,-0.17066344],[-0.79846143,0.57735027,0.17066344],[-0.79846143,-0.57735027,-0.17066344],[0.17066344,-0.79846143,0.57735027],[0.17066344,0.79846143,-0.57735027],[-0.17066344,0.79846143,0.57735027],[-0.17066344,-0.79846143,-0.57735027],[0.17066344,0.57735027,0.79846143],[0.17066344,-0.57735027,-0.79846143],[-0.17066344,-0.57735027,0.79846143],[-0.17066344,0.57735027,-0.79846143],[0.79846143,0.17066344,0.57735027],[0.79846143,-0.17066344,-0.57735027],[-0.79846143,-0.17066344,0.57735027],[-0.79846143,0.17066344,-0.57735027],[0.57735027,0.79846143,0.17066344],[0.57735027,-0.79846143,-0.17066344],[-0.57735027,-0.79846143,0.17066344],[-0.57735027,0.79846143,-0.17066344],[0.57735027,0.57735027,0.57735027],[0.57735027,0.57735027,-0.57735027],[0.57735027,-0.57735027,0.57735027],[0.57735027,-0.57735027,-0.57735027],[-0.57735027,0.57735027,0.57735027],[-0.57735027,0.57735027,-0.57735027],[-0.57735027,-0.57735027,0.57735027],[-0.57735027,-0.57735027,-0.57735027]],"dirsSnubcubeTriL":[[-0.57735027,0.17066344,-0.79846143],[-0.57735027,-0.17066344,0.79846143],[0.57735027,-0.17066344,-0.79846143],[0.57735027,0.17066344,0.79846143],[-0.79846143,0.57735027,-0.17066344],[-0.79846143,-0.57735027,0.17066344],[0.79846143,-0.57735027,-0.17066344],[0.79846143,0.57735027,0.17066344],[-0.17066344,0.79846143,-0.57735027],[-0.17066344,-0.79846143,0.57735027],[0.17066344,-0.79846143,-0.57735027],[0.17066344,0.79846143,0.57735027],[-0.17066344,-0.57735027,-0.79846143],[-0.17066344,0.57735027,0.79846143],[0.17066344,0.57735027,-0.79846143],[0.17066344,-0.57735027,0.79846143],[-0.79846143,-0.17066344,-0.57735027],[-0.79846143,0.17066344,0.57735027],[0.79846143,0.17066344,-0.57735027],[0.79846143,-0.17066344,0.57735027],[-0.57735027,-0.79846143,-0.17066344],[-0.57735027,0.79846143,0.17066344],[0.57735027,0.79846143,-0.17066344],[0.57735027,-0.79846143,0.17066344],[-0.57735027,-0.57735027,-0.57735027],[-0.57735027,-0.57735027,0.57735027],[-0.57735027,0.57735027,-0.57735027],[-0.57735027,0.57735027,0.57735027],[0.57735027,-0.57735027,-0.57735027],[0.57735027,-0.57735027,0.57735027],[0.57735027,0.57735027,-0.57735027],[0.57735027,0.57735027,0.57735027]],"dirsSquareAntiPrism":[[0,-0.23914631,0.97098354],[0.68658905,0.23914631,0.68658905],[0.97098354,-0.23914631,0],[0.68658905,0.23914631,-0.68658905],[0,-0.23914631,-0.97098354],[-0.68658905,0.23914631,-0.68658905],[-0.97098354,-0.23914631,0],[-0.68658905,0.23914631,0.68658905]],"dirsTC":[[0.57735027,0.57735027,0.57735027],[0.57735027,-0.57735027,-0.57735027],[-0.57735027,0.57735027,-0.57735027],[-0.57735027,-0.57735027,0.57735027]],"dirsTF":[[-0.57735027,-0.57735027,-0.57735027],[-0.57735027,0.57735027,0.57735027],[0.57735027,-0.57735027,0.57735027],[0.57735027,0.57735027,-0.57735027]],"dirsTetraHex":[[0.4472136,0,0.89442719],[0.4472136,0,-0.89442719],[-0.4472136,0,0.89442719],[-0.4472136,0,-0.89442719],[0.89442719,0.4472136,0],[0.89442719,-0.4472136,0],[-0.89442719,0.4472136,0],[-0.89442719,-0.4472136,0],[0,0.89442719,0.4472136],[0,0.89442719,-0.4472136],[0,-0.89442719,0.4472136],[0,-0.89442719,-0.4472136],[0,0.4472136,0.89442719],[0,0.4472136,-0.89442719],[0,-0.4472136,0.89442719],[0,-0.4472136,-0.89442719],[0.89442719,0,0.4472136],[0.89442719,0,-0.4472136],[-0.89442719,0,0.4472136],[-0.89442719,0,-0.4472136],[0.4472136,0.89442719,0],[0.4472136,-0.89442719,0],[-0.4472136,0.89442719,0],[-0.4472136,-0.89442719,0]],"dirsTetraTrapezo":[[0,0.51108108,0.8595325],[0,0.51108108,-0.8595325],[0.8595325,0.51108108,0],[-0.8595325,0.51108108,0],[0.60778126,-0.51108108,-0.60778126],[-0.60778126,-0.51108108,0.60778126],[0.60778126,-0.51108108,0.60778126],[-0.60778126,-0.51108108,-0.60778126]],"dirsTrapRhomDod":[[0,0,-1.0],[0,0,1.0],[-0.28867513,-0.81649658,-0.5],[-0.28867513,0.81649658,-0.5],[-0.28867513,-0.81649658,0.5],[-0.28867513,0.81649658,0.5],[0.57735027,-0.81649658,0],[0.57735027,0.81649658,0],[-0.8660254,0,-0.5],[-0.8660254,0,0.5],[0.8660254,0,-0.5],[0.8660254,0,0.5]],"dirsTrapRhomTria":[[0,0,-1.0],[0,0,1.0],[-0.58778525,0,-0.80901699],[-0.58778525,0,0.80901699],[0.58778525,0,-0.80901699],[0.58778525,0,0.80901699],[-0.95105652,0,-0.30901699],[-0.95105652,0,0.30901699],[0.95105652,0,-0.30901699],[0.95105652,0,0.30901699],[0.85065081,-0.52573111,0],[0.85065081,0.52573111,0],[0.26286556,-0.52573111,-0.80901699],[0.26286556,0.52573111,-0.80901699],[0.26286556,-0.52573111,0.80901699],[0.26286556,0.52573111,0.80901699],[-0.68819096,-0.52573111,-0.5],[-0.68819096,0.52573111,-0.5],[-0.68819096,-0.52573111,0.5],[-0.68819096,0.52573111,0.5],[-0.52573111,-0.85065081,0],[-0.52573111,0.85065081,0],[-0.16245985,-0.85065081,-0.5],[-0.16245985,0.85065081,-0.5],[-0.16245985,-0.85065081,0.5],[-0.16245985,0.85065081,0.5],[0.4253254,-0.85065081,-0.30901699],[0.4253254,0.85065081,-0.30901699],[0.4253254,-0.85065081,0.30901699],[0.4253254,0.85065081,0.30901699]],"dirsTriDipyra":[[0,0.65465367,0.75592895],[0,-0.65465367,0.75592895],[-0.65465367,0.65465367,-0.37796447],[-0.65465367,-0.65465367,-0.37796447],[0.65465367,0.65465367,-0.37796447],[0.65465367,-0.65465367,-0.37796447]],"dirsTriPrism":[[0,0,1.0],[0.8660254,0,-0.5],[-0.8660254,0,-0.5]],"dirsTriaIcosa":[[0,0.16838141,0.98572192],[0,0.16838141,-0.98572192],[0,-0.16838141,0.98572192],[0,-0.16838141,-0.98572192],[0.98572192,0,0.16838141],[0.98572192,0,-0.16838141],[-0.98572192,0,0.16838141],[-0.98572192,0,-0.16838141],[0.16838141,0.98572192,0],[0.16838141,-0.98572192,0],[-0.16838141,0.98572192,0],[-0.16838141,-0.98572192,0],[0.16838141,0.44082824,0.88165649],[0.16838141,0.44082824,-0.88165649],[0.16838141,-0.44082824,0.88165649],[0.16838141,-0.44082824,-0.88165649],[-0.16838141,0.44082824,0.88165649],[-0.16838141,0.44082824,-0.88165649],[-0.16838141,-0.44082824,0.88165649],[-0.16838141,-0.44082824,-0.88165649],[0.88165649,0.16838141,0.44082824],[0.88165649,0.16838141,-0.44082824],[0.88165649,-0.16838141,0.44082824],[0.88165649,-0.16838141,-0.44082824],[-0.88165649,0.16838141,0.44082824],[-0.88165649,0.16838141,-0.44082824],[-0.88165649,-0.16838141,0.44082824],[-0.88165649,-0.16838141,-0.44082824],[0.44082824,0.88165649,0.16838141],[0.44082824,0.88165649,-0.16838141],[0.44082824,-0.88165649,0.16838141],[0.44082824,-0.88165649,-0.16838141],[-0.44082824,0.88165649,0.16838141],[-0.44082824,0.88165649,-0.16838141],[-0.44082824,-0.88165649,0.16838141],[-0.44082824,-0.88165649,-0.16838141],[0.44082824,0.54489368,0.71327508],[0.44082824,0.54489368,-0.71327508],[0.44082824,-0.54489368,0.71327508],[0.44082824,-0.54489368,-0.71327508],[-0.44082824,0.54489368,0.71327508],[-0.44082824,0.54489368,-0.71327508],[-0.44082824,-0.54489368,0.71327508],[-0.44082824,-0.54489368,-0.71327508],[0.71327508,0.44082824,0.54489368],[0.71327508,0.44082824,-0.54489368],[0.71327508,-0.44082824,0.54489368],[0.71327508,-0.44082824,-0.54489368],[-0.71327508,0.44082824,0.54489368],[-0.71327508,0.44082824,-0.54489368],[-0.71327508,-0.44082824,0.54489368],[-0.71327508,-0.44082824,-0.54489368],[0.54489368,0.71327508,0.44082824],[0.54489368,0.71327508,-0.44082824],[0.54489368,-0.71327508,0.44082824],[0.54489368,-0.71327508,-0.44082824],[-0.54489368,0.71327508,0.44082824],[-0.54489368,0.71327508,-0.44082824],[-0.54489368,-0.71327508,0.44082824],[-0.54489368,-0.71327508,-0.44082824]],"dirsTriaTet":[[0.30151134,-0.30151134,0.90453403],[0.30151134,0.30151134,-0.90453403],[-0.30151134,0.30151134,0.90453403],[-0.30151134,-0.30151134,-0.90453403],[0.90453403,-0.30151134,0.30151134],[0.90453403,0.30151134,-0.30151134],[-0.90453403,0.30151134,0.30151134],[-0.90453403,-0.30151134,-0.30151134],[0.30151134,-0.90453403,0.30151134],[0.30151134,0.90453403,-0.30151134],[-0.30151134,0.90453403,0.30151134],[-0.30151134,-0.90453403,-0.30151134]]},"axes":{"1":"dirsTC","2":"dirsCF","3":"dirsCC","4":"dirsCE","5":"dirsDF","6":"dirsDC","7":"dirsDE","8":"dirsCW","9":"dirsDeltIcosi","10":"dirsDeltHex","11":"dirsTriaTet","12":"dirsTetraHex","13":"dirsPentIcosiD","14":"dirsPentIcosiL","15":"dirsDisdyDodeca","16":"dirsPentaDodeca","17":"dirsTriaIcosa","18":"dirsPentHexeD","19":"dirsPentHexeL","20":"dirsDisdyTria","21":"dirsTriDipyra","22":"dirsPentDipyra","23":"dirsHexDipyra","24":"dirsHepDipyra","25":"dirsOctDipyra","26":"dirsTetraTrapezo","27":"dirsPentTrapezo","28":"dirsHexTrapezo","29":"dirsHeptTrapezo","30":"dirsOctTrapezo","31":"dirsTrapRhomDod","32":"dirsPseuDeltIcosi","33":"dirsTrapRhomTria","34":"dirsCutsDihe","35":"dirsCutsTriPrism","36":"dirsCutsSquarePrism","37":"dirsCutsPentPrism","38":"dirsCutsHexPrism","39":"dirsCutsHepPrism","40":"dirsCutsOctPrism","41":"dirsTF","42":"dirsSquareAntiPrism","43":"dirsPentAntiPrism","44":"dirsHexAntiPrism","45":"dirsHepAntiPrism","46":"dirsOctAntiPrism"},"shapes":[{"id":0,"name":"Sphere","groups":[],"scale":1.0,"bounds":[1.0,-1.0]},{"id":1,"name":"Tetrahedron","groups":[["dirsTC",1.0]],"scale":0.33333333,"bounds":[1.73205081,-1.73205081]},{"id":2,"name":"Cube","groups":[["dirsCF",1.0]],"scale":0.57735027,"bounds":[1.0,-1.0]},{"id":3,"name":"Octahedron","groups":[["dirsCC",1.0]],"scale":0.57735027,"bounds":[1.73205081,-1.73205081]},{"id":4,"name":"Rhombic Dodecahedron","groups":[["dirsCE",1.0]],"scale":0.70710678,"bounds":[1.41421356,-1.41421356]},{"id":5,"name":"Dodecahedron","groups":[["dirsDF",1.0]],"scale":0.79465447,"bounds":[1.1755705,-1.1755705]},{"id":6,"name":"Icosahedron","groups":[["dirsDC",1.0]],"scale":0.79465447,"bounds":[1.07046627,-1.07046627]},{"id":7,"name":"Rhombic Triacontahedron","groups":[["dirsDE",1.0]],"scale":0.85065081,"bounds":[1.0,-1.0]},{"id":8,"name":"Triakis Octahedron","groups":[["dirsCW",1.0]],"scale":0.67859834,"bounds":[1.47362576,-1.47362576]},{"id":9,"name":"Deltoidal Icositetrahedron","groups":[["dirsDeltIcosi",1.0]],"scale":0.86285621,"bounds":[1.15894165,-1.15894165]},{"id":10,"name":"Deltoidal Hexecontahedron","groups":[["dirsDeltHex",1.0]],"scale":0.92459411,"bounds":[1.05425622,-1.05425622]},{"id":11,"name":"Triakis Tetrahedron","groups":[["dirsTriaTet",1.0]],"scale":0.52223297,"bounds":[1.1055416,-1.1055416]},{"id":12,"name":"Tetrakis Hexahedron","groups":[["dirsTetraHex",1.0]],"scale":0.67082039,"bounds":[1.11803399,-1.11803399]},{"id":13,"name":"Pentagonal Icositetrahedron (dextro)","groups":[["dirsPentIcosiD",1.0]],"scale":0.85034021,"bounds":[1.1759999,-1.1759999]},{"id":14,"name":"Pentagonal Icositetrahedron (laevo)","groups":[["dirsPentIcosiL",1.0]],"scale":0.85034021,"bounds":[1.1759999,-1.1759999]},{"id":15,"name":"Disdyakis Dodecahedron","groups":[["dirsDisdyDodeca",1.0]],"scale":0.82594259,"bounds":[1.2107379,-1.2107379]},{"id":16,"name":"Pentakis Dodecahedron","groups":[["dirsPentaDodeca",1.0]],"scale":0.91495838,"bounds":[1.02099984,-1.02099984]},{"id":17,"name":"Triakis Icosahedron","groups":[["dirsTriaIcosa",1.0]],"scale":0.83850515,"bounds":[1.0144849,-1.0144849]},{"id":18,"name":"Pentagonal Hexecontahedron (dextro)","groups":[["dirsPentHexeD",1.0]],"scale":0.91886149,"bounds":[1.02803149,-1.02803149]},{"id":19,"name":"Pentagonal Hexecontahedron (laevo)","groups":[["dirsPentHexeL",1.0]],"scale":0.91886149,"bounds":[1.02803149,-1.02803149]},{"id":20,"name":"Disdyakis Triacontahedron","groups":[["dirsDisdyTria",1.0]],"scale":0.90494419,"bounds":[1.01775303,-1.01775303]},{"id":21,"name":"Triangular Dipyramid","groups":[["dirsTriDipyra",1.0]],"scale":0.37796447,"bounds":[1.32287566,-2.64575131]},{"id":22,"name":"Pentagonal Dipyramid","groups":[["dirsPentDipyra",1.0]],"scale":0.50673185,"bounds":[1.15995323,-1.43378105]},{"id":23,"name":"Hexagonal Dipyramid","groups":[["dirsHexDipyra",1.0]],"scale":0.4472136,"bounds":[1.11803399,-1.11803399]},{"id":24,"name":"Heptagonal Dipyramid","groups":[["dirsHepDipyra",1.0]],"scale":0.3980325,"bounds":[1.09007114,-1.20988769]},{"id":25,"name":"Octagonal Dipyramid","groups":[["dirsOctDipyra",1.0]],"scale":0.35740674,"bounds":[1.07072247,-1.07072247]},{"id":26,"name":"Tetragonal Trapezohedron","groups":[["dirsTetraTrapezo",1.0]],"scale":0.51108108,"bounds":[1.36303499,-1.36303499]},{"id":27,"name":"Pentagonal Trapezohedron","groups":[["dirsPentTrapezo",1.0]],"scale":0.4472136,"bounds":[1.23606798,-1.23606798]},{"id":28,"name":"Hexagonal Trapezohedron","groups":[["dirsHexTrapezo",1.0]],"scale":0.39331989,"bounds":[1.16575463,-1.16575463]},{"id":29,"name":"Heptagonal Trapezohedron","groups":[["dirsHeptTrapezo",1.0]],"scale":0.34905022,"bounds":[1.12270896,-1.12270896]},{"id":30,"name":"Octagonal Trapezohedron","groups":[["dirsOctTrapezo",1.0]],"scale":0.31270999,"bounds":[1.0944545,-1.0944545]},{"id":31,"name":"Trapezo-Rhombic Dodecahedron","groups":[["dirsTrapRhomDod",1.0]],"scale":0.70710678,"bounds":[1.0,-1.0]},{"id":32,"name":"Pseudo-Deltoidal Icositetrahedron","groups":[["dirsPseuDeltIcosi",1.0]],"scale":0.86285621,"bounds":[1.15894165,-1.15894165]},{"id":33,"name":"Trapezo-Rhombic Triacontahedron","groups":[["dirsTrapRhomTria",1.0]],"scale":0.85065081,"bounds":[1.0,-1.0]},{"id":34,"name":"Triangular Prism (Equidistant Faces)","groups":[["dirsTriPrism",1.0],["dirsPrismCaps",1.0]],"scale":0.4472136,"bounds":[1.0,-2.0]},{"id":35,"name":"Pentagonal Prism (Equidistant Faces)","groups":[["dirsPentPrism",1.0],["dirsPrismCaps",1.0]],"scale":0.62896017,"bounds":[1.0,-1.23606798]},{"id":36,"name":"Hexagonal Prism (Equidistant Faces)","groups":[["dirsHexPrism",1.0],["dirsPrismCaps",1.0]],"scale":0.65465367,"bounds":[1.0,-1.0]},{"id":37,"name":"Heptagonal Prism (Equidistant Faces)","groups":[["dirsHepPrism",1.0],["dirsPrismCaps",1.0]],"scale":0.66936232,"bounds":[1.0,-1.10991626]},{"id":38,"name":"Octagonal Prism (Equidistant Faces)","groups":[["dirsOctPrism",1.0],["dirsPrismCaps",1.0]],"scale":0.67859834,"bounds":[1.0,-1.0]},{"id":39,"name":"Truncated Cube (Equidistant Faces)","groups":[["dirsCF",1.0],["dirsCC",1.0]],"scale":0.80689822,"bounds":[1.0,-1.0]},{"id":40,"name":"Truncated Dodecahedron (Equidistant Faces)","groups":[["dirsDF",1.0],["dirsDC",1.0]],"scale":0.92260219,"bounds":[1.07046627,-1.07046627]},{"id":41,"name":"Cuboctahedron","groups":[["dirsCF",1.0],["dirsCC",1.1547005383792515]],"scale":0.70710678,"bounds":[1.0,-1.0]},{"id":42,"name":"Icosidodecahedron","groups":[["dirsDF",1.0],["dirsDC",1.0981854713951091]],"scale":0.85065081,"bounds":[1.1755705,-1.1755705]},{"id":43,"name":"Truncated Tetrahedron","groups":[["dirsTC",1.0],["dirsCC",1.6666666666666667]],"scale":0.52223297,"bounds":[1.73205081,-1.73205081]},{"id":44,"name":"Truncated Octahedron","groups":[["dirsCC",1.0],["dirsCF",1.1547005383792515]],"scale":0.77459667,"bounds":[1.15470054,-1.15470054]},{"id":45,"name":"Truncated Cube","groups":[["dirsCF",1.0],["dirsCC",1.1547005383792515]],"scale":0.67859834,"bounds":[1.0,-1.0]},{"id":46,"name":"Rhombicuboctahedron","groups":[["dirsCF",1.0],["dirsCE",1.0],["dirsCC",1.0556428926658263]],"scale":0.86285621,"bounds":[1.0,-1.0]},{"id":47,"name":"Truncated Cuboctahedron","groups":[["dirsCF",1.0],["dirsCC",1.0922345950699728],["dirsCE",1.1530096874093536]],"scale":0.82594259,"bounds":[1.0,-1.0]},{"id":48,"name":"Snub Cube (dextro)","groups":[["dirsCF",1.0],["dirsSnubcubeTriD",1.0619127032398092]],"scale":0.85034021,"bounds":[1.0,-1.0]},{"id":49,"name":"Snub Cube (laevo)","groups":[["dirsCF",1.0],["dirsSnubcubeTriL",1.0619127032398092]],"scale":0.85034021,"bounds":[1.0,-1.0]},{"id":50,"name":"Truncated Icosahedron","groups":[["dirsDC",1.0],["dirsDF",1.0265315223282925]],"scale":0.91495838,"bounds":[1.07046627,-1.07046627]},{"id":51,"name":"Truncated Dodecahedron","groups":[["dirsDF",1.0],["dirsDC",1.169839420461926]],"scale":0.83850515,"bounds":[1.1755705,-1.1755705]},{"id":52,"name":"Rhombicosidodecahedron","groups":[["dirsDF",1.0],["dirsDE",1.0258945123917511],["dirsDC",1.0447777710718726]],"scale":0.92459411,"bounds":[1.02589451,-1.02589451]},{"id":53,"name":"Truncated Icosidodecahedron","groups":[["dirsDF",1.0],["dirsDC",1.0661408512011672],["dirsDE",1.0857649092690291]],"scale":0.90494419,"bounds":[1.08576491,-1.08576491]},{"id":54,"name":"Snub Dodecahedron (dextro)","groups":[["dirsSnubDodPentD",1.0],["dirsSnubDodTriD",1.0485501227820064]],"scale":0.91886149,"bounds":[1.05862838,-1.05862838]},{"id":55,"name":"Snub Dodecahedron (laevo)","groups":[["dirsSnubDodPentL",1.0],["dirsSnubDodTriL",1.0485501227820064]],"scale":0.91886149,"bounds":[1.05862838,-1.05862838]},{"id":56,"name":"Triangular Prism (Square Sides)","groups":[["dirsTriPrism",1.0],["dirsPrismCaps",1.7320508075688772]],"scale":0.37796447,"bounds":[1.0,-2.0]},{"id":57,"name":"Pentagonal Prism (Square Sides)","groups":[["dirsPrismCaps",1.0],["dirsPentPrism",1.3763819204711736]],"scale":0.50673185,"bounds":[1.37638192,-1.70130162]},{"id":58,"name":"Hexagonal Prism (Square Sides)","groups":[["dirsPrismCaps",1.0],["dirsHexPrism",1.7320508075688772]],"scale":0.4472136,"bounds":[1.73205081,-1.73205081]},{"id":59,"name":"Heptagonal Prism (Square Sides)","groups":[["dirsPrismCaps",1.0],["dirsHepPrism",2.0765213965723364]],"scale":0.3980325,"bounds":[2.0765214,-2.30476487]},{"id":60,"name":"Octagonal Prism (Square Sides)","groups":[["dirsPrismCaps",1.0],["dirsOctPrism",2.414213562373095]],"scale":0.35740674,"bounds":[2.41421356,-2.41421356]},{"id":61,"name":"Square Antiprism","groups":[["dirsPrismCaps",1.0],["dirsSquareAntiPrism",1.3938468501173518]],"scale":0.51108108,"bounds":[1.68179283,-1.68179283]},{"id":62,"name":"Pentagonal Antiprism","groups":[["dirsPrismCaps",1.0],["dirsPentAntiPrism",1.776901418668612]],"scale":0.4472136,"bounds":[2.0,-2.0]},{"id":63,"name":"Hexagonal Antiprism","groups":[["dirsPrismCaps",1.0],["dirsHexAntiPrism",2.1547005383792515]],"scale":0.39331989,"bounds":[2.33754179,-2.33754179]},{"id":64,"name":"Heptagonal Antiprism","groups":[["dirsPrismCaps",1.0],["dirsHepAntiPrism",2.529536805958041]],"scale":0.34905022,"bounds":[2.68472549,-2.68472549]},{"id":65,"name":"Octagonal Antiprism","groups":[["dirsPrismCaps",1.0],["dirsOctAntiPrism",2.902535809086495]],"scale":0.31270999,"bounds":[3.03747459,-3.03747459]}],"shapeMenu":[{"label":"Smooth Solids","items":[[0,"Sphere"]]},{"label":"Platonic Solids","items":[[1,"Tetrahedron"],[2,"Cube"],[3,"Octahedron"],[5,"Dodecahedron"],[6,"Icosahedron"]]},{"label":"Catalan Solids","items":[[4,"Rhombic Dodecahedron"],[7,"Rhombic Triacontahedron"],[11,"Triakis Tetrahedron"],[12,"Tetrakis Hexahedron"],[8,"Triakis Octahedron"],[17,"Triakis Icosahedron"],[10,"Deltoidal Hexecontahedron"],[9,"Deltoidal Icositetrahedron"],[18,"Pentagonal Hexecontahedron (dextro)"],[19,"Pentagonal Hexecontahedron (laevo)"],[13,"Pentagonal Icositetrahedron (dextro)"],[14,"Pentagonal Icositetrahedron (laevo)"],[15,"Disdyakis Dodecahedron"],[20,"Disdyakis Triacontahedron"],[16,"Pentakis Dodecahedron"]]},{"label":"Dipyramids","items":[[21,"Triangular Dipyramid"],[22,"Pentagonal Dipyramid"],[23,"Hexagonal Dipyramid"],[24,"Heptagonal Dipyramid"],[25,"Octagonal Dipyramid"]]},{"label":"Trapezohedra","items":[[26,"Tetragonal Trapezohedron"],[27,"Pentagonal Trapezohedron"],[28,"Hexagonal Trapezohedron"],[29,"Heptagonal Trapezohedron"],[30,"Octagonal Trapezohedron"]]},{"label":"Prisms and Antiprisms","items":[[56,"Triangular Prism (Square Sides)"],[57,"Pentagonal Prism (Square Sides)"],[58,"Hexagonal Prism (Square Sides)"],[59,"Heptagonal Prism (Square Sides)"],[60,"Octagonal Prism (Square Sides)"],[61,"Square Antiprism"],[62,"Pentagonal Antiprism"],[63,"Hexagonal Antiprism"],[64,"Heptagonal Antiprism"],[65,"Octagonal Antiprism"],[34,"Triangular Prism (Equidistant Faces)"],[35,"Pentagonal Prism (Equidistant Faces)"],[36,"Hexagonal Prism (Equidistant Faces)"],[37,"Heptagonal Prism (Equidistant Faces)"],[38,"Octagonal Prism (Equidistant Faces)"]]},{"label":"Archimedean Solids","items":[[43,"Truncated Tetrahedron"],[41,"Cuboctahedron"],[45,"Truncated Cube"],[48,"Snub Cube (dextro)"],[49,"Snub Cube (laevo)"],[46,"Rhombicuboctahedron"],[44,"Truncated Octahedron"],[47,"Truncated Cuboctahedron"],[51,"Truncated Dodecahedron"],[42,"Icosidodecahedron"],[54,"Snub Dodecahedron (dextro)"],[55,"Snub Dodecahedron (laevo)"],[50,"Truncated Icosahedron"],[52,"Rhombicosidodecahedron"],[53,"Truncated Icosidodecahedron"]]},{"label":"Other Solids","items":[[31,"Trapezo-Rhombic Dodecahedron"],[32,"Pseudo-Deltoidal Icositetrahedron"],[33,"Trapezo-Rhombic Triacontahedron"],[39,"Truncated Cube (Equidistant Faces)"],[40,"Truncated Dodecahedron (Equidistant Faces)"]]}],"axisMenu":[{"label":"Platonic Geometries","items":[[1,"Tetrahedron"],[41,"Tetrahedron (Corners)"],[2,"Cube"],[3,"Octahedron"],[5,"Dodecahedron"],[6,"Icosahedron"]]},{"label":"Catalan Geometries","items":[[4,"Rhombic Dodecahedron"],[7,"Rhombic Triacontahedron"],[11,"Triakis Tetrahedron"],[12,"Tetrakis Hexahedron"],[8,"Triakis Octahedron"],[17,"Triakis Icosahedron"],[10,"Deltoidal Hexecontahedron"],[9,"Deltoidal Icositetrahedron"],[18,"Pentagonal Hexecontahedron (dextro)"],[19,"Pentagonal Hexecontahedron (laevo)"],[13,"Pentagonal Icositetrahedron (dextro)"],[14,"Pentagonal Icositetrahedron (laevo)"],[15,"Disdyakis Dodecahedron"],[20,"Disdyakis Triacontahedron"],[16,"Pentakis Dodecahedron"]]},{"label":"Dipyramidal Geometries","items":[[21,"Triangular Dipyramid"],[22,"Pentagonal Dipyramid"],[23,"Hexagonal Dipyramid"],[24,"Heptagonal Dipyramid"],[25,"Octagonal Dipyramid"]]},{"label":"Trapezohedral Geometries","items":[[26,"Tetragonal Trapezohedron"],[27,"Pentagonal Trapezohedron"],[28,"Hexagonal Trapezohedron"],[29,"Heptagonal Trapezohedron"],[30,"Octagonal Trapezohedron"]]},{"label":"Prismatic Geometries","items":[[34,"Dihedral Cuts (Top & Bottom Faces)"],[35,"Triangular Prism (Side Faces)"],[36,"Square Prism (Side Faces)"],[37,"Pentagonal Prism (Side Faces)"],[38,"Hexagonal Prism (Side Faces)"],[39,"Heptagonal Prism (Side Faces)"],[40,"Octagonal Prism (Side Faces)"],[42,"Square Antiprism (Side Faces)"],[43,"Pentagonal Antiprism (Side Faces)"],[44,"Hexagonal Antiprism (Side Faces)"],[45,"Heptagonal Antiprism (Side Faces)"],[46,"Octagonal Antiprism (Side Faces)"]]},{"label":"Other Geometries","items":[[31,"Trapezo-Rhombic Dodecahedron"],[32,"Pseudo-Deltoidal Icositetrahedron"],[33,"Trapezo-Rhombic Triacontahedron"]]}]};
+    const dirs = Object.fromEntries(Object.entries(geometryCatalog.axes).map(([index,name]) => [index,geometryCatalog.vectors[name]]));
+    const shapeList = geometryCatalog.shapes.map((shape) => ({
+      ...shape,
+      planes: shape.groups.flatMap(([name,radius]) => geometryCatalog.vectors[name].map((normal) => [...normal,radius])),
+      sliceBounds: shape.bounds
+    }));
+    const shapes = new Map(shapeList.map((s) => [s.id, s]));
+    const symList = geometryCatalog.axisMenu.flatMap((group) => group.items);
+
+    const colors = [
+      ['Red', '#e44b43'], ['Green', '#35c878'], ['Blue', '#438be8'], ['Yellow', '#f0d34c'],
+      ['Blue violet', '#8c61e8'], ['Coral', '#f17d63'], ['Medium turquoise', '#55cfc2'], ['Spring green', '#48e68b'],
+      ['Magenta', '#e153c8'], ['Maroon', '#982f51'], ['Yellow green', '#9dcb45'], ['Orange', '#ed9838'],
+      ['Orange red', '#f05f32'], ['Sea green', '#329f72'], ['Summer sky', '#64bfe9'], ['Neon blue', '#5170ff'],
+      ['White', '#f6f3e9'], ['Black', '#191a1d'], ['Medium slate blue', '#786fda'], ['Medium spring green', '#45d7a2'],
+      ['Scarlet', '#ef3f57']
+    ];
+
+    const iOSExportLimited=/iP(?:hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0)>1);
+    function detectNativeExportSize() {
+      const cssWidth=Number(globalThis.screen?.width);
+      const cssHeight=Number(globalThis.screen?.height);
+      const pixelRatio=Number(globalThis.devicePixelRatio) || 1;
+      const width=Math.round(cssWidth*pixelRatio);
+      const height=Math.round(cssHeight*pixelRatio);
+      const shortEdge=Math.min(width,height);
+      const longEdge=Math.max(width,height);
+      const aspect=longEdge/shortEdge;
+      if (![width,height,aspect].every(Number.isFinite)) return null;
+      if (shortEdge<640 || longEdge>5120 || width*height>15000000 || aspect>4) return null;
+      return { width, height };
+    }
+    const nativeExportSize=iOSExportLimited ? null : detectNativeExportSize();
+    const validExportSize=(size) => iOSExportLimited
+      ? size === 'preview'
+      : /^(normal|large|huge)$/.test(String(size)) || (size === 'native' && nativeExportSize);
+    const defaults = {
+      base_shape: '2', usermat: '0', userbg: '0', slice: 100, fast_render: false, export_size: iOSExportLimited ? 'preview' : nativeExportSize ? 'native' : 'normal',
+      rot_x: -20, rot_y: 25, rot_z: -8, cut_width: '3'
+    };
+    const defaultCuts = Array.from({length: 5}, (_, i) => ({
+      use: i === 0, sym: 2, type: 1, depth: i === 0 ? 100 : 200, apex: i === 0 ? 100 : 0, planar: i === 0,
+      color: i, rot: [0,0,0], trans: [0,0,0]
+    }));
+    const presetCatalog = [
+      ['rubik',"Rubik's Cube",'base_shape=2&sym_0=2&depth_0=100&apex_0=100'],
+      ['skewb','Skewb','base_shape=2&sym_0=3&depth_0=0&apex_0=0'],
+      ['megaminx','Megaminx','base_shape=5&sym_0=5&depth_0=186&apex_0=186'],
+      ['helicopter','Helicopter Cube','base_shape=2&sym_0=4&depth_0=212&apex_0=212'],
+      ['curvy','Curvy Copter','base_shape=2&sym_0=4&depth_0=212.2&apex_0=100'],
+      ['master_curvy','Master Curvy Copter','base_shape=2&sym_0=4&depth_0=212.2&apex_0=150&use_1=on&sym_1=4&depth_1=240&apex_1=160&color_1=0'],
+      ['dreidel_skewb','Dreidel Skewb','base_shape=2&sym_0=3&depth_0=79.5&apex_0=250'],
+      ['dreidel_pentultimate','Dreidel Pentultimate','base_shape=5&sym_0=5&depth_0=44.5&apex_0=280'],
+      ['real_5x5x5',"Carl Hoff's Real5x5x5",'base_shape=2&cut_width=3&userbg=1&use_0=on&sym_0=2&type_0=1&depth_0=40&apex_0=40&color_0=0&use_1=on&sym_1=2&type_1=1&depth_1=150&apex_1=80&color_1=1&use_2=on&sym_2=2&type_2=1&depth_2=232&apex_2=0&color_2=2&use_3=on&sym_3=2&type_3=1&depth_3=250&apex_3=0&color_3=3'],
+      ['chopasaurus','Master Chopasaurus Triacontahedron','base_shape=7&cut_width=3&userbg=0&use_0=on&sym_0=6&type_0=1&depth_0=15&apex_0=15&color_0=7'],
+      ['gelatinbrain',"Gelatinbrain's 3.1.33",'base_shape=2&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=260&apex_0=450&color_0=6&use_1=on&sym_1=2&type_1=1&depth_1=254&apex_1=0&color_1=4'],
+      ['bump','Bump Cube','base_shape=2&transc_x_0=0.15&transc_y_0=0.3&transc_z_0=0.45&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0'],
+      ['fisher','Fisher Cube','base_shape=2&rotc_x_0=0&rotc_y_0=45&rotc_z_0=0&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0'],
+      ['axis','Axis Cube','base_shape=2&rotc_x_0=45&rotc_y_0=-19.3&rotc_z_0=45&cut_width=3&userbg=0&use_0=on&sym_0=2&type_0=1&depth_0=100&apex_0=100&color_0=0'],
+      ['insanity_cubed',"David Pitcher's Insanity Cubed",'base_shape=2&rotc_x_0=90&rotc_y_0=125.3&rotc_z_0=135&cut_width=3&userbg=0&use_0=on&sym_0=21&type_0=1&depth_0=160&apex_0=160&color_0=19'],
+      ['ultimate_insanity',"David Pitcher's Ultimate Insanity",'base_shape=21&rot_x=-20&rot_y=25&rot_z=-8&cut_width=3&userbg=0&usermat=0&use_0=on&sym_0=21&type_0=1&depth_0=150&apex_0=150&color_0=18&rotc_x_0=0&transc_x_0=0&rotc_y_0=60&transc_y_0=0&rotc_z_0=0&transc_z_0=0&use_1=on&sym_1=35&type_1=1&depth_1=99&apex_1=99&color_1=18&rotc_x_1=0&transc_x_1=0&rotc_y_1=0&transc_y_1=0&rotc_z_1=0&transc_z_1=0'],
+      ['pentex',"Greg's Pentex",'base_shape=57&usermat=0&rot_x=-30&rot_y=25&rot_z=-16&cut_width=5&userbg=0&use_0=on&sym_0=22&type_0=1&depth_0=110&apex_0=50&color_0=15&rotc_x_0=0&transc_x_0=0&rotc_y_0=0&transc_y_0=0&rotc_z_0=0&transc_z_0=0']
+    ];
+    const state = { ...defaults, cuts: structuredClone(defaultCuts), spin: false, zoom: 1 };
+    if (nativeExportSize) {
+      $('nativeExportSize').hidden=false;
+      $('nativeExportDimensions').textContent=`${nativeExportSize.width} × ${nativeExportSize.height}`;
+    }
+    if (iOSExportLimited) {
+      $('previewExportSize').hidden=false;
+      $('normalExportSize').hidden=true;
+      $('largeExportSize').hidden=true;
+      $('hugeExportSize').hidden=true;
+    }
+
+    const option = (value, text) => {
+      const o = document.createElement('option'); o.value = value; o.textContent = text; return o;
+    };
+    function populateGroupedSelect(select,menu) {
+      menu.forEach((group) => {
+        const optgroup=document.createElement('optgroup'); optgroup.label=group.label;
+        group.items.forEach(([value,name]) => optgroup.append(option(value,name)));
+        select.append(optgroup);
+      });
+    }
+    populateGroupedSelect($('base_shape'),geometryCatalog.shapeMenu);
+
+    ['x','y','z'].forEach((axis) => {
+      const box = document.createElement('div'); box.className = 'axis-input';
+      box.innerHTML = `<span>${axis.toUpperCase()}</span><input type="number" step="1" min="-360" max="360" id="rot_${axis}" name="rot_${axis}">`;
+      $('sceneRotation').append(box);
+    });
+
+    function cutMarkup(i) {
+      const symOptions = geometryCatalog.axisMenu.map((group) => `<optgroup label="${group.label}">${group.items.map(([v,n]) => `<option value="${v}">${n}</option>`).join('')}</optgroup>`).join('');
+      const colorOptions = colors.map(([n], c) => `<option value="${c}">${n}</option>`).join('');
+      return `<details class="cut" id="cut_${i}" ${i === 0 ? 'open' : ''} style="--cut-color:${colors[i][1]}">
+        <summary>
+          <input type="checkbox" id="use_${i}" name="use_${i}" aria-label="Enable cut ${i + 1}">
+          <span class="cut-dot"></span>
+          <span><span class="cut-title">Cut ${i + 1}</span><br><span class="cut-summary" id="cut_summary_${i}"></span></span>
+        </summary>
+        <div class="cut-fields">
+          <div class="field"><label for="sym_${i}">Symmetry / direction set</label><select id="sym_${i}" name="sym_${i}">${symOptions}</select></div>
+          <div class="field">
+            <span class="label" id="cut_mode_label_${i}">Cut shape</span>
+            <div class="cut-mode" role="group" aria-labelledby="cut_mode_label_${i}">
+              <button type="button" data-cut-mode="planar" data-cut-index="${i}" aria-pressed="false">Planar</button>
+              <button type="button" data-cut-mode="curved" data-cut-index="${i}" aria-pressed="false">Curved</button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="depth_${i}">Depth</label>${numberSlider(`depth_${i}`,0,300,.1)}</div>
+            <div class="field"><label for="type_${i}">Depth units</label><select id="type_${i}" name="type_${i}"><option value="1">Jaap's · 0–300</option><option value="2">Degrees · 0–90</option></select></div>
+          </div>
+          <div class="row">
+            <div class="field"><label id="apex_label_${i}" for="apex_${i}">Cone apex</label>${numberSlider(`apex_${i}`,-1000,1000,.1)}</div>
+            <div class="field"><label for="color_${i}">Cut color</label><div class="swatch-select"><span class="swatch"></span><select id="color_${i}" name="color_${i}">${colorOptions}</select></div></div>
+          </div>
+          <div class="field"><span class="label">Rotate cuts (x, y, z)</span><div class="triple">${axisFields('rotc',i,-360,360,.1)}</div></div>
+          <div class="field"><span class="label">Translate cuts (x, y, z)</span><div class="triple">${axisFields('transc',i,-1,1,.01)}</div></div>
+        </div>
+      </details>`;
+    }
+    function axisFields(prefix, i, min, max, step) {
+      return ['x','y','z'].map((a) => {
+        const id = `${prefix}_${a}_${i}`;
+        return `<div class="axis-input"><span>${a.toUpperCase()}</span>${numberSlider(id,min,max,step)}</div>`;
+      }).join('');
+    }
+    function numberSlider(id, min, max, step) {
+      return `<div class="number-slider"><input type="number" id="${id}" name="${id}" min="${min}" max="${max}" step="${step}"><input class="quick-slider" type="range" data-for="${id}" min="${min}" max="${max}" step="${step}" tabindex="-1" aria-label="Quickly adjust ${id.replaceAll('_',' ')}"></div>`;
+    }
+    $('cuts').innerHTML = Array.from({length: 5}, (_, i) => cutMarkup(i)).join('');
+
+    function clamp(n, lo, hi, fallback = 0) {
+      n = Number(n); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : fallback;
+    }
+    function readQuery() {
+      applyParams(new URLSearchParams(location.search));
+    }
+    function applyParams(q) {
+      if (shapes.has(Number(q.get('base_shape')))) state.base_shape = q.get('base_shape');
+      if (/^[0-5]$/.test(q.get('usermat') || '')) state.usermat = q.get('usermat');
+      if (/^[0-3]$/.test(q.get('userbg') || '')) state.userbg = q.get('userbg');
+      if (/^[1-5]$/.test(q.get('cut_width') || '')) state.cut_width = q.get('cut_width');
+      if (q.has('slice')) state.slice = clamp(q.get('slice'), 0, 100, 100);
+      else if (q.get('crosssection') === 'on') state.slice = 50;
+      state.fast_render = q.get('fast_render') === 'on';
+      if (validExportSize(q.get('export_size'))) state.export_size = q.get('export_size');
+      ['x','y','z'].forEach((a) => { if (q.has(`rot_${a}`)) state[`rot_${a}`] = clamp(q.get(`rot_${a}`), -360, 360); });
+      for (let i = 0; i < 5; i++) {
+        const c = state.cuts[i];
+        if (q.has(`use_${i}`)) c.use = q.get(`use_${i}`) === 'on';
+        if (q.has(`sym_${i}`) && dirs[q.get(`sym_${i}`)]) c.sym = Number(q.get(`sym_${i}`));
+        if (q.has(`type_${i}`)) c.type = clamp(q.get(`type_${i}`), 1, 2, 1);
+        if (q.has(`depth_${i}`)) c.depth = clamp(q.get(`depth_${i}`), 0, c.type === 2 ? 90 : 300, 100);
+        if (q.has(`apex_${i}`)) c.apex = clamp(q.get(`apex_${i}`), -1000, 1000);
+        c.planar = q.has(`planar_${i}`)
+          ? q.get(`planar_${i}`) === 'on'
+          : Math.abs(effectiveDepth(c) - c.apex) < .0001;
+        if (c.planar) c.apex = effectiveDepth(c);
+        if (q.has(`color_${i}`)) c.color = clamp(q.get(`color_${i}`), 0, 20, i);
+        ['x','y','z'].forEach((a, k) => {
+          if (q.has(`rotc_${a}_${i}`)) c.rot[k] = clamp(q.get(`rotc_${a}_${i}`), -360, 360);
+          if (q.has(`transc_${a}_${i}`)) c.trans[k] = clamp(q.get(`transc_${a}_${i}`), -1, 1);
+        });
+      }
+    }
+
+    function syncControls() {
+      ['base_shape','usermat','userbg','cut_width'].forEach((k) => { $(k).value = state[k]; });
+      $('slice').value = state.slice;
+      $('fast_render').checked = state.fast_render;
+      syncExportSize();
+      updateSliceLabel();
+      ['x','y','z'].forEach((a) => { $(`rot_${a}`).value = round(state[`rot_${a}`], 1); });
+      state.cuts.forEach((c, i) => {
+        $(`use_${i}`).checked = c.use;
+        $(`sym_${i}`).value = c.sym;
+        $(`type_${i}`).value = c.type;
+        $(`depth_${i}`).max = c.type === 2 ? 90 : 300;
+        document.querySelector(`[data-for="depth_${i}"]`).max = c.type === 2 ? 90 : 300;
+        $(`depth_${i}`).value = c.depth;
+        $(`apex_${i}`).value = c.apex;
+        $(`color_${i}`).value = c.color;
+        syncCutMode(i);
+        ['x','y','z'].forEach((a,k) => {
+          $(`rotc_${a}_${i}`).value = c.rot[k];
+          $(`transc_${a}_${i}`).value = c.trans[k];
+        });
+        updateCutLabel(i);
+      });
+      syncSliders();
+    }
+
+    function syncSliders() {
+      document.querySelectorAll('.quick-slider').forEach((slider) => {
+        const input = $(slider.dataset.for);
+        slider.value = clamp(input.value, Number(slider.min), Number(slider.max));
+      });
+    }
+
+    function syncExportSize() {
+      document.querySelectorAll('[data-export-size]').forEach((button) => {
+        button.setAttribute('aria-pressed',String(button.dataset.exportSize === state.export_size));
+      });
+    }
+
+    function readControls() {
+      ['base_shape','usermat','userbg','cut_width'].forEach((k) => { state[k] = $(k).value; });
+      state.slice = clamp($('slice').value, 0, 100, 100);
+      state.fast_render = $('fast_render').checked;
+      updateSliceLabel();
+      ['x','y','z'].forEach((a) => { state[`rot_${a}`] = clamp($(`rot_${a}`).value, -360, 360); });
+      state.cuts.forEach((c, i) => {
+        c.use = $(`use_${i}`).checked;
+        c.sym = Number($(`sym_${i}`).value);
+        c.type = Number($(`type_${i}`).value);
+        $(`depth_${i}`).max = c.type === 2 ? 90 : 300;
+        const depthSlider = document.querySelector(`[data-for="depth_${i}"]`);
+        depthSlider.max = c.type === 2 ? 90 : 300;
+        c.depth = clamp($(`depth_${i}`).value, 0, c.type === 2 ? 90 : 300);
+        $(`depth_${i}`).value = c.depth;
+        c.apex = c.planar ? effectiveDepth(c) : clamp($(`apex_${i}`).value, -1000, 1000);
+        $(`apex_${i}`).value = round(c.apex, 4);
+        c.color = clamp($(`color_${i}`).value, 0, 20, i);
+        ['x','y','z'].forEach((a,k) => {
+          c.rot[k] = clamp($(`rotc_${a}_${i}`).value, -360, 360);
+          c.trans[k] = clamp($(`transc_${a}_${i}`).value, -1, 1);
+        });
+        updateCutLabel(i);
+      });
+      syncSliders();
+    }
+
+    function updateCutLabel(i) {
+      const c = state.cuts[i];
+      const name = symList.find(([n]) => n === Number(c.sym))?.[1] || 'Unknown';
+      $(`cut_summary_${i}`).textContent = c.use ? `${name} · ${c.planar ? 'planar' : 'curved'}` : 'Disabled';
+      $(`cut_${i}`).style.setProperty('--cut-color', colors[c.color]?.[1] || '#fff');
+    }
+
+    function syncCutMode(i) {
+      const planar = Boolean(state.cuts[i].planar);
+      document.querySelectorAll(`[data-cut-index="${i}"]`).forEach((button) => {
+        button.setAttribute('aria-pressed', String((button.dataset.cutMode === 'planar') === planar));
+      });
+      const apex = $(`apex_${i}`);
+      const apexSlider = document.querySelector(`[data-for="apex_${i}"]`);
+      apex.disabled = planar;
+      apexSlider.disabled = planar;
+      apex.closest('.number-slider').classList.toggle('is-locked',planar);
+      $(`apex_label_${i}`).textContent = planar ? 'Cone apex · locked to depth' : 'Cone apex';
+    }
+
+    function updateSliceLabel() {
+      const value = Number(state.slice);
+      $('sliceReadout').textContent = value >= 99.95 ? 'No slicing' : value <= .05 ? 'Fully sliced' : Math.abs(value - 50) < .05 ? 'Through origin' : `${round(value, 1)}%`;
+    }
+
+    function effectiveDepth(c) {
+      return c.type === 2 ? Math.sin((90 - c.depth) * DEG) * 300 : c.depth;
+    }
+
+    function changeDepthUnits(i, nextType) {
+      const cut = state.cuts[i];
+      if (cut.type === nextType) return;
+      const physicalDepth = effectiveDepth(cut);
+      cut.type = nextType;
+      cut.depth = nextType === 2
+        ? round(Math.acos(clamp(physicalDepth / 300, 0, 1)) / DEG, 6)
+        : round(physicalDepth, 6);
+      if (cut.planar) cut.apex = physicalDepth;
+      syncControls();
+      changed();
+    }
+
+    function queryString() {
+      const q = new URLSearchParams();
+      ['base_shape','usermat','userbg','cut_width'].forEach((k) => q.set(k, state[k]));
+      if (state.slice < 100) q.set('slice',round(state.slice,1));
+      if (state.fast_render) q.set('fast_render','on');
+      q.set('export_size',state.export_size);
+      ['x','y','z'].forEach((a) => q.set(`rot_${a}`, round(state[`rot_${a}`], 2)));
+      state.cuts.forEach((c, i) => {
+        q.set(`use_${i}`,c.use ? 'on' : 'off');
+        if (!c.use) return;
+        q.set(`sym_${i}`,c.sym); q.set(`type_${i}`,c.type); q.set(`planar_${i}`,c.planar ? 'on' : 'off');
+        q.set(`depth_${i}`,c.depth); q.set(`apex_${i}`,c.apex); q.set(`color_${i}`,c.color);
+        ['x','y','z'].forEach((a,k) => {
+          q.set(`rotc_${a}_${i}`,c.rot[k]); q.set(`transc_${a}_${i}`,c.trans[k]);
+        });
+      });
+      return q.toString();
+    }
+
+    function twistyRendererQueryString() {
+      const q = new URLSearchParams();
+      ['base_shape','usermat','cut_width'].forEach((key) => q.set(key, state[key]));
+      // The original renderer has no transparent background; use its closest
+      // dark backdrop when sending a transparent TwistyVision scene there.
+      q.set('userbg', state.userbg === '3' ? '0' : state.userbg);
+      ['x','y','z'].forEach((axis) => q.set(`rot_${axis}`, round(state[`rot_${axis}`], 2)));
+      if (state.slice < 99.95) q.set('crosssection','on');
+      state.cuts.forEach((cut, index) => {
+        q.set(`use_${index}`,cut.use ? 'on' : 'off');
+        if (!cut.use) return;
+        q.set(`sym_${index}`,cut.sym);
+        q.set(`type_${index}`,cut.type);
+        q.set(`depth_${index}`,cut.depth);
+        q.set(`apex_${index}`,cut.apex);
+        q.set(`color_${index}`,cut.color);
+        ['x','y','z'].forEach((axis, component) => {
+          q.set(`rotc_${axis}_${index}`,cut.rot[component]);
+          q.set(`transc_${axis}_${index}`,cut.trans[component]);
+        });
+      });
+      return q.toString();
+    }
+
+    function updateTwistyRendererLink() {
+      const url = new URL('https://www.brandonenright.net/cgi-bin/jaaps_povray.pl');
+      url.search = twistyRendererQueryString();
+      $('rendererLink').href = url.href;
+    }
+
+    const SAVED_CONFIG_KEY = 'twistyLab.savedConfigurations.v1';
+    const LAST_CONFIG_KEY = 'twistyLab.lastConfiguration.v1';
+    const SAVED_CONFIG_FORMAT = 'twistyvision-saved-configurations';
+    const LAST_CONFIG_FORMAT = 'twistyvision-last-configuration';
+    const SHARE_CONFIG_FORMAT = 'twistyvision-configuration';
+    const LEGACY_SAVED_CONFIG_FORMAT = 'twisty-lab-saved-configurations';
+    const LEGACY_LAST_CONFIG_FORMAT = 'twisty-lab-last-configuration';
+    const LEGACY_SHARE_CONFIG_FORMAT = 'twisty-lab-configuration';
+    let savedConfigurations = [];
+    let lastConfigurationTimer;
+
+    function configurationData() {
+      return {
+        version: 1,
+        base_shape: String(state.base_shape),
+        usermat: String(state.usermat),
+        userbg: String(state.userbg),
+        slice: state.slice,
+        fast_render: Boolean(state.fast_render),
+        export_size: state.export_size,
+        rotation: { x: state.rot_x, y: state.rot_y, z: state.rot_z },
+        zoom: state.zoom,
+        cut_width: String(state.cut_width),
+        cuts: state.cuts.map((cut) => ({
+          use: Boolean(cut.use),
+          sym: Number(cut.sym),
+          type: Number(cut.type),
+          depth: Number(cut.depth),
+          apex: Number(cut.apex),
+          planar: Boolean(cut.planar),
+          color: Number(cut.color),
+          rotation: cut.rot.map(Number),
+          translation: cut.trans.map(Number)
+        }))
+      };
+    }
+
+    function normalizedConfiguration(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Configuration is not an object');
+      const config = {
+        version: 1,
+        ...defaults,
+        zoom: clamp(raw.zoom, .58, 2.3, 1),
+        cuts: structuredClone(defaultCuts)
+      };
+      if (shapes.has(Number(raw.base_shape))) config.base_shape = String(raw.base_shape);
+      if (/^[0-5]$/.test(String(raw.usermat ?? ''))) config.usermat = String(raw.usermat);
+      if (/^[0-3]$/.test(String(raw.userbg ?? ''))) config.userbg = String(raw.userbg);
+      if (/^[1-5]$/.test(String(raw.cut_width ?? ''))) config.cut_width = String(raw.cut_width);
+      config.slice = clamp(raw.slice, 0, 100, 100);
+      config.fast_render = raw.fast_render === true;
+      if (validExportSize(raw.export_size)) config.export_size = String(raw.export_size);
+      const rotation = raw.rotation && typeof raw.rotation === 'object' ? raw.rotation : {};
+      ['x','y','z'].forEach((axis) => {
+        const value = rotation[axis] ?? raw[`rot_${axis}`];
+        config[`rot_${axis}`] = clamp(value, -360, 360, defaults[`rot_${axis}`]);
+      });
+      if (Array.isArray(raw.cuts)) {
+        raw.cuts.slice(0, 5).forEach((source, index) => {
+          if (!source || typeof source !== 'object' || Array.isArray(source)) return;
+          const cut = config.cuts[index];
+          cut.use = source.use === true;
+          if (dirs[source.sym]) cut.sym = Number(source.sym);
+          cut.type = clamp(source.type, 1, 2, 1);
+          cut.depth = clamp(source.depth, 0, cut.type === 2 ? 90 : 300, cut.depth);
+          cut.apex = clamp(source.apex, -1000, 1000, cut.apex);
+          cut.planar = typeof source.planar === 'boolean'
+            ? source.planar
+            : Math.abs(effectiveDepth(cut) - cut.apex) < .0001;
+          if (cut.planar) cut.apex = effectiveDepth(cut);
+          cut.color = clamp(source.color, 0, 20, cut.color);
+          const rotationValues = Array.isArray(source.rotation) ? source.rotation : source.rot;
+          const translationValues = Array.isArray(source.translation) ? source.translation : source.trans;
+          if (Array.isArray(rotationValues)) cut.rot = [0,1,2].map((i) => clamp(rotationValues[i], -360, 360, 0));
+          if (Array.isArray(translationValues)) cut.trans = [0,1,2].map((i) => clamp(translationValues[i], -1, 1, 0));
+        });
+      }
+      return config;
+    }
+
+    function assignConfigurationData(raw) {
+      const config = normalizedConfiguration(raw);
+      const { version, ...settings } = config;
+      Object.assign(state, settings, { cuts: structuredClone(config.cuts), spin: false });
+    }
+
+    function applyConfigurationData(raw) {
+      assignConfigurationData(raw);
+      $('toggleMotion').textContent = 'Auto-rotate: off';
+      $('configuration').value = 'current';
+      syncControls();
+      changed();
+      syncConfigurationSelection();
+    }
+
+    function readLastConfiguration() {
+      try {
+        const stored = localStorage.getItem(LAST_CONFIG_KEY);
+        if (!stored) return null;
+        const payload = JSON.parse(stored);
+        if (![LAST_CONFIG_FORMAT,LEGACY_LAST_CONFIG_FORMAT].includes(payload?.format) || payload?.version !== 1 || !payload.configuration) return null;
+        return normalizedConfiguration(payload.configuration);
+      } catch (error) {
+        console.warn('Could not restore the last configuration', error);
+        return null;
+      }
+    }
+
+    function saveLastConfiguration() {
+      clearTimeout(lastConfigurationTimer);
+      try {
+        localStorage.setItem(LAST_CONFIG_KEY, JSON.stringify({
+          format: LAST_CONFIG_FORMAT,
+          version: 1,
+          configuration: configurationData()
+        }));
+      } catch (error) {
+        console.warn('Could not remember the current configuration', error);
+      }
+    }
+
+    function scheduleLastConfigurationSave(delay = 180) {
+      clearTimeout(lastConfigurationTimer);
+      lastConfigurationTimer = setTimeout(saveLastConfiguration, delay);
+    }
+
+    function savedId() {
+      return globalThis.crypto?.randomUUID?.() || `config-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+
+    function normalizedSavedEntry(entry) {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) throw new Error('Invalid saved configuration entry');
+      const name = String(entry.name || '').trim().slice(0, 100);
+      if (!name) throw new Error('A saved configuration is missing its name');
+      return {
+        id: String(entry.id || savedId()),
+        name,
+        updatedAt: String(entry.updatedAt || new Date().toISOString()),
+        configuration: normalizedConfiguration(entry.configuration)
+      };
+    }
+
+    function parseSavedCollection(data) {
+      const entries = Array.isArray(data) ? data : data?.configurations;
+      if (!Array.isArray(entries)) throw new Error('This is not a TwistyVision saved-configurations file');
+      return entries.map(normalizedSavedEntry);
+    }
+
+    function readSavedConfigurations() {
+      try {
+        const stored = localStorage.getItem(SAVED_CONFIG_KEY);
+        savedConfigurations = stored ? parseSavedCollection(JSON.parse(stored)) : [];
+      } catch (error) {
+        console.warn('Could not read saved configurations', error);
+        savedConfigurations = [];
+      }
+    }
+
+    function commitSavedConfigurations(next) {
+      localStorage.setItem(SAVED_CONFIG_KEY, JSON.stringify({
+        format: SAVED_CONFIG_FORMAT,
+        version: 1,
+        configurations: next
+      }));
+      savedConfigurations = next;
+    }
+
+    function renderConfigurations(selectedValue = 'current') {
+      const select = $('configuration');
+      select.replaceChildren(option('current', 'Current configuration'));
+
+      const user = document.createElement('optgroup');
+      user.label = 'User';
+      user.append(option('new', 'New configuration…'));
+      savedConfigurations.forEach((entry) => user.append(option(`user:${entry.id}`, entry.name)));
+      select.append(user);
+
+      const builtIn = document.createElement('optgroup');
+      builtIn.label = 'Built-in';
+      presetCatalog.forEach(([key,name]) => builtIn.append(option(`builtin:${key}`, name)));
+      select.append(builtIn);
+
+      const values = [...select.options].map((entry) => entry.value);
+      select.value = values.includes(selectedValue) ? selectedValue : 'current';
+      syncConfigurationSelection();
+    }
+
+    function selectedConfiguration() {
+      const value = $('configuration').value;
+      if (value.startsWith('builtin:')) {
+        const key = value.slice(8);
+        const entry = presetCatalog.find(([presetKey]) => presetKey === key);
+        return entry ? { kind: 'builtin', key, name: entry[1] } : { kind: 'current' };
+      }
+      if (value.startsWith('user:')) {
+        const id = value.slice(5);
+        const entry = savedConfigurations.find((saved) => saved.id === id);
+        return entry ? { kind: 'user', entry } : { kind: 'current' };
+      }
+      return { kind: value === 'new' ? 'new' : 'current' };
+    }
+
+    function syncConfigurationSelection() {
+      const selected = selectedConfiguration();
+      if (selected.kind === 'builtin') $('savedName').value = selected.name;
+      else if (selected.kind === 'user') $('savedName').value = selected.entry.name;
+      else $('savedName').value = '';
+      $('saveConfiguration').textContent = selected.kind === 'user' ? 'Update selected' : selected.kind === 'builtin' ? 'Save as user' : 'Save current';
+      $('loadConfiguration').disabled = !['builtin','user'].includes(selected.kind);
+      $('deleteConfiguration').disabled = selected.kind !== 'user';
+    }
+
+    function downloadSavedConfigurations() {
+      const contents = JSON.stringify({
+        format: SAVED_CONFIG_FORMAT,
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        configurations: savedConfigurations
+      }, null, 2);
+      const url = URL.createObjectURL(new Blob([contents], { type: 'application/json' }));
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = 'twistyvision-configurations.json';
+      anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function encodeShareCode(configuration) {
+      const json = JSON.stringify({ format: SHARE_CONFIG_FORMAT, version: 1, configuration });
+      const bytes = new TextEncoder().encode(json);
+      let binary = '';
+      bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+      return btoa(binary);
+    }
+
+    function decodeShareCode(code) {
+      const binary = atob(code.replace(/\s+/g, ''));
+      const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+      const payload = JSON.parse(new TextDecoder().decode(bytes));
+      if (![SHARE_CONFIG_FORMAT,LEGACY_SHARE_CONFIG_FORMAT].includes(payload?.format) || payload?.version !== 1 || !payload.configuration) {
+        throw new Error('This is not a TwistyVision configuration share code');
+      }
+      return payload.configuration;
+    }
+
+    let rendererReady = false;
+    let applyingPreset = false;
+    let interactiveRendering = false;
+    let exportInProgress = false;
+    let exportCancelled = false;
+    let rendererContextLost = false;
+    let interactiveTimer;
+    function beginInteractiveRender(redraw=true) {
+      clearTimeout(interactiveTimer);
+      if (!rendererReady) return;
+      if (!interactiveRendering) { interactiveRendering=true; if(redraw) draw(); }
+    }
+    function settleInteractiveRender(delay=120) {
+      clearTimeout(interactiveTimer);
+      interactiveTimer=setTimeout(() => {
+        if (!rendererReady || !interactiveRendering) return;
+        interactiveRendering=false;
+        draw();
+      },delay);
+    }
+    function changed() {
+      readControls();
+      if (!applyingPreset && selectedConfiguration().kind === 'builtin') {
+        $('configuration').value='current';
+        syncConfigurationSelection();
+      }
+      scheduleLastConfigurationSave();
+      updateTwistyRendererLink();
+      if (rendererReady && !exportInProgress) {
+        uploadGeometry();
+        draw();
+      }
+    }
+
+    function preset(name) {
+      Object.assign(state, defaults, { cuts: structuredClone(defaultCuts), zoom: 1, spin: false });
+      $('toggleMotion').textContent = 'Auto-rotate: off';
+      const selected=presetCatalog.find(([key]) => key===name) || presetCatalog[0];
+      $('configuration').value=`builtin:${selected[0]}`;
+      applyParams(new URLSearchParams(selected[2]));
+      applyingPreset=true; syncControls(); changed(); applyingPreset=false;
+      syncConfigurationSelection();
+    }
+
+    document.querySelectorAll('.quick-slider').forEach((slider) => {
+      slider.addEventListener('input', () => { $(slider.dataset.for).value = slider.value; });
+    });
+    document.querySelectorAll('input[type="number"]').forEach((input) => {
+      input.addEventListener('input', () => {
+        const slider = document.querySelector(`[data-for="${input.id}"]`);
+        if (slider) slider.value = clamp(input.value, Number(slider.min), Number(slider.max));
+      });
+    });
+    document.querySelectorAll('input[type="range"]').forEach((slider) => {
+      slider.addEventListener('pointerdown',beginInteractiveRender);
+      slider.addEventListener('input',() => { beginInteractiveRender(false); settleInteractiveRender(); });
+      slider.addEventListener('change',() => settleInteractiveRender(80));
+      slider.addEventListener('pointerup',() => settleInteractiveRender(80));
+      slider.addEventListener('pointercancel',() => settleInteractiveRender(80));
+    });
+    document.querySelectorAll('[data-cut-mode]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const index = Number(button.dataset.cutIndex);
+        state.cuts[index].planar = button.dataset.cutMode === 'planar';
+        syncCutMode(index);
+        changed();
+      });
+    });
+    document.querySelectorAll('[data-export-size]').forEach((button) => {
+      button.addEventListener('click', () => {
+        state.export_size=button.dataset.exportSize;
+        syncExportSize();
+        changed();
+      });
+    });
+    document.querySelectorAll('[id^="type_"]').forEach((select) => {
+      select.addEventListener('change', () => changeDepthUnits(Number(select.id.slice(5)), Number(select.value)));
+    });
+    document.querySelectorAll('select:not(#configuration):not([id^="type_"]), input:not(#savedName):not(#configurationFile)').forEach((el) => {
+      el.addEventListener('input', changed);
+      el.addEventListener('change', changed);
+    });
+    document.querySelectorAll('.cut summary input').forEach((el) => el.addEventListener('click', (e) => e.stopPropagation()));
+    $('configuration').addEventListener('change', () => {
+      const selected = selectedConfiguration();
+      syncConfigurationSelection();
+      if (selected.kind === 'builtin') preset(selected.key);
+    });
+    $('reset').addEventListener('click', () => {
+      preset('rubik');
+    });
+    $('homeView').addEventListener('click', resetView);
+    $('preview').addEventListener('dblclick', resetView);
+    function resetView() {
+      state.rot_x = -20; state.rot_y = 25; state.rot_z = -8; state.zoom = 1;
+      syncControls(); changed();
+    }
+
+    function setTheme(theme, persist) {
+      const dark = theme === 'dark';
+      const next = dark ? 'light' : 'dark';
+      document.documentElement.dataset.theme = theme;
+      $('themeSwitch').setAttribute('aria-pressed',String(dark));
+      $('themeSwitch').setAttribute('aria-label',`Switch to ${next} theme`);
+      $('themeSwitch').title = `Switch to ${next} theme`;
+      if (persist) try { localStorage.setItem('twistyvision-theme',theme); } catch {}
+    }
+    setTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',false);
+    $('themeSwitch').addEventListener('click', () => {
+      setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark',true);
+    });
+
+    function setAboutExpanded(expanded, returnFocus = false) {
+      $('aboutToggle').setAttribute('aria-expanded',String(expanded));
+      document.querySelector('.app').classList.toggle('about-open',expanded);
+      $('aboutContent').hidden = !expanded;
+      if (expanded) {
+        requestAnimationFrame(() => $('aboutContent').scrollIntoView({
+          behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+          block: 'start'
+        }));
+      } else if (returnFocus) $('aboutToggle').focus();
+    }
+    $('aboutToggle').addEventListener('click', () => {
+      setAboutExpanded($('aboutToggle').getAttribute('aria-expanded') !== 'true');
+    });
+    $('closeAbout').addEventListener('click', () => setAboutExpanded(false,true));
+
+    $('saveConfiguration').addEventListener('click', () => {
+      const name = $('savedName').value.trim().slice(0, 100);
+      if (!name) { flash('Give this configuration a name'); $('savedName').focus(); return; }
+      const selected = selectedConfiguration();
+      const selectedId = selected.kind === 'user' ? selected.entry.id : '';
+      const id = selectedId || savedId();
+      const entry = { id, name, updatedAt: new Date().toISOString(), configuration: configurationData() };
+      const next = selectedId
+        ? savedConfigurations.map((saved) => saved.id === selectedId ? entry : saved)
+        : [...savedConfigurations, entry];
+      try {
+        commitSavedConfigurations(next);
+        renderConfigurations(`user:${id}`);
+        flash(selectedId ? 'Saved configuration updated' : 'Configuration saved');
+      } catch (error) {
+        console.error(error);
+        flash('Could not save in this browser');
+      }
+    });
+    $('loadConfiguration').addEventListener('click', () => {
+      const selected = selectedConfiguration();
+      if (selected.kind === 'builtin') { preset(selected.key); flash(`Loaded ${selected.name}`); return; }
+      if (selected.kind !== 'user') return;
+      try {
+        applyConfigurationData(selected.entry.configuration);
+        $('configuration').value = `user:${selected.entry.id}`;
+        syncConfigurationSelection();
+        flash(`Loaded ${selected.entry.name}`);
+      }
+      catch (error) { console.error(error); flash('Could not load this configuration'); }
+    });
+    let pendingDeleteId = '';
+    $('deleteConfiguration').addEventListener('click', () => {
+      const choice = selectedConfiguration();
+      if (choice.kind !== 'user') return;
+      pendingDeleteId = choice.entry.id;
+      $('deleteConfigurationName').textContent = `“${choice.entry.name}”`;
+      $('deleteDialog').returnValue = '';
+      $('deleteDialog').showModal();
+    });
+    $('deleteDialog').addEventListener('close', () => {
+      const selectedId = pendingDeleteId;
+      pendingDeleteId = '';
+      if ($('deleteDialog').returnValue !== 'delete') return;
+      const selected = savedConfigurations.find((entry) => entry.id === selectedId);
+      if (!selected) return;
+      try {
+        commitSavedConfigurations(savedConfigurations.filter((entry) => entry.id !== selected.id));
+        renderConfigurations();
+        flash('Saved configuration deleted');
+      } catch (error) {
+        console.error(error);
+        flash('Could not delete this configuration');
+      }
+    });
+    $('downloadConfigurations').addEventListener('click', () => {
+      downloadSavedConfigurations();
+      flash('Saved configurations downloaded');
+    });
+    $('uploadConfigurations').addEventListener('click', () => $('configurationFile').click());
+    $('configurationFile').addEventListener('change', async () => {
+      const file = $('configurationFile').files[0];
+      $('configurationFile').value = '';
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        if (data?.format && ![SAVED_CONFIG_FORMAT,LEGACY_SAVED_CONFIG_FORMAT].includes(data.format)) throw new Error('Unexpected file format');
+        const imported = parseSavedCollection(data);
+        const merged = new Map(savedConfigurations.map((entry) => [entry.id, entry]));
+        imported.forEach((entry) => merged.set(entry.id, entry));
+        commitSavedConfigurations([...merged.values()]);
+        renderConfigurations(imported[0] ? `user:${imported[0].id}` : 'current');
+        flash(`Imported ${imported.length} saved configuration${imported.length === 1 ? '' : 's'}`);
+      } catch (error) {
+        console.error(error);
+        flash('Could not import that JSON file');
+      }
+    });
+    $('exportClipboard').addEventListener('click', async () => {
+      const code = encodeShareCode(configurationData());
+      $('shareCode').value = code;
+      $('shareCode').focus();
+      $('shareCode').select();
+      try { await navigator.clipboard.writeText(code); flash('Share code copied'); }
+      catch { flash('Share code ready to copy'); }
+    });
+    $('importClipboard').addEventListener('click', async () => {
+      let code = $('shareCode').value.trim();
+      if (!code) {
+        try { code = (await navigator.clipboard.readText()).trim(); }
+        catch { /* The textarea remains available when clipboard permission is denied. */ }
+      }
+      if (!code) { flash('Paste a share code first'); $('shareCode').focus(); return; }
+      try {
+        $('shareCode').value = code;
+        applyConfigurationData(decodeShareCode(code));
+        flash('Shared configuration imported');
+      } catch (error) {
+        console.error(error);
+        flash('That share code is not valid');
+      }
+    });
+
+    $('copyLink').addEventListener('click', async () => {
+      const url = new URL(location.href);
+      url.search = queryString();
+      url.hash = '';
+      try { await navigator.clipboard.writeText(url.href); flash('Configuration link copied'); }
+      catch { window.prompt('Copy this configuration URL:', url.href); }
+    });
+    $('rendererLink').addEventListener('click', () => {
+      readControls();
+      updateTwistyRendererLink();
+    });
+    $('download').addEventListener('click', async () => {
+      const button=$('download');
+      if (exportInProgress) {
+        exportCancelled=true;
+        button.textContent='Cancelling…';
+        button.disabled=true;
+        setRendererLoading('Cancelling PNG export…');
+        return;
+      }
+      if (!rendererReady) return;
+      const oldLabel=button.textContent;
+      clearTimeout(interactiveTimer); clearTimeout(statusTimer);
+      interactiveRendering=false;
+      exportInProgress=true;
+      exportCancelled=false;
+      button.textContent=iOSExportLimited ? 'Preparing PNG…' : 'Cancel export';
+      if (iOSExportLimited) button.disabled=true;
+      let blob, mobileExport=false;
+      try {
+        const exportState=structuredClone(state);
+        if (iOSExportLimited) {
+          $('status').textContent='Capturing preview PNG…'; $('status').classList.add('show');
+          blob=await renderPreviewPng(exportState);
+        } else {
+          mobileExport=mobileExportDevice();
+          const exportQuality=mobileExport ? 'mobileUltra' : 'ultra';
+          if (!rendererPrograms[exportQuality]) {
+            await ensureExportRenderer(exportQuality);
+          }
+          if (exportCancelled) throw exportCancelledError();
+          $('status').textContent=`Rendering ${mobileExport ? 'mobile ' : ''}ultra-quality PNG…`; $('status').classList.add('show');
+          blob=await renderUltraPng(exportState,mobileExport);
+        }
+      } catch(error) {
+        if (rendererContextLost) { /* The recovery overlay explains the interruption. */ }
+        else if (error?.name === 'ExportCancelledError') flash('PNG export cancelled');
+        else if (error?.name === 'ExportIntegrityError') {
+          console.error(error);
+          flash('Mobile GPU interrupted export; PNG not downloaded');
+        }
+        else { console.error(error); flash('Could not render PNG'); }
+      } finally {
+        exportInProgress=false;
+        exportCancelled=false;
+        if (!rendererContextLost) {
+          setRendererLoading('');
+          button.disabled=false;
+          button.textContent=oldLabel;
+          const previewRenderer=interactiveRendering ? rendererPrograms.fast : rendererPrograms.detailed || rendererPrograms.fast;
+          if (previewRenderer) {
+            activateRenderer(previewRenderer);
+            uploadGeometry();
+            draw();
+            if (mobileExport && rendererPrograms.mobileUltra) {
+              gl.deleteProgram(rendererPrograms.mobileUltra.program);
+              rendererPrograms.mobileUltra=null;
+              exportCompilePromises.mobileUltra=null;
+            }
+          }
+        }
+      }
+      if(blob && !rendererContextLost){
+        const url=URL.createObjectURL(blob), a=document.createElement('a');
+        a.download=`twistyvision-${iOSExportLimited ? 'preview' : 'ultra'}-${Date.now()}.png`; a.href=url; a.click();
+        setTimeout(() => URL.revokeObjectURL(url),1000); flash(`${iOSExportLimited ? 'Preview' : 'Ultra-quality'} PNG downloaded`);
+      }
+    });
+    $('toggleMotion').addEventListener('click', () => {
+      state.spin = !state.spin; $('toggleMotion').textContent = `Auto-rotate: ${state.spin ? 'on' : 'off'}`;
+      if (state.spin) animate();
+      else scheduleLastConfigurationSave();
+    });
+    let statusTimer;
+    function flash(message) {
+      clearTimeout(statusTimer);
+      $('status').textContent = message; $('status').classList.add('show');
+      statusTimer=setTimeout(() => $('status').classList.remove('show'), 1600);
+    }
+    function round(n, places = 2) { const p = 10 ** places; return Math.round(n * p) / p; }
+
+    readSavedConfigurations();
+    renderConfigurations();
+
+    // Populate the form even when WebGL is unavailable, so old links remain
+    // readable and editable instead of falling back to blank controls.
+    const loadedFromLink = location.search.length > 1;
+    const lastConfiguration = loadedFromLink ? null : readLastConfiguration();
+    if (loadedFromLink) readQuery();
+    else if (lastConfiguration) assignConfigurationData(lastConfiguration);
+    syncControls();
+    $('configuration').value=loadedFromLink || lastConfiguration ? 'current' : 'builtin:rubik';
+    syncConfigurationSelection();
+    updateTwistyRendererLink();
+    if (loadedFromLink) history.replaceState(null, '', location.pathname);
+    saveLastConfiguration();
+    window.addEventListener('pagehide', saveLastConfiguration);
+
+    // WebGL renderer -------------------------------------------------------
+    const canvas = $('preview');
+    const gl = canvas.getContext('webgl2', {
+      alpha: true,
+      premultipliedAlpha: true,
+      antialias: false
+    });
+    if (!gl) {
+      $('rendererLoading').hidden = true;
+      $('error').style.display = 'block';
+      $('error').textContent = 'This preview needs WebGL 2. Please enable hardware acceleration or open it in a current browser.';
+      ['download','toggleMotion','homeView'].forEach((id) => { $(id).disabled = true; });
+      return;
+    }
+
+    function markRendererContextLost(statusMessage='') {
+      if (rendererContextLost) return;
+      rendererContextLost=true;
+      rendererReady=false;
+      exportCancelled=true;
+      interactiveRendering=false;
+      state.spin=false;
+      clearTimeout(interactiveTimer);
+      $('toggleMotion').textContent='Auto-rotate: off';
+      ['download','toggleMotion','homeView'].forEach((id) => { $(id).disabled=true; });
+      $('download').textContent='Download unavailable';
+      saveLastConfiguration();
+      setRendererLoading('Graphics interrupted · waiting to recover…');
+      console.warn('WebGL context lost',statusMessage);
+    }
+    canvas.addEventListener('webglcontextlost',(event) => {
+      event.preventDefault();
+      markRendererContextLost(event.statusMessage || '');
+    },false);
+    canvas.addEventListener('webglcontextrestored',() => {
+      setRendererLoading('Restoring preview…');
+      saveLastConfiguration();
+      location.reload();
+    },false);
+
+    const vertexSource = `#version 300 es
+      layout(location=0) in vec2 aPosition;
+      void main() { gl_Position = vec4(aPosition, 0.0, 1.0); }
+    `;
+    const fragmentSource = `#version 300 es
+      #define QUALITY_FAST 0
+      #define QUALITY_DETAILED 1
+      #define QUALITY_ULTRA 2
+      #define QUALITY_MOBILE_ULTRA 3
+      #define RENDER_QUALITY QUALITY_DETAILED
+
+      #if RENDER_QUALITY == QUALITY_FAST
+        #define MARCH_STEPS 96
+        #define HIT_THRESHOLD 0.0022
+        #define MARCH_SCALE 0.82
+        #define MIN_MARCH_STEP 0.0025
+        #define SHADOW_STEPS 8
+        #define AO_STEPS 2
+        #define SHADOW_BIAS 0.004
+        #define SHADOW_START 0.003
+        #define SHADOW_MIN_STEP 0.010
+        #define SHADOW_HIT_THRESHOLD 0.0015
+      #elif RENDER_QUALITY == QUALITY_ULTRA
+        #define MARCH_STEPS 768
+        #define HIT_THRESHOLD 0.000003
+        #define MARCH_SCALE 0.45
+        #define MIN_MARCH_STEP 0.000002
+        #define SHADOW_STEPS 96
+        #define AO_STEPS 10
+        #define REFINEMENT_STEPS 12
+        #define SHADOW_BIAS 0.0008
+        #define SHADOW_START 0.0004
+        #define SHADOW_MIN_STEP 0.00035
+        #define SHADOW_HIT_THRESHOLD 0.00005
+      #elif RENDER_QUALITY == QUALITY_MOBILE_ULTRA
+        #define MARCH_STEPS 192
+        #define HIT_THRESHOLD 0.000025
+        #define MARCH_SCALE 0.62
+        #define MIN_MARCH_STEP 0.000015
+        #define SHADOW_STEPS 16
+        #define AO_STEPS 3
+        #define REFINEMENT_STEPS 6
+        #define SHADOW_BIAS 0.0015
+        #define SHADOW_START 0.00075
+        #define SHADOW_MIN_STEP 0.0008
+        #define SHADOW_HIT_THRESHOLD 0.00015
+      #else
+        #define MARCH_STEPS 180
+        #define HIT_THRESHOLD 0.0009
+        #define MARCH_SCALE 0.72
+        #define MIN_MARCH_STEP 0.0012
+        #define SHADOW_STEPS 32
+        #define AO_STEPS 5
+        #define SHADOW_BIAS 0.0025
+        #define SHADOW_START 0.001
+        #define SHADOW_MIN_STEP 0.0015
+        #define SHADOW_HIT_THRESHOLD 0.00035
+      #endif
+
+      precision highp float;
+      precision highp int;
+      out vec4 outColor;
+      uniform vec2 uOutputResolution;
+      uniform vec2 uTileOrigin;
+      uniform float uZoom;
+      uniform mat3 uInvRotation;
+      uniform int uShape;
+      uniform float uShapeScale;
+      uniform vec2 uSliceBounds;
+      uniform int uPlaneCount;
+      uniform sampler2D uPlaneTexture;
+      uniform int uAxisCount;
+      uniform sampler2D uAxes;
+      uniform vec4 uCutParams[5];
+      uniform vec3 uCutTrans[5];
+      uniform vec3 uCutColors[5];
+      uniform vec3 uBaseColor;
+      uniform float uSlice;
+      uniform int uBackground;
+      uniform int uFast;
+      uniform int uPreviewExport;
+
+      float slicePlaneZ() {
+        return uSlice <= 0.5
+          ? mix(uSliceBounds.x + 0.002, 0.0, uSlice * 2.0)
+          : mix(0.0, uSliceBounds.y - 0.002, (uSlice - 0.5) * 2.0);
+      }
+
+      float baseField(vec3 p) {
+        float d;
+        if (uShape == 0) d = length(p) - 1.0;
+        else {
+          d = -1e4;
+          for (int i = 0; i < 256; i++) {
+            if (i >= uPlaneCount) break;
+            vec4 plane = texelFetch(uPlaneTexture, ivec2(i, 0), 0);
+            d = max(d, dot(p, plane.xyz) - plane.w);
+          }
+        }
+        d = max(d, slicePlaneZ() - p.z);
+        return d;
+      }
+
+      float shellField(vec3 p, vec3 axis, int cutId) {
+        vec4 c = uCutParams[cutId];
+        float div = c.x, apex = c.y, width = c.z;
+        vec3 localP = p - uCutTrans[cutId];
+        if (abs(apex - div) < 0.00005) {
+          return abs(dot(localP, axis) - div) - width * 0.5;
+        }
+        float baseRadius = sqrt(max(0.0, 1.0 - div * div));
+        float slope = baseRadius / max(abs(div - apex), 0.0001);
+        float cosAngle = inversesqrt(1.0 + slope * slope);
+        vec3 rel = localP - axis * apex;
+        float h = dot(rel, axis);
+        float radial = length(rel - axis * h);
+        float shell = abs(radial - abs(h) * slope) * cosAngle - width * 0.5;
+        float gate;
+        if (apex < div) gate = -(h - max(0.0, -apex));
+        else gate = h - (div - apex);
+        return max(shell, gate);
+      }
+
+      vec2 sourceMap(vec3 p) {
+        float d = baseField(p);
+        float cutUnion = 1e4;
+        float cutId = -1.0;
+        for (int i = 0; i < 1024; i++) {
+          if (i >= uAxisCount) break;
+          vec4 a = texelFetch(uAxes, ivec2(i, 0), 0);
+          int id = int(a.w + 0.5);
+          float s = shellField(p, normalize(a.xyz), id);
+          if (s < cutUnion) { cutUnion = s; cutId = float(id); }
+        }
+        if (-cutUnion > d) return vec2(-cutUnion, cutId + 1.0);
+        return vec2(d, 0.0);
+      }
+
+      vec2 mapScene(vec3 worldP) {
+        vec3 p = uInvRotation * worldP / uShapeScale;
+        vec2 hit = sourceMap(p);
+        hit.x *= uShapeScale;
+        return hit;
+      }
+
+      vec3 shellGradient(vec3 p, vec3 axis, int cutId) {
+        vec4 c = uCutParams[cutId];
+        float div = c.x, apex = c.y;
+        vec3 localP = p - uCutTrans[cutId];
+        if (abs(apex - div) < 0.00005) {
+          float side = dot(localP, axis) - div;
+          return (side >= 0.0 ? 1.0 : -1.0) * axis;
+        }
+        float baseRadius = sqrt(max(0.0, 1.0 - div * div));
+        float slope = baseRadius / max(abs(div - apex), 0.0001);
+        float cosAngle = inversesqrt(1.0 + slope * slope);
+        vec3 rel = localP - axis * apex;
+        float h = dot(rel, axis);
+        vec3 radialVector = rel - axis * h;
+        float radial = length(radialVector);
+        vec3 helper = abs(axis.z) < 0.9 ? vec3(0.0,0.0,1.0) : vec3(0.0,1.0,0.0);
+        vec3 radialDirection = radial > 0.00001 ? radialVector / radial : normalize(cross(axis, helper));
+        float coneSide = radial - abs(h) * slope;
+        float shell = abs(coneSide) * cosAngle - c.z * 0.5;
+        vec3 shellNormal = (coneSide >= 0.0 ? 1.0 : -1.0) * cosAngle
+          * (radialDirection - (h >= 0.0 ? 1.0 : -1.0) * slope * axis);
+        float gate;
+        vec3 gateNormal;
+        if (apex < div) { gate = -(h - max(0.0, -apex)); gateNormal = -axis; }
+        else { gate = h - (div - apex); gateNormal = axis; }
+        return normalize(gate > shell ? gateNormal : shellNormal);
+      }
+
+      vec3 analyticNormal(vec3 worldP) {
+        vec3 p = uInvRotation * worldP / uShapeScale;
+        float baseDistance;
+        vec3 baseNormal;
+        if (uShape == 0) {
+          baseDistance = length(p) - 1.0;
+          baseNormal = normalize(p);
+        } else {
+          baseDistance = -1e4;
+          baseNormal = vec3(0.0,0.0,1.0);
+          for (int i = 0; i < 256; i++) {
+            if (i >= uPlaneCount) break;
+            vec4 plane = texelFetch(uPlaneTexture, ivec2(i, 0), 0);
+            float distance = dot(p, plane.xyz) - plane.w;
+            if (distance > baseDistance) { baseDistance = distance; baseNormal = plane.xyz; }
+          }
+        }
+        float clipDistance = slicePlaneZ() - p.z;
+        if (clipDistance > baseDistance) { baseDistance = clipDistance; baseNormal = vec3(0.0,0.0,-1.0); }
+
+        float cutUnion = 1e4;
+        vec3 cutAxis = vec3(0.0,0.0,1.0);
+        int cutId = -1;
+        for (int i = 0; i < 1024; i++) {
+          if (i >= uAxisCount) break;
+          vec4 a = texelFetch(uAxes, ivec2(i, 0), 0);
+          int id = int(a.w + 0.5);
+          vec3 axis = normalize(a.xyz);
+          float distance = shellField(p, axis, id);
+          if (distance < cutUnion) { cutUnion = distance; cutAxis = axis; cutId = id; }
+        }
+        vec3 sourceNormal = baseNormal;
+        if (cutId >= 0 && -cutUnion > baseDistance) sourceNormal = -shellGradient(p, cutAxis, cutId);
+        return normalize(transpose(uInvRotation) * sourceNormal);
+      }
+
+      vec2 sphereInterval(vec3 ro, vec3 rd) {
+        float b = dot(ro, rd);
+        float c = dot(ro, ro) - 1.050625;
+        float discriminant = b*b - c;
+        if (discriminant < 0.0) return vec2(1.0,-1.0);
+        float root = sqrt(discriminant);
+        return vec2(-b-root,-b+root);
+      }
+
+      float softShadow(vec3 ro, vec3 rd) {
+        vec2 bounds = sphereInterval(ro,rd);
+        if (bounds.y <= 0.0) return 1.0;
+        float shade = 1.0, t = max(SHADOW_START,bounds.x);
+        #if RENDER_QUALITY == QUALITY_DETAILED
+          int samples = uFast == 1 ? 8 : SHADOW_STEPS;
+        #else
+          int samples = SHADOW_STEPS;
+        #endif
+        for (int i = 0; i < SHADOW_STEPS; i++) {
+          if (i >= samples) break;
+          float h = mapScene(ro + rd * t).x;
+          shade = min(shade, 13.0 * h / t);
+          if (h < SHADOW_HIT_THRESHOLD) {
+            shade = 0.0;
+            break;
+          }
+          #if RENDER_QUALITY == QUALITY_ULTRA
+            float minStep = SHADOW_MIN_STEP;
+            float maxStep = 0.085;
+          #elif RENDER_QUALITY == QUALITY_MOBILE_ULTRA
+            float minStep = SHADOW_MIN_STEP;
+            float maxStep = 0.105;
+          #elif RENDER_QUALITY == QUALITY_FAST
+            float minStep = SHADOW_MIN_STEP;
+            float maxStep = 0.24;
+          #else
+            float minStep = uFast == 1 ? 0.010 : SHADOW_MIN_STEP;
+            float maxStep = uFast == 1 ? 0.24 : 0.13;
+          #endif
+          t += clamp(h, minStep, maxStep);
+          if (t > bounds.y) break;
+        }
+        return clamp(shade, 0.18, 1.0);
+      }
+
+      float ambientOcclusion(vec3 p, vec3 n) {
+        float occ = 0.0, weight = 1.0;
+        #if RENDER_QUALITY == QUALITY_DETAILED
+          int samples = uFast == 1 ? 2 : AO_STEPS;
+        #else
+          int samples = AO_STEPS;
+        #endif
+        for (int i = 1; i <= AO_STEPS; i++) {
+          if (i > samples) break;
+          float dist = 0.025 * float(i);
+          occ += (dist - mapScene(p + n * dist).x) * weight;
+          weight *= 0.58;
+        }
+        return clamp(1.0 - occ * 2.8, 0.3, 1.0);
+      }
+
+      vec3 background(vec2 uv, vec2 globalPixel) {
+        if (uBackground == 3) {
+          float checkerSize = min(uOutputResolution.x,uOutputResolution.y) / 36.0;
+          float checker = mod(floor(globalPixel.x / checkerSize) + floor(globalPixel.y / checkerSize), 2.0);
+          return mix(vec3(0.105,0.11,0.125), vec3(0.16,0.165,0.18), checker);
+        }
+        if (uBackground == 1) {
+          float vignette = 1.0 - 0.08 * dot(uv, uv);
+          return vec3(0.91,0.90,0.86) * vignette;
+        }
+        if (uBackground == 2) {
+          float t = clamp(uv.y * 0.45 + 0.55, 0.0, 1.0);
+          return mix(vec3(0.08,0.18,0.31), vec3(0.60,0.78,0.91), t);
+        }
+        float glow = exp(-1.7 * length(uv - vec2(-.35,.42)));
+        return mix(vec3(.018,.023,.031), vec3(.055,.09,.095), glow);
+      }
+
+      vec4 missColor(vec3 bg) {
+        if (uBackground == 3 && uPreviewExport == 1) return vec4(0.0);
+        #if RENDER_QUALITY == QUALITY_ULTRA || RENDER_QUALITY == QUALITY_MOBILE_ULTRA
+          if (uBackground == 3) return vec4(0.0);
+        #endif
+        return vec4(bg,1.0);
+      }
+
+      vec4 renderPixel(vec2 uv, vec2 globalPixel) {
+        vec3 bg = background(uv,globalPixel);
+        float viewScale = 1.28 / uZoom;
+        // Match POV-Ray's orthographic camera at negative Z looking toward
+        // the origin. Viewing from positive Z cannot represent chiral solids
+        // correctly, even if the resulting image is rotated afterward.
+        vec3 ro = vec3(uv * viewScale, -3.2);
+        vec3 rd = vec3(0.0, 0.0, 1.0);
+        vec2 rayBounds = sphereInterval(ro,rd);
+        if (rayBounds.y <= max(rayBounds.x,0.0)) return missColor(bg);
+        float t = max(rayBounds.x,0.0);
+        float material = 0.0;
+        bool hit = false;
+        float previousT = t;
+        float previousDistance = 1e4;
+        for (int i = 0; i < MARCH_STEPS; i++) {
+          vec2 scene = mapScene(ro + rd * t);
+          if (scene.x < HIT_THRESHOLD) {
+            hit = true;
+            #if RENDER_QUALITY == QUALITY_ULTRA || RENDER_QUALITY == QUALITY_MOBILE_ULTRA
+            if (scene.x < 0.0 && previousDistance > 0.0 && t > previousT) {
+              float outsideT = previousT;
+              float insideT = t;
+              for (int refinement = 0; refinement < REFINEMENT_STEPS; refinement++) {
+                float middleT = (outsideT + insideT) * 0.5;
+                if (mapScene(ro + rd * middleT).x > 0.0) outsideT = middleT;
+                else insideT = middleT;
+              }
+              t = insideT;
+            }
+            #endif
+            material = mapScene(ro + rd * t).y;
+            break;
+          }
+          previousT = t;
+          previousDistance = scene.x;
+          t += max(scene.x * MARCH_SCALE, MIN_MARCH_STEP);
+          if (t > rayBounds.y) break;
+        }
+        if (!hit) return missColor(bg);
+
+        vec3 p = ro + rd * t;
+        vec3 n = analyticNormal(p);
+        vec3 viewDir = -rd;
+        // These directions mirror the three lights in Jaap's POV template.
+        vec3 lightDir = normalize(vec3(-1.0, 1.0, -1.0));
+        float diffuse = pow(max(dot(n, lightDir), 0.0), 1.12);
+        float rightFill = max(dot(n, vec3(1.0,0.0,0.0)), 0.0);
+        float backFill = max(dot(n, vec3(0.0,0.0,-1.0)), 0.0);
+        float shadow = softShadow(p + n * SHADOW_BIAS, lightDir);
+        float ao = ambientOcclusion(p, n);
+        vec3 base = uBaseColor;
+        if (material > 0.5) {
+          int id = clamp(int(material - 1.0 + 0.5), 0, 4);
+          base = uCutColors[id];
+        }
+        vec3 halfDir = normalize(lightDir + viewDir);
+        float spec = pow(max(dot(n, halfDir), 0.0), 55.0) * shadow;
+        float rim = pow(1.0 - max(dot(n, viewDir), 0.0), 3.0);
+        float cutSurface = step(0.5,material);
+        float fillStrength = mix(1.0,0.35,cutSurface);
+        float rimStrength = mix(0.16,0.025,cutSurface);
+        vec3 lit = base * (0.07 + 0.82 * diffuse * shadow + fillStrength * (0.08 * rightFill + 0.035 * backFill)) * ao;
+        lit += vec3(1.0,.92,.80) * spec * .55 + base * rim * rimStrength * shadow * ao;
+        float edge = smoothstep(0.0, 0.02, abs(dot(n, viewDir)));
+        lit *= mix(.66, 1.0, edge);
+        lit = pow(lit, vec3(1.0/2.2));
+        return vec4(lit,1.0);
+      }
+
+      void main() {
+        vec2 globalPixel = gl_FragCoord.xy + uTileOrigin;
+        vec2 uv = (2.0 * globalPixel - uOutputResolution.xy) / min(uOutputResolution.x, uOutputResolution.y);
+        vec4 color;
+        #if RENDER_QUALITY == QUALITY_ULTRA
+          vec2 pixel = vec2(2.0 / min(uOutputResolution.x,uOutputResolution.y));
+          color = vec4(0.0);
+          for (int sampleY = 0; sampleY < 4; sampleY++) {
+            for (int sampleX = 0; sampleX < 4; sampleX++) {
+              vec2 offset = (vec2(float(sampleX),float(sampleY)) + 0.5) / 4.0 - 0.5;
+              color += renderPixel(uv + pixel * offset,globalPixel + offset);
+            }
+          }
+          color *= 1.0 / 16.0;
+        #elif RENDER_QUALITY == QUALITY_MOBILE_ULTRA
+          vec2 pixel = vec2(2.0 / min(uOutputResolution.x,uOutputResolution.y));
+          color = vec4(0.0);
+          for (int sampleY = 0; sampleY < 2; sampleY++) {
+            for (int sampleX = 0; sampleX < 2; sampleX++) {
+              vec2 offset = (vec2(float(sampleX),float(sampleY)) + 0.5) / 2.0 - 0.5;
+              color += renderPixel(uv + pixel * offset,globalPixel + offset);
+            }
+          }
+          color *= 1.0 / 4.0;
+        #else
+          color = renderPixel(uv,globalPixel);
+        #endif
+        outColor = color;
+      }
+    `;
+
+    const qualityDefine = '#define RENDER_QUALITY QUALITY_DETAILED';
+    const qualityNames = { fast: 'QUALITY_FAST', detailed: 'QUALITY_DETAILED', ultra: 'QUALITY_ULTRA', mobileUltra: 'QUALITY_MOBILE_ULTRA' };
+    const rendererPrograms = { fast: null, detailed: null, ultra: null, mobileUltra: null };
+    const parallelCompile = gl.getExtension('KHR_parallel_shader_compile');
+    const exportCompilePromises = { ultra: null, mobileUltra: null };
+    let vertexShader = null;
+    let activeRenderer = null;
+    let uniforms = null;
+
+    const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+    async function allowPaint() { await nextFrame(); await nextFrame(); }
+    function setRendererLoading(message = '') {
+      $('rendererLoadingText').textContent = message;
+      $('rendererLoading').hidden = !message;
+    }
+    function createShader(type, source) {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader,source);
+      gl.compileShader(shader);
+      return shader;
+    }
+    async function compileRenderer(quality) {
+      if (rendererPrograms[quality]) return rendererPrograms[quality];
+      if (!vertexShader) vertexShader = createShader(gl.VERTEX_SHADER,vertexSource);
+      const source = fragmentSource.replace(qualityDefine,`#define RENDER_QUALITY ${qualityNames[quality]}`);
+      const fragmentShader = createShader(gl.FRAGMENT_SHADER,source);
+      const program = gl.createProgram();
+      gl.attachShader(program,vertexShader);
+      gl.attachShader(program,fragmentShader);
+      gl.linkProgram(program);
+      if (parallelCompile) {
+        while (!rendererContextLost && !gl.getProgramParameter(program,parallelCompile.COMPLETION_STATUS_KHR)) await nextFrame();
+      }
+      if (rendererContextLost) throw new Error('WebGL context lost');
+      if (!gl.getShaderParameter(vertexShader,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(vertexShader) || 'Vertex shader compilation failed');
+      if (!gl.getShaderParameter(fragmentShader,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(fragmentShader) || `${quality} shader compilation failed`);
+      if (!gl.getProgramParameter(program,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program) || `${quality} shader linking failed`);
+      gl.detachShader(program,fragmentShader);
+      gl.deleteShader(fragmentShader);
+      const locations = Object.fromEntries([
+        'uOutputResolution','uTileOrigin','uZoom','uInvRotation','uShape','uShapeScale','uSliceBounds','uPlaneCount','uPlaneTexture','uAxisCount','uAxes',
+        'uCutParams','uCutTrans','uCutColors','uBaseColor','uSlice','uBackground','uFast','uPreviewExport'
+      ].map((name) => [name,gl.getUniformLocation(program,['uCutParams','uCutTrans','uCutColors'].includes(name) ? `${name}[0]` : name)]));
+      return rendererPrograms[quality] = { quality, program, uniforms: locations };
+    }
+    async function ensureExportRenderer(quality) {
+      if (rendererPrograms[quality]) return rendererPrograms[quality];
+      if (!exportCompilePromises[quality]) {
+        exportCompilePromises[quality] = (async () => {
+          setRendererLoading(quality === 'mobileUltra' ? 'Compiling mobile export renderer…' : 'Compiling ultra-quality renderer…');
+          await allowPaint();
+          return compileRenderer(quality);
+        })();
+      }
+      try { return await exportCompilePromises[quality]; }
+      catch (error) { exportCompilePromises[quality] = null; throw error; }
+    }
+    function activateRenderer(renderer) {
+      if (rendererContextLost || !renderer || activeRenderer === renderer) return false;
+      activeRenderer = renderer;
+      uniforms = renderer.uniforms;
+      gl.useProgram(renderer.program);
+      gl.uniform1i(uniforms.uAxes,0);
+      gl.uniform1i(uniforms.uPlaneTexture,1);
+      return true;
+    }
+
+    const quad = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    const axisTexture = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, axisTexture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const planeTexture = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, planeTexture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    const materials = [
+      [.88,.86,.79], [.085,.09,.10], [.78,.52,.16], [.76,.43,.50], [.78,.79,.77], [.45,.18,.09]
+    ];
+    let renderComplexity=0;
+    const hexRgb = (h) => [1,3,5].map((p) => parseInt(h.slice(p,p+2),16)/255);
+    function rot(v, angles) {
+      // The imported POV geometry and screen-space camera correction already
+      // account for handedness, so retain POV's numeric X/Y/Z angle signs.
+      let [x,y,z] = v; const [ax,ay,az] = angles.map((a) => a*DEG);
+      let c=Math.cos(ax),s=Math.sin(ax); [y,z]=[y*c-z*s,y*s+z*c];
+      c=Math.cos(ay);s=Math.sin(ay); [x,z]=[x*c+z*s,-x*s+z*c];
+      c=Math.cos(az);s=Math.sin(az); [x,y]=[x*c-y*s,x*s+y*c];
+      return [x,y,z];
+    }
+    function rotationMatrix(angles) {
+      const basis = [[1,0,0],[0,1,0],[0,0,1]].map((v) => rot(v, angles));
+      return [
+        basis[0][0],basis[1][0],basis[2][0],
+        basis[0][1],basis[1][1],basis[2][1],
+        basis[0][2],basis[1][2],basis[2][2]
+      ];
+    }
+    function multiplyMatrix(a,b) {
+      const out = Array(9).fill(0);
+      for (let row=0; row<3; row++) for (let col=0; col<3; col++) for (let k=0; k<3; k++) out[row*3+col] += a[row*3+k]*b[k*3+col];
+      return out;
+    }
+    function screenRotation(dx,dy) {
+      const x=dy*.42*DEG, y=dx*.42*DEG, cx=Math.cos(x), sx=Math.sin(x), cy=Math.cos(y), sy=Math.sin(y);
+      const aroundX=[1,0,0, 0,cx,-sx, 0,sx,cx];
+      const aroundY=[cy,0,sy, 0,1,0, -sy,0,cy];
+      const current=rotationMatrix([state.rot_x,state.rot_y,state.rot_z]);
+      const next=multiplyMatrix(multiplyMatrix(aroundY,aroundX),current);
+      const pitch=Math.asin(clamp(-next[6],-1,1));
+      const cp=Math.cos(pitch);
+      let roll, yaw;
+      if(Math.abs(cp)>1e-6){ roll=Math.atan2(next[7],next[8]); yaw=Math.atan2(next[3],next[0]); }
+      else { roll=Math.atan2(-next[5],next[4]); yaw=0; }
+      const angle=(radians) => {
+        const degrees=radians/DEG;
+        return ((degrees+180)%360+360)%360-180;
+      };
+      state.rot_x=angle(roll); state.rot_y=angle(pitch); state.rot_z=angle(yaw);
+    }
+    function inverseRotationMatrix(angles) {
+      return new Float32Array(rotationMatrix(angles));
+    }
+
+    function uploadGeometry(sourceState=state) {
+      const shape = shapes.get(Number(sourceState.base_shape)) || shapes.get(2);
+      const planeWidth = Math.max(1,shape.planes.length);
+      const planeData = new Float32Array(planeWidth*4);
+      shape.planes.forEach((plane,i) => planeData.set(plane,i*4));
+      gl.uniform1i(uniforms.uShape, shape.id);
+      gl.uniform1f(uniforms.uShapeScale, shape.scale);
+      gl.uniform2f(uniforms.uSliceBounds,shape.sliceBounds[0],shape.sliceBounds[1]);
+      gl.uniform1i(uniforms.uPlaneCount, shape.planes.length);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, planeTexture);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA32F,planeWidth,1,0,gl.RGBA,gl.FLOAT,planeData);
+      gl.uniform1f(uniforms.uSlice, sourceState.slice / 100);
+      gl.uniform1i(uniforms.uBackground, Number(sourceState.userbg));
+      gl.uniform1i(uniforms.uFast, sourceState.fast_render ? 1 : 0);
+      gl.uniform1i(uniforms.uPreviewExport,0);
+      gl.uniform3fv(uniforms.uBaseColor, materials[Number(sourceState.usermat)] || materials[0]);
+
+      const axes = [];
+      const params = new Float32Array(20), translations = new Float32Array(15), cutColors = new Float32Array(15);
+      sourceState.cuts.forEach((c,i) => {
+        const depth = effectiveDepth(c) / 300;
+        params.set([depth, c.apex/300, Number(sourceState.cut_width)*.005, c.use ? 1 : 0], i*4);
+        translations.set(c.trans, i*3);
+        cutColors.set(hexRgb(colors[c.color][1]), i*3);
+        if (c.use) (dirs[c.sym] || []).forEach((d) => axes.push(...rot(d,c.rot),i));
+      });
+      const count = Math.min(axes.length/4, 1024);
+      renderComplexity=shape.planes.length+count;
+      const texWidth = Math.max(1,count);
+      const texData = new Float32Array(texWidth*4);
+      texData.set(axes.slice(0,texWidth*4));
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, axisTexture);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA32F,texWidth,1,0,gl.RGBA,gl.FLOAT,texData);
+      gl.uniform1i(uniforms.uAxisCount,count);
+      gl.uniform4fv(uniforms.uCutParams,params);
+      gl.uniform3fv(uniforms.uCutTrans,translations);
+      gl.uniform3fv(uniforms.uCutColors,cutColors);
+      return renderComplexity;
+    }
+
+    function resize() {
+      if (rendererContextLost) return;
+      const baseQuality=renderComplexity>300?.5:renderComplexity>160?.62:renderComplexity>90?.78:1;
+      const dpr=Math.min(devicePixelRatio || 1,1.65)*baseQuality*(interactiveRendering ? .5 : 1);
+      const w = Math.max(2, Math.floor(canvas.clientWidth*dpr));
+      const h = Math.max(2, Math.floor(canvas.clientHeight*dpr));
+      if (canvas.width !== w || canvas.height !== h) { canvas.width=w; canvas.height=h; }
+      if (iOSExportLimited) $('previewExportDimensions').textContent=`${w} × ${h}`;
+      gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+      gl.viewport(0,0,w,h);
+      gl.uniform2f(uniforms.uOutputResolution,w,h);
+      gl.uniform2f(uniforms.uTileOrigin,0,0);
+    }
+    function draw() {
+      if (rendererContextLost || exportInProgress) return;
+      const target = interactiveRendering ? rendererPrograms.fast : rendererPrograms.detailed || rendererPrograms.fast;
+      if (!target) return;
+      if (activateRenderer(target)) uploadGeometry();
+      resize();
+      gl.uniform1f(uniforms.uZoom, state.zoom);
+      gl.uniform1i(uniforms.uFast, state.fast_render || target.quality === 'fast' ? 1 : 0);
+      gl.uniformMatrix3fv(uniforms.uInvRotation,false,inverseRotationMatrix([state.rot_x,state.rot_y,state.rot_z]));
+      gl.drawArrays(gl.TRIANGLES,0,3);
+    }
+
+    async function renderPreviewPng(sourceState) {
+      abortIfContextLost();
+      const renderer=rendererPrograms.detailed || rendererPrograms.fast;
+      if (!renderer) throw new Error('Preview renderer is unavailable');
+      activateRenderer(renderer);
+      uploadGeometry(sourceState);
+      resize();
+      gl.uniform1f(uniforms.uZoom,sourceState.zoom);
+      gl.uniform1i(uniforms.uFast,sourceState.fast_render ? 1 : 0);
+      gl.uniformMatrix3fv(uniforms.uInvRotation,false,inverseRotationMatrix([sourceState.rot_x,sourceState.rot_y,sourceState.rot_z]));
+      gl.uniform1i(uniforms.uPreviewExport,1);
+      gl.drawArrays(gl.TRIANGLES,0,3);
+      abortIfContextLost();
+      let blob;
+      try {
+        blob=await new Promise((resolve,reject) => canvas.toBlob(
+          (value) => value ? resolve(value) : reject(new Error('Preview PNG encoding failed')),
+          'image/png'
+        ));
+      } finally {
+        if (!rendererContextLost) {
+          gl.uniform1i(uniforms.uPreviewExport,0);
+          gl.drawArrays(gl.TRIANGLES,0,3);
+        }
+      }
+      abortIfContextLost();
+      return blob;
+    }
+
+    function exportCancelledError() {
+      const error=new Error('PNG export cancelled');
+      error.name='ExportCancelledError';
+      return error;
+    }
+
+    function exportIntegrityError(message) {
+      const error=new Error(message);
+      error.name='ExportIntegrityError';
+      return error;
+    }
+
+    function abortIfContextLost() {
+      if (!rendererContextLost && !gl.isContextLost()) return;
+      markRendererContextLost();
+      throw exportCancelledError();
+    }
+
+    function exportDimensions(size) {
+      if (size === 'native' && nativeExportSize) return { ...nativeExportSize };
+      const edge={ normal: 1024, large: 1440, huge: 2880 }[size] || 1024;
+      return { width: edge, height: edge };
+    }
+
+    function mobileExportDevice() {
+      const coarsePointer=typeof matchMedia === 'function' && matchMedia('(any-pointer: coarse)').matches;
+      const shortScreenEdge=Math.min(Number(globalThis.screen?.width) || innerWidth,Number(globalThis.screen?.height) || innerHeight);
+      return coarsePointer || ((navigator.maxTouchPoints || 0)>0 && shortScreenEdge<900);
+    }
+
+    async function renderUltraPng(sourceState,mobileGpu=mobileExportDevice()) {
+      const tileSize=mobileGpu ? 64 : 256;
+      const yieldBudget=45;
+      const renderer=rendererPrograms[mobileGpu ? 'mobileUltra' : 'ultra'];
+      if (!renderer) throw new Error('Export renderer is unavailable');
+      abortIfContextLost();
+      activateRenderer(renderer);
+      uploadGeometry(sourceState);
+      const {width,height}=exportDimensions(sourceState.export_size);
+      const tileColumns=Math.ceil(width/tileSize);
+      const tileRows=Math.ceil(height/tileSize);
+      const tileTotal=tileColumns*tileRows;
+      let pixels=new Uint8ClampedArray(width*height*4);
+      let tilePixels=new Uint8Array(tileSize*tileSize*4);
+      const restoredPixel=mobileGpu ? new Uint8Array(4) : null;
+      const transparent=Number(sourceState.userbg) === 3;
+      const framebuffer=gl.createFramebuffer();
+      const colorTexture=gl.createTexture();
+
+      if (!framebuffer || !colorTexture) {
+        abortIfContextLost();
+        if (framebuffer) gl.deleteFramebuffer(framebuffer);
+        if (colorTexture) gl.deleteTexture(colorTexture);
+        throw new Error('Could not create the tiled export framebuffer');
+      }
+      try {
+        gl.activeTexture(gl.TEXTURE2);
+        gl.bindTexture(gl.TEXTURE_2D,colorTexture);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA8,tileSize,tileSize,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER,framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,colorTexture,0);
+        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+          abortIfContextLost();
+          throw new Error('Tiled export framebuffer is incomplete');
+        }
+        gl.readBuffer(gl.COLOR_ATTACHMENT0);
+        gl.pixelStorei(gl.PACK_ALIGNMENT,1);
+        gl.disable(gl.BLEND);
+        gl.uniform2f(uniforms.uOutputResolution,width,height);
+        gl.uniform1f(uniforms.uZoom,sourceState.zoom);
+        gl.uniform1i(uniforms.uFast,0);
+        gl.uniformMatrix3fv(uniforms.uInvRotation,false,inverseRotationMatrix([sourceState.rot_x,sourceState.rot_y,sourceState.rot_z]));
+
+        setRendererLoading(`Rendering PNG 0% · ${width}×${height}`);
+        await nextFrame();
+        abortIfContextLost();
+        let completed=0;
+        let lastYield=performance.now();
+        for (let tileY=0; tileY<height; tileY+=tileSize) {
+          for (let tileX=0; tileX<width; tileX+=tileSize) {
+            if (exportCancelled) throw exportCancelledError();
+            abortIfContextLost();
+            const tileWidth=Math.min(tileSize,width-tileX);
+            const tileHeight=Math.min(tileSize,height-tileY);
+            gl.viewport(0,0,tileWidth,tileHeight);
+            if (mobileGpu) {
+              // A valid 4-sample result can only have alpha values of
+              // 0, 64, 128, 191, or 255. This impossible value exposes a
+              // clear that ran without the expensive shader draw completing.
+              gl.disable(gl.SCISSOR_TEST);
+              gl.clearColor(0.19,0.47,0.83,113/255);
+              gl.clear(gl.COLOR_BUFFER_BIT);
+            }
+            gl.uniform2f(uniforms.uTileOrigin,tileX,tileY);
+            gl.drawArrays(gl.TRIANGLES,0,3);
+            if (mobileGpu) {
+              const marker=completed+1;
+              const markerR=marker&255;
+              const markerG=(marker>>8)&255;
+              const markerB=(marker>>16)&255;
+              gl.enable(gl.SCISSOR_TEST);
+              gl.scissor(tileWidth-1,tileHeight-1,1,1);
+              gl.clearColor(markerR/255,markerG/255,markerB/255,253/255);
+              gl.clear(gl.COLOR_BUFFER_BIT);
+              gl.disable(gl.SCISSOR_TEST);
+              gl.finish();
+            }
+            abortIfContextLost();
+            gl.readPixels(0,0,tileWidth,tileHeight,gl.RGBA,gl.UNSIGNED_BYTE,tilePixels);
+            abortIfContextLost();
+            if (mobileGpu) {
+              const marker=completed+1;
+              const markerOffset=(tileWidth*tileHeight-1)*4;
+              if (Math.abs(tilePixels[markerOffset]-(marker&255))>1 || Math.abs(tilePixels[markerOffset+1]-((marker>>8)&255))>1 || Math.abs(tilePixels[markerOffset+2]-((marker>>16)&255))>1 || Math.abs(tilePixels[markerOffset+3]-253)>1) {
+                throw exportIntegrityError('Mobile GPU returned a stale export tile');
+              }
+              for (let pixel=3; pixel<tileWidth*tileHeight*4; pixel+=4) {
+                if (tilePixels[pixel]===113) throw exportIntegrityError('Mobile GPU did not finish an export tile');
+              }
+              // Replace the in-band marker with the real shader result for
+              // that one pixel before copying the tile into the final image.
+              gl.enable(gl.SCISSOR_TEST);
+              gl.scissor(tileWidth-1,tileHeight-1,1,1);
+              gl.drawArrays(gl.TRIANGLES,0,3);
+              gl.disable(gl.SCISSOR_TEST);
+              gl.finish();
+              abortIfContextLost();
+              gl.readPixels(tileWidth-1,tileHeight-1,1,1,gl.RGBA,gl.UNSIGNED_BYTE,restoredPixel);
+              abortIfContextLost();
+              if (restoredPixel[3]===113 || restoredPixel[3]===253) {
+                throw exportIntegrityError('Mobile GPU did not restore an export pixel');
+              }
+              tilePixels.set(restoredPixel,markerOffset);
+            }
+
+            for (let localY=0; localY<tileHeight; localY++) {
+              const sourceStart=localY*tileWidth*4;
+              const destinationStart=((height-1-tileY-localY)*width+tileX)*4;
+              if (!transparent) {
+                pixels.set(tilePixels.subarray(sourceStart,sourceStart+tileWidth*4),destinationStart);
+                continue;
+              }
+              for (let localX=0; localX<tileWidth; localX++) {
+                const source=sourceStart+localX*4;
+                const destination=destinationStart+localX*4;
+                const alpha=tilePixels[source+3];
+                pixels[destination+3]=alpha;
+                if (alpha === 0) continue;
+                if (alpha === 255) {
+                  pixels[destination]=tilePixels[source];
+                  pixels[destination+1]=tilePixels[source+1];
+                  pixels[destination+2]=tilePixels[source+2];
+                } else {
+                  // The 16-sample shader average is premultiplied at silhouette
+                  // pixels; ImageData and PNG store straight-alpha colors.
+                  pixels[destination]=Math.min(255,Math.round(tilePixels[source]*255/alpha));
+                  pixels[destination+1]=Math.min(255,Math.round(tilePixels[source+1]*255/alpha));
+                  pixels[destination+2]=Math.min(255,Math.round(tilePixels[source+2]*255/alpha));
+                }
+              }
+            }
+
+            completed++;
+            const updateProgress=performance.now()-lastYield>yieldBudget || completed === tileTotal;
+            if (updateProgress) {
+              setRendererLoading(`Rendering PNG ${Math.round(completed/tileTotal*100)}% · ${width}×${height}`);
+            }
+            if (mobileGpu || updateProgress) {
+              await nextFrame();
+              abortIfContextLost();
+              if (updateProgress) lastYield=performance.now();
+            }
+          }
+        }
+
+        if (exportCancelled) throw exportCancelledError();
+        abortIfContextLost();
+        setRendererLoading('Encoding PNG…');
+        await nextFrame();
+        const outputCanvas=document.createElement('canvas');
+        outputCanvas.width=width;
+        outputCanvas.height=height;
+        const context=outputCanvas.getContext('2d',{ willReadFrequently: true });
+        if (!context) throw new Error('Could not create the PNG canvas');
+        let imageData=new ImageData(pixels,width,height);
+        context.putImageData(imageData,0,0);
+        imageData=null;
+        pixels=null;
+        tilePixels=null;
+        let blob;
+        try {
+          blob=await new Promise((resolve,reject) => outputCanvas.toBlob(
+            (value) => value ? resolve(value) : reject(new Error('PNG encoding failed')),
+            'image/png'
+          ));
+        } finally {
+          // Release the large temporary 2D backing store before returning to
+          // the WebGL preview; mobile browsers may otherwise evict its context.
+          outputCanvas.width=1;
+          outputCanvas.height=1;
+        }
+        if (exportCancelled) throw exportCancelledError();
+        return blob;
+      } finally {
+        if (!rendererContextLost) {
+          gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+          gl.deleteFramebuffer(framebuffer);
+          gl.deleteTexture(colorTexture);
+        }
+      }
+    }
+    new ResizeObserver(draw).observe(canvas);
+
+    let dragging=false, lastX=0, lastY=0, pinch=0;
+    canvas.addEventListener('pointerdown',(e) => { beginInteractiveRender(); dragging=true; lastX=e.clientX; lastY=e.clientY; canvas.setPointerCapture(e.pointerId); });
+    canvas.addEventListener('pointermove',(e) => {
+      if (!dragging) return;
+      screenRotation(lastX-e.clientX,lastY-e.clientY);
+      lastX=e.clientX;lastY=e.clientY; syncControls(); draw();
+    });
+    canvas.addEventListener('pointerup',() => { dragging=false; changed(); settleInteractiveRender(80); });
+    canvas.addEventListener('pointercancel',() => { dragging=false; scheduleLastConfigurationSave(); settleInteractiveRender(80); });
+    canvas.addEventListener('wheel',(e) => { e.preventDefault(); beginInteractiveRender(false); state.zoom=clamp(state.zoom*Math.exp(-e.deltaY*.001),.58,2.3,1); scheduleLastConfigurationSave(); draw(); settleInteractiveRender(); },{passive:false});
+    canvas.addEventListener('touchstart',(e) => { if(e.touches.length===2) pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); },{passive:true});
+    canvas.addEventListener('touchmove',(e) => { if(e.touches.length===2){beginInteractiveRender(false);const p=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);state.zoom=clamp(state.zoom*p/pinch,.58,2.3,1);pinch=p;scheduleLastConfigurationSave();draw();settleInteractiveRender();} },{passive:true});
+
+    let lastFrame=0;
+    function animate(now=performance.now()) {
+      if(!state.spin) return;
+      const delta=Math.min(40,now-lastFrame||16);lastFrame=now;state.rot_y=(state.rot_y+delta*.012)%360;
+      syncControls();draw();requestAnimationFrame(animate);
+    }
+
+    async function initializeRenderer() {
+      $('download').disabled = true;
+      setRendererLoading('Compiling fast preview…');
+      await allowPaint();
+      try {
+        const fastRenderer = await compileRenderer('fast');
+        if (rendererContextLost) return;
+        activateRenderer(fastRenderer);
+        rendererReady = true;
+        uploadGeometry();
+        draw();
+      } catch (error) {
+        if (rendererContextLost) return;
+        console.error(error);
+        setRendererLoading('');
+        $('error').style.display = 'block';
+        $('error').textContent = `Preview shader could not start: ${error.message}`;
+        return;
+      }
+
+      setRendererLoading('Compiling detailed preview…');
+      await allowPaint();
+      try {
+        const detailedRenderer = await compileRenderer('detailed');
+        if (!rendererContextLost && !interactiveRendering && !exportInProgress) {
+          activateRenderer(detailedRenderer);
+          uploadGeometry();
+          draw();
+        }
+      } catch (error) {
+        if (!rendererContextLost) {
+          console.error(error);
+          flash('Detailed renderer unavailable; using fast preview');
+        }
+      } finally {
+        if (!rendererContextLost) {
+          setRendererLoading('');
+          $('download').disabled = false;
+        }
+      }
+    }
+    initializeRenderer();
+  })();
+  </script>
+</body>
+</html>
