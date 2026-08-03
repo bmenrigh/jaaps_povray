@@ -2605,23 +2605,58 @@
     }
     new ResizeObserver(draw).observe(canvas);
 
-    let dragging=false, lastX=0, lastY=0, pinch=0;
-    canvas.addEventListener('pointerdown',(e) => { beginInteractiveRender(); dragging=true; lastX=e.clientX; lastY=e.clientY; canvas.setPointerCapture(e.pointerId); });
+    let dragging=false, lastX=0, lastY=0, pinch=0, pinchGesture=false;
+    const activeTouchPointers=new Set();
+    canvas.addEventListener('pointerdown',(e) => {
+      beginInteractiveRender();
+      if (e.pointerType === 'touch') {
+        activeTouchPointers.add(e.pointerId);
+        if (activeTouchPointers.size >= 2) {
+          pinchGesture=true;
+          dragging=false;
+        }
+      }
+      if (!pinchGesture) {
+        dragging=true;
+        lastX=e.clientX;
+        lastY=e.clientY;
+      }
+      canvas.setPointerCapture(e.pointerId);
+    });
     canvas.addEventListener('pointermove',(e) => {
-      if (!dragging) return;
+      if (!dragging || pinchGesture) return;
       screenRotation(lastX-e.clientX,lastY-e.clientY);
       lastX=e.clientX;lastY=e.clientY; syncControls(); draw();
     });
-    canvas.addEventListener('pointerup',() => { dragging=false; changed(); settleInteractiveRender(80); });
-    canvas.addEventListener('pointercancel',() => { dragging=false; scheduleLastConfigurationSave(); settleInteractiveRender(80); });
+    function endCanvasPointer(e,cancelled=false) {
+      if (e.pointerType === 'touch') {
+        activeTouchPointers.delete(e.pointerId);
+        if (pinchGesture) {
+          dragging=false;
+          if (activeTouchPointers.size === 0) pinchGesture=false;
+          scheduleLastConfigurationSave();
+          settleInteractiveRender(80);
+          return;
+        }
+      }
+      dragging=false;
+      if (cancelled) scheduleLastConfigurationSave();
+      else changed();
+      settleInteractiveRender(80);
+    }
+    canvas.addEventListener('pointerup',(e) => endCanvasPointer(e));
+    canvas.addEventListener('pointercancel',(e) => endCanvasPointer(e,true));
     canvas.addEventListener('wheel',(e) => { e.preventDefault(); beginInteractiveRender(false); state.zoom=clamp(state.zoom*Math.exp(-e.deltaY*.001),.58,2.3,1); scheduleLastConfigurationSave(); draw(); settleInteractiveRender(); },{passive:false});
-    canvas.addEventListener('touchstart',(e) => { if(e.touches.length===2) pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); },{passive:true});
-    canvas.addEventListener('touchmove',(e) => { if(e.touches.length===2){beginInteractiveRender(false);const p=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);state.zoom=clamp(state.zoom*p/pinch,.58,2.3,1);pinch=p;scheduleLastConfigurationSave();draw();settleInteractiveRender();} },{passive:true});
+    canvas.addEventListener('touchstart',(e) => { if(e.touches.length>=2){pinchGesture=true;dragging=false;pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);} },{passive:true});
+    canvas.addEventListener('touchmove',(e) => { if(e.touches.length>=2){beginInteractiveRender(false);const p=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(pinch>0 && p>0) state.zoom=clamp(state.zoom*p/pinch,.58,2.3,1);pinch=p;scheduleLastConfigurationSave();draw();settleInteractiveRender();} },{passive:true});
+    canvas.addEventListener('touchend',(e) => { if(e.touches.length===0){activeTouchPointers.clear();pinchGesture=false;} },{passive:true});
+    canvas.addEventListener('touchcancel',() => { activeTouchPointers.clear();pinchGesture=false;dragging=false; },{passive:true});
 
     let lastFrame=0;
     function animate(now=performance.now()) {
       if(!state.spin) return;
-      const delta=Math.min(40,now-lastFrame||16);lastFrame=now;state.rot_y=(state.rot_y+delta*.012)%360;
+      const delta=Math.min(40,now-lastFrame||16);lastFrame=now;
+      if (!pinchGesture) state.rot_y=(state.rot_y+delta*.012)%360;
       syncControls();draw();requestAnimationFrame(animate);
     }
 
